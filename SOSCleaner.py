@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 25 Nov 2013 01:54:36 PM EST
+# Last Modified : Mon 25 Nov 2013 03:44:14 PM EST
 # Purpose :
 
 import os
@@ -43,6 +43,8 @@ class SOSCleaner:
         self.ip_db = {} #stored in Obfuscated:Original pairings
         self.start_ip = '10.230.230.0'
         self.exceptions = ('proc/sys/net/.*/route/flush',)  #a list of regex parameters to bypass
+
+        self._make_dest_env()
 
     def _skip_file(self, d, files):
         '''the function passed into shutil.copytree to ignore certain patterns and filetypes'''
@@ -75,12 +77,7 @@ class SOSCleaner:
 
         return rtn
 
-    def _ofile(self, filename, flag='rw'):
-        '''takes a path and returns an open file object. by default it returns a read/write object, but will accept other flags'''
-        fhandle = open(filename,flag)
-        return fhandle
-
-    def _mk_dest_env(self):
+    def _make_dest_env(self):
         '''this will create the folder in /tmp to store the sanitized files and populate it with the scrubbed files using shutil'''
 
         timestamp = strftime("%Y%m%d%H%M%S", gmtime())
@@ -108,14 +105,6 @@ class SOSCleaner:
         ip = socket.inet_ntoa(struct.pack('!I', num))
 
         return ip
-
-    def _check_ip(self, num):
-        '''checks for the existence of an IP in the IP database'''
-
-        if num in self.ip_db.values():
-            return True
-
-        return False
 
     def _ip2db(self, ip):
         '''adds an IP address to the IP database and returns the obfuscated entry, or returns the existing obfuscated IP entry
@@ -163,12 +152,14 @@ class SOSCleaner:
 
         return rtn
 
-    def _string_search(self, files, regex):
+    def _string_search(self, regex):
         '''takes a list of files and searches through them all for a given regex pattern'''
+
+        files = self._file_list(a.working_dir)
 
         for fpath in files:
             if os.path.isfile(fpath):
-                os.system("chmod 664 %s" % fpath) #a kludge, I know... 
+                os.system("chmod 664 %s" % fpath) #a kludge, I know...
                 if self.debug:
                     print "PROCESSING: %s" % fpath
                 f = open(fpath, 'r+')
