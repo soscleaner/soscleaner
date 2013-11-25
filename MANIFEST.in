@@ -1,0 +1,3 @@
+recursive-include python-magic/testdata *
+include LICENSE*
+include README*
