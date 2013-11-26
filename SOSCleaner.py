@@ -19,12 +19,12 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 25 Nov 2013 03:44:14 PM EST
+# Last Modified : Tue 26 Nov 2013 12:29:53 PM EST
 # Purpose :
 
 import os
 import re
-from python-magic import magic
+from python_magic import magic
 from time import strftime, gmtime
 import shutil
 import struct, socket
@@ -44,19 +44,18 @@ class SOSCleaner:
         self.start_ip = '10.230.230.0'
         self.exceptions = ('proc/sys/net/.*/route/flush',)  #a list of regex parameters to bypass
 
-        self._make_dest_env()
-
     def _skip_file(self, d, files):
         '''the function passed into shutil.copytree to ignore certain patterns and filetypes'''
         skip_list = []
         for f in files:
             f_full = os.path.join(d, f)
             if not os.path.isdir(f_full):
-                mode = oct(os.stat(f_full).st_mode)[-3:]
-                if mode == '200':
-                    skip_list.append(f) #don't copy write-only devices
-                if magic.from_file(f_full) == 'data':
-                    skip_list.append(f)
+                if not os.path.islink(f_full):
+                    mode = oct(os.stat(f_full).st_mode)[-3:]
+                    if mode == '200':
+                        skip_list.append(f) #don't copy write-only devices
+                    if magic.from_file(f_full) == 'data':
+                        skip_list.append(f)
 
         return skip_list
 
@@ -83,7 +82,7 @@ class SOSCleaner:
         timestamp = strftime("%Y%m%d%H%M%S", gmtime())
         dir_path = "/tmp/soscleaner-%s" % timestamp
 
-        shutil.copytree(self.report, dir_path, ignore=self._skip_file, symlinks=True)
+        shutil.copytree(self.report, dir_path, symlinks=True, ignore=self._skip_file)
         self.working_dir = dir_path
 
     def _tar_results(self, dir_path):
@@ -154,8 +153,6 @@ class SOSCleaner:
 
     def _string_search(self, regex):
         '''takes a list of files and searches through them all for a given regex pattern'''
-
-        files = self._file_list(a.working_dir)
 
         for fpath in files:
             if os.path.isfile(fpath):
