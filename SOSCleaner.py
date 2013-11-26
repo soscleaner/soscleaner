@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Tue 26 Nov 2013 12:29:53 PM EST
+# Last Modified : Tue 26 Nov 2013 12:48:15 PM EST
 # Purpose :
 
 import os
@@ -43,6 +43,8 @@ class SOSCleaner:
         self.ip_db = {} #stored in Obfuscated:Original pairings
         self.start_ip = '10.230.230.0'
         self.exceptions = ('proc/sys/net/.*/route/flush',)  #a list of regex parameters to bypass
+
+        self._make_dest_env()   #create the working directory
 
     def _skip_file(self, d, files):
         '''the function passed into shutil.copytree to ignore certain patterns and filetypes'''
@@ -153,6 +155,10 @@ class SOSCleaner:
 
     def _string_search(self, regex):
         '''takes a list of files and searches through them all for a given regex pattern'''
+        try:
+            files = self._file_list(self.working_dir)
+        except:
+            raise Exception('no working directory defined')
 
         for fpath in files:
             if os.path.isfile(fpath):
