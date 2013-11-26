@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Tue 26 Nov 2013 12:48:15 PM EST
+# Last Modified : Tue 26 Nov 2013 03:31:29 PM EST
 # Purpose :
 
 import os
@@ -61,23 +61,6 @@ class SOSCleaner:
 
         return skip_list
 
-    def _swap_ip(self, match):
-        '''used to pass into re.sub to alter the IP address'''
-
-        rtn = ''
-        s_match = match.split()
-        rtn = match
-        for b in range(0, len(s_match) -1):
-            if self.debug:
-                print "TESTING: %s" % s_match[b]
-                if '127.0.0.1' not in s_match[b]:
-                    m = re.search('.*[\/\s\W:;\a](\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}).*', s_match[b])
-                    if m:
-                        s_match[b] = self._ip2db(s_match[b])
-        rtn = ' '.join(map(str, s_match))
-
-        return rtn
-
     def _make_dest_env(self):
         '''this will create the folder in /tmp to store the sanitized files and populate it with the scrubbed files using shutil'''
 
@@ -86,14 +69,6 @@ class SOSCleaner:
 
         shutil.copytree(self.report, dir_path, symlinks=True, ignore=self._skip_file)
         self.working_dir = dir_path
-
-    def _tar_results(self, dir_path):
-        '''tars and compresses a directory full of sanitized stuff'''
-        output_file = "%s.tar.gz" % dir_path
-        with tarfile.open(output_file, "w:gz") as tar:
-            tar.add(dir_path, arcname=os.path.basename(dir_path))
-
-        return tar
 
     def _ip2int(self, ipstr):
         '''converts a dotted decimal IP address into an integer that can be incremented'''
@@ -152,28 +127,3 @@ class SOSCleaner:
                 rtn.append(x)
 
         return rtn
-
-    def _string_search(self, regex):
-        '''takes a list of files and searches through them all for a given regex pattern'''
-        try:
-            files = self._file_list(self.working_dir)
-        except:
-            raise Exception('no working directory defined')
-
-        for fpath in files:
-            if os.path.isfile(fpath):
-                os.system("chmod 664 %s" % fpath) #a kludge, I know...
-                if self.debug:
-                    print "PROCESSING: %s" % fpath
-                f = open(fpath, 'r+')
-                lines = f.readlines()
-                f.seek(0)
-                f.truncate()
-                for l in lines:
-                    ip_match = re.search(r'%s' % regex, l)
-                    if ip_match:
-                        l = self._swap_ip(l)
-                        if self.debug:
-                            print l
-                    f.write(l) #write it back into the file
-                f.close()
