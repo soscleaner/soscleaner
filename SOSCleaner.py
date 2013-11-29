@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 28 Nov 2013 11:34:39 PM EST
+# Last Modified : Fri 29 Nov 2013 12:34:49 AM EST
 # Purpose :
 
 import os
@@ -65,17 +65,12 @@ class SOSCleaner:
         '''this will substitute an obfuscated IP for each instance of a given IP in a file'''
         pattern = r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)([ (\[]?(\.|dot)[ )\]]?(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
         ips = [each[0] for each in re.findall(pattern, line)]
-        for item in ips:
-            location = ips.index(item)
-            ip = re.sub("[ ()\[\]]", "", item)
-            ip = re.sub("dot", ".", ip)
-            ips.remove(item)
-            ips.insert(location, ip)
-
-        for ip in ips:
-            line = line.replace(ip, self._ip2db(ip))
+        if len(ips) > 0:    #if we need to make a substitution
+            for ip in ips:
+                line = line.replace(ip, self._ip2db(ip))
 
         return line
+
 
     def _make_dest_env(self):
         '''this will create the folder in /tmp to store the sanitized files and populate it with the scrubbed files using shutil'''
@@ -143,3 +138,43 @@ class SOSCleaner:
                 rtn.append(x)
 
         return rtn
+
+    def _clean_line(self, l):
+        '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
+
+        new_line = self._sub_ip(l)  #IP substitution
+        #
+        #TODO - more cleanups
+        #
+
+        return new_line
+
+    def _clean_file(self, f):
+        '''this will take a given file path, scrub it accordingly, and save a new copy of the file in the same location'''
+        if os.path.exists(f):
+            tmp_file = tempfile.TemporaryFile()
+            fh = open(f,'r')
+            data = fh.readlines()
+            fh.close()
+
+            #scrub the data, and hold it in a temporary file
+            for l in data:
+                new_l = self._clean_line(l)
+                tmp_file.write(new_l)
+            tmp_file.seek(0)
+
+            #re-open the filepath and write out the newly scrubbed information
+            new_fh = open(f, 'w')
+            for line in tmp_file:
+                new_fh.write(line)
+
+            #close all the filehandles cleanly
+            tmp_file.close()
+            new_fh.close()
+
+    def clean_report(self):
+        '''this will loop through all the files in a working_directory and scrub them all'''
+
+        files = self._file_list(self.working_dir)
+        for f in files:
+            self._clean_file(f)
