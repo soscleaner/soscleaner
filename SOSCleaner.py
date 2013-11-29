@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Tue 26 Nov 2013 03:31:29 PM EST
+# Last Modified : Thu 28 Nov 2013 11:34:39 PM EST
 # Purpose :
 
 import os
@@ -60,6 +60,22 @@ class SOSCleaner:
                         skip_list.append(f)
 
         return skip_list
+
+    def _sub_ip(self, line):
+        '''this will substitute an obfuscated IP for each instance of a given IP in a file'''
+        pattern = r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)([ (\[]?(\.|dot)[ )\]]?(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
+        ips = [each[0] for each in re.findall(pattern, line)]
+        for item in ips:
+            location = ips.index(item)
+            ip = re.sub("[ ()\[\]]", "", item)
+            ip = re.sub("dot", ".", ip)
+            ips.remove(item)
+            ips.insert(location, ip)
+
+        for ip in ips:
+            line = line.replace(ip, self._ip2db(ip))
+
+        return line
 
     def _make_dest_env(self):
         '''this will create the folder in /tmp to store the sanitized files and populate it with the scrubbed files using shutil'''
