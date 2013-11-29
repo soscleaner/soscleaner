@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 29 Nov 2013 06:37:00 AM EST
+# Last Modified : Fri 29 Nov 2013 06:42:51 AM EST
 # Purpose :
 
 import os
@@ -227,6 +227,6 @@ class SOSCleaner:
             #create tarball
             if self.reporting:
                 print "GZip'd Tarball Created at: %s" % 'foo'
-        else
+        else:
             if reporting:
                 print "Compression Not Enabled - No Archive Created"
