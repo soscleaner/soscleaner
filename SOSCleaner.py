@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 29 Nov 2013 12:19:33 PM EST
+# Last Modified : Fri 29 Nov 2013 12:37:30 PM EST
 # Purpose :
 
 import os
@@ -212,24 +212,24 @@ class SOSCleaner:
 
         files = self._file_list(self.working_dir)
         if self.reporting:
-            print textwrap.dedent("""
+            print textwrap.dedent(
+            """
             SOSCleaner Started: %s
             Working Directory: %s
             IP Substitution Address Start: %s
-            Domain Name Substitution: %s
-            """) % (strftime("%H:%M:%S"), self.working_dir, self.start_ip, self.domain)
+            Domain Name Substitution: %s""") % (strftime("%H:%M:%S"), self.working_dir, self.start_ip, self.domain)
 
         for f in files:
             if self.debug:
                 print "Cleaning %s" % f
             self._clean_file(f)
         if self.reporting:
-            print textwrap.dedent("""
+            print textwrap.dedent(
+            """
             SOSCleaner Completed: %s
             IP Addresses Obfuscated: %s
             Hostnames Obfuscated: %s
-            Files Processed: %s
-            """) % (strftime("%H:%M:%S"), len(self.ip_db),len(self.hn_db), self.file_count)
+            Files Processed: %s""") % (strftime("%H:%M:%S"), len(self.ip_db),len(self.hn_db), self.file_count)
         if self.compress:
             #create tarball
             if self.reporting:
