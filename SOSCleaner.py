@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 29 Nov 2013 12:37:30 PM EST
+# Last Modified : Fri 29 Nov 2013 08:11:08 PM EST
 # Purpose :
 
 import os
@@ -48,10 +48,12 @@ class SOSCleaner:
         self.ip_db = {}
         self.start_ip = '10.230.230.0'
         self.hn_db = {}
+        self.hostname_count = 0
         self.domain = 'example.com'
         self.reporting = reporting
 
         self._make_dest_env()   #create the working directory
+        self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
     def _skip_file(self, d, files):
         '''
@@ -91,6 +93,26 @@ class SOSCleaner:
                 line = line.replace(ip, new_ip)
         return line
 
+    def _sub_hostname(self, line):
+        '''
+        This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
+        Example:
+        '''
+        if self.is_fqdn:
+            regex = re.compile(r'\b\S*\.%s' % self.domainname)
+            hostnames = [each for each in regex.findall(line)]
+            if len(hostnames) > 0:
+                for hn in hostnames:
+                    new_hn = self._hn2db(hn)
+                    if self.debug:
+                        print "Obfuscating FQDN: %s --> %s" % (hn, new_hn)
+                    line = line.replace(hn, new_hn)
+        else:
+            #we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
+            line = line.replace(self.hostname, self._hn2db(self.hostname))
+
+        return line
+
     def _make_dest_env(self):
         '''
         This will create the folder in /tmp to store the sanitized files and populate it using shutil
@@ -105,6 +127,29 @@ class SOSCleaner:
             self.working_dir = dir_path
         except:
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
+
+    def _get_hostname(self):
+        #gets the hostname and stores hostname/domainname so they can be filtered out later
+
+        try:
+            hostfile = os.path.join(self.working_dir, 'hostname')
+            fh = open(hostfile, 'r')
+            name_list = fh.readline().rstrip().split('.')
+            is_fqdn = True
+
+            if len(name_list) == 1: #if it's not an FQDN - no dots
+                is_fqdn = False
+
+            hostname = name_list[0]
+            if is_fqdn:
+                domainname = '.'.join(name_list[1:len(name_list)])
+            else:
+                domainname = 'not-an-fqdn'
+
+            return hostname, domainname, is_fqdn
+
+        except:
+            raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
 
     def _ip2int(self, ipstr):
         #converts a dotted decimal IP address into an integer that can be incremented
@@ -143,6 +188,28 @@ class SOSCleaner:
 
             return self._int2ip(new_ip)
 
+    def _hn2db(self, hn):
+        '''
+        This will add a hostname for an FQDN on the same domain as the host to an obfuscation database, or return an existing entry
+        '''
+        db = self.hn_db
+        hn_found = False
+        for k,v in db.iteritems():
+            if v == hn:  #the hostname is in the database
+                ret_hn = k
+                hn_found = True
+        if hn_found:
+            return ret_hn
+        else:
+            self.hostname_count += 1    #we have a new hostname, so we increment the counter to get the host ID number
+            if self.is_fqdn:    #it's an fqdn, so we add in the obfuscated domainname
+                new_hn = "host%s.%s" % (self.hostname_count, self.domain)
+            else:
+                new_hn = "host%s" % self.hostname_count
+            self.hn_db[new_hn] = hn
+
+            return new_hn
+
     def _walk_report(self, folder):
         '''returns a dictonary of dictionaries in the format {directory_name:[file1,file2,filex]}'''
 
@@ -174,9 +241,7 @@ class SOSCleaner:
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
         new_line = self._sub_ip(l)  #IP substitution
-        #
-        #TODO - more cleanups
-        #
+        new_line = self._sub_hostname(new_line)    #Hostname substitution
 
         return new_line
 
@@ -212,6 +277,14 @@ class SOSCleaner:
 
         files = self._file_list(self.working_dir)
         if self.reporting:
+            if not self.is_fqdn:
+                print textwrap.dedent("""
+                ***WARNING***
+                The Hostname (%s) Does Not Appear To Be A Fully Qualified Domain Name (FQDN).
+                This Will Greatly Limit The Cleaning Ability for SOSCleaner.
+                Please See The Documentation For More Details.
+                ***WARNING***
+                """) % self.hostname
             print textwrap.dedent(
             """
             SOSCleaner Started: %s
