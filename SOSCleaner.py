@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 29 Nov 2013 11:05:01 PM EST
+# Last Modified : Sat 30 Nov 2013 12:09:45 AM EST
 # Purpose :
 
 import os
@@ -30,6 +30,7 @@ import shutil
 import struct, socket
 import tempfile
 import textwrap
+import logging
 
 class SOSCleaner:
     '''
@@ -39,21 +40,24 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, sosreport, compress=True, debug=False, reporting=True):
+    def __init__(self, sosreport, compress=True, loglevel='INFO', reporting=True):
 
         self.version = '0.1'
         self.report = sosreport
         self.compress = compress
-        self.debug = debug
+        self.loglevel = loglevel
         self.ip_db = {}
         self.start_ip = '10.230.230.0'
         self.hn_db = {}
         self.hostname_count = 0
         self.domain = 'example.com'
-        self.reporting = reporting
 
         self._make_dest_env()   #create the working directory
         self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
+
+        self.logfile = os.path.join(self.working_dir, 'soscleaner.log')
+        loglevel_config = 'logging.%s' % self.loglevel
+        logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
 
     def _skip_file(self, d, files):
         '''
@@ -88,8 +92,7 @@ class SOSCleaner:
         if len(ips) > 0:
             for ip in ips:
                 new_ip = self._ip2db(ip)
-                if self.debug:
-                    print "Obfuscating IP: %s --> %s" % (ip, new_ip)
+                logging.debug("Obfuscating IP - %s > %s", ip, new_ip)
                 line = line.replace(ip, new_ip)
         return line
 
@@ -104,12 +107,19 @@ class SOSCleaner:
             if len(hostnames) > 0:
                 for hn in hostnames:
                     new_hn = self._hn2db(hn)
-                    if self.debug:
-                        print "Obfuscating FQDN: %s --> %s" % (hn, new_hn)
+                    logging.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                     line = line.replace(hn, new_hn)
-        else:
-            #we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
-            line = line.replace(self.hostname, self._hn2db(self.hostname))
+
+            '''
+            logs like secure have a non-FQDN hostname entry on almost every line.
+            So we will always run this bit of code to clean up as much as possibe, in addition
+            to searching for all of the FQDNs that we know exist.
+            we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
+            '''
+
+            new_hn = self._hn2db(self.hostname)
+            logging.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
+            line = line.replace(self.hostname, new_hn)
 
         return line
 
@@ -278,37 +288,21 @@ class SOSCleaner:
         '''this will loop through all the files in a working_directory and scrub them'''
 
         files = self._file_list(self.working_dir)
-        if self.reporting:
-            if not self.is_fqdn:
-                print textwrap.dedent("""
-                ***WARNING***
-                The Hostname (%s) Does Not Appear To Be A Fully Qualified Domain Name (FQDN).
-                This Will Greatly Limit The Cleaning Ability for SOSCleaner.
-                Please See The Documentation For More Details.
-                ***WARNING***
-                """) % self.hostname
-            print textwrap.dedent(
-            """
-            SOSCleaner Started: %s
-            Working Directory: %s
-            IP Substitution Address Start: %s
-            Domain Name Substitution: %s""") % (strftime("%H:%M:%S"), self.working_dir, self.start_ip, self.domain)
-
+        if not self.is_fqdn:
+            logging.warning("The Hostname Does Not Appear to be an FQDN - %s", self.hostname)
+        logging.info("SOSCleaner Started")
+        logging.info("Working Directory - %s", self.working_dir)
+        logging.info("IP Substitution Start Address - %s", self.start_ip)
+        logging.info("Domain Name Substitution - %s", self.domain)
         for f in files:
-            if self.debug:
-                print "Cleaning %s" % f
+            logging.debug("Cleaning %s", f)
             self._clean_file(f)
-        if self.reporting:
-            print textwrap.dedent(
-            """
-            SOSCleaner Completed: %s
-            IP Addresses Obfuscated: %s
-            Hostnames Obfuscated: %s
-            Files Processed: %s""") % (strftime("%H:%M:%S"), len(self.ip_db),len(self.hn_db), self.file_count)
+        logging.info("SOSCleaner Completed")
+        logging.info("IP Addresses Obfuscated - %s", len(self.ip_db))
+        logging.info("Hostnames Obfuscated - %s" , len(self.hn_db))
+        logging.info("Files Cleaned - %s", self.file_count)
         if self.compress:
             #create tarball
-            if self.reporting:
-                print "GZip'd Tarball Created at: %s" % 'foo'
+            logging.info("GZip'd Tarball Created at: %s" , 'foo')
         else:
-            if self.reporting:
-                print "Compression Not Enabled - No Archive Created"
+            logging.info("Compression Not Enabled - No Archive Created")
