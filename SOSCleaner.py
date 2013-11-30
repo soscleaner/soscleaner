@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 29 Nov 2013 08:11:08 PM EST
+# Last Modified : Fri 29 Nov 2013 11:05:01 PM EST
 # Purpose :
 
 import os
@@ -99,7 +99,7 @@ class SOSCleaner:
         Example:
         '''
         if self.is_fqdn:
-            regex = re.compile(r'\b\S*\.%s' % self.domainname)
+            regex = re.compile(r'\w*\.%s' % self.domainname)
             hostnames = [each for each in regex.findall(line)]
             if len(hostnames) > 0:
                 for hn in hostnames:
@@ -257,7 +257,9 @@ class SOSCleaner:
                 for l in data:
                     new_l = self._clean_line(l)
                     tmp_file.write(new_l)
-                    tmp_file.seek(0)
+
+                tmp_file.seek(0)
+
             except:
                 raise Exception("CleanFile Error: Cannot Open File For Reading")
 
