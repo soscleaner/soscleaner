@@ -7,7 +7,7 @@ SOSCleaner is intended to help users in environments that have data restrictions
 What Does it Do?
 ----------------
 * Scrubs Binary Files - Binary Files cannot easily be visually scanned. They are left out of a 'cleaned' sosreport
-* IP Address Obfuscation - IPv4 addresses throughout the sosreport are obfuscated consistently throughout all files.  For example, if 192.168.100.5 is obfuscated to 10.0.0.68, it will appear as 10.0.0.68 in all files within the sosreport. This means that troubleshooting can still take place.
+* IP Address Obfuscation - IPv4 addresses in the sosreport are obfuscated consistently throughout all files.  For example, if 192.168.100.5 is obfuscated to 10.0.0.68, it will appear as 10.0.0.68 in all files within the sosreport. This means that troubleshooting can still take place.
 * Hostname Obfuscation - Hostnames are obfuscated consistently troughout all files, much like the IP Address functionality. Based on the system's hostname, if the hostname for the system in question is an FQDN (Fully Qualified Domain Name), all hostnames on that domain are obfuscated. If the hostname is NOT an FQDN, then all examples of that hostname itself are obfuscated.
 
 Project Information
@@ -25,4 +25,20 @@ Usage Basics
 from SOSCleaner import SOSCleaner
 x = SOSCleaner('path/to/sosreport/directory')
 x.clean_report()
+```
+
+How Do I See The Obfuscated Data?
+---------------------------------
+* The data is available if accessing the Python class directly. It will soon be available optionally from the application
+
+```
+from SOSCleaner import SOSCleaner
+x = SOSCleaner('path/to/sosreport/directory')
+x.clean_report()
+
+x.ip_db
+{'192.168.1.4':'10.10.10.123', ...}
+
+x.hn_db
+{'server1.myserverfarm.com':'host0.example.com'}
 ```
