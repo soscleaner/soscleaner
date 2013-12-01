@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 30 Nov 2013 12:09:45 AM EST
+# Last Modified : Sun 01 Dec 2013 11:06:35 AM EST
 # Purpose :
 
 import os
@@ -74,7 +74,7 @@ class SOSCleaner:
             if not os.path.isdir(f_full):
                 if not os.path.islink(f_full):
                     mode = oct(os.stat(f_full).st_mode)[-3:]
-                    if mode == '200':
+                    if mode == '200' or mode == '444' or mode == '400':
                         skip_list.append(f)
                     if magic.from_file(f_full) == 'data':
                         skip_list.append(f)
@@ -110,16 +110,16 @@ class SOSCleaner:
                     logging.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                     line = line.replace(hn, new_hn)
 
-            '''
-            logs like secure have a non-FQDN hostname entry on almost every line.
-            So we will always run this bit of code to clean up as much as possibe, in addition
-            to searching for all of the FQDNs that we know exist.
-            we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
-            '''
+        '''
+        logs like secure have a non-FQDN hostname entry on almost every line.
+        So we will always run this bit of code to clean up as much as possibe, in addition
+        to searching for all of the FQDNs that we know exist.
+        we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
+        '''
 
-            new_hn = self._hn2db(self.hostname)
-            logging.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
-            line = line.replace(self.hostname, new_hn)
+        new_hn = self._hn2db(self.hostname)
+        logging.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
+        line = line.replace(self.hostname, new_hn)
 
         return line
 
@@ -263,23 +263,24 @@ class SOSCleaner:
                 fh = open(f,'r')
                 data = fh.readlines()
                 fh.close()
+                if len(data) > 0: #if the file isn't empty:
+                    for l in data:
+                        new_l = self._clean_line(l)
+                        tmp_file.write(new_l)
 
-                for l in data:
-                    new_l = self._clean_line(l)
-                    tmp_file.write(new_l)
-
-                tmp_file.seek(0)
+                    tmp_file.seek(0)
 
             except:
                 raise Exception("CleanFile Error: Cannot Open File For Reading")
 
             try:
-                new_fh = open(f, 'w')
-                for line in tmp_file:
-                    new_fh.write(line)
-                new_fh.close()
+                if len(data) > 0:
+                    new_fh = open(f, 'w')
+                    for line in tmp_file:
+                        new_fh.write(line)
+                    new_fh.close()
             except:
-                raise Exception("CleanFile Error: Cannot Write to New File")
+                raise Exception("CleanFile Error: Cannot Write to New File - %s" % f)
 
             finally:
                 tmp_file.close()
