@@ -35,6 +35,8 @@ How Do I See The Obfuscated Data?
 {'obfuscated_ip':'original_ip',...}
 ```
 
+* To View The Data from a cleaned report:
+
 ```
 from SOSCleaner import SOSCleaner
 x = SOSCleaner('path/to/sosreport/directory')
