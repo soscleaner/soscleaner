@@ -22,6 +22,8 @@ Usage Basics
 * As a Python Module
 ```
 from SOSCleaner import SOSCleaner
+
 x = SOSCleaner('path/to/sosreport/directory')
+
 x.clean_report()
 ```
