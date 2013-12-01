@@ -29,7 +29,11 @@ x.clean_report()
 
 How Do I See The Obfuscated Data?
 ---------------------------------
-* The data is available if accessing the Python class directly. It will soon be available optionally from the application
+* The data is available if accessing the Python class directly. It will soon be available optionally from the application. Within the application, it is stored within a key/value dictionary. It's format is 
+
+```
+{'obfuscated_ip':'original_ip',...}
+```
 
 ```
 from SOSCleaner import SOSCleaner
