@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sun 01 Dec 2013 11:06:35 AM EST
+# Last Modified : Sun 01 Dec 2013 11:32:16 AM EST
 # Purpose :
 
 import os
@@ -293,6 +293,7 @@ class SOSCleaner:
             logging.warning("The Hostname Does Not Appear to be an FQDN - %s", self.hostname)
         logging.info("SOSCleaner Started")
         logging.info("Working Directory - %s", self.working_dir)
+        print "Working Directory - %s" % self.working_dir
         logging.info("IP Substitution Start Address - %s", self.start_ip)
         logging.info("Domain Name Substitution - %s", self.domain)
         for f in files:
