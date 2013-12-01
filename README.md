@@ -12,6 +12,7 @@ What Does it Do?
 
 Project Information
 --------------------
-* Maintainer - Jamie Duncan <jduncan@redhat.com>
+* Maintainer - Jamie Duncan (jduncan@redhat.com)
 * Source and Issues - https://github.com/jduncan-rva/soscleaner
+* Git Hub Pages - http://jduncan-rva.github.io/soscleaner/
 * Mailing List - If this gets off the ground
