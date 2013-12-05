@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sun 01 Dec 2013 11:32:16 AM EST
+# Last Modified : Thu 05 Dec 2013 01:31:01 PM EST
 # Purpose :
 
 import os
@@ -40,12 +40,13 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, sosreport, compress=True, loglevel='INFO', reporting=True):
+    def __init__(self, sosreport, compress, loglevel, reporting, xsos):
 
         self.version = '0.1'
         self.report = sosreport
         self.compress = compress
         self.loglevel = loglevel
+        self.reporting = reporting
         self.ip_db = {}
         self.start_ip = '10.230.230.0'
         self.hn_db = {}
@@ -271,7 +272,7 @@ class SOSCleaner:
                     tmp_file.seek(0)
 
             except:
-                raise Exception("CleanFile Error: Cannot Open File For Reading")
+                raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
             try:
                 if len(data) > 0:
