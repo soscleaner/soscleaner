@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 05 Dec 2013 01:41:37 PM EST
+# Last Modified : Thu 05 Dec 2013 02:47:06 PM EST
 # Purpose :
 
 import os
@@ -31,6 +31,7 @@ import struct, socket
 import tempfile
 import textwrap
 import logging
+import tarfile
 
 class SOSCleaner:
     '''
@@ -44,7 +45,7 @@ class SOSCleaner:
     def __init__(self, sosreport, compress, loglevel, reporting, xsos):
 
         self.version = '0.1'
-        self.report = sosreport
+        self.report = self._extract_sosreport(sosreport)
         self.compress = compress
         self.loglevel = loglevel
         self.reporting = reporting
@@ -87,6 +88,27 @@ class SOSCleaner:
                         skip_list.append(f)
 
         return skip_list
+
+    def _extract_sosreport(self, path):
+        '''
+        This will look for common compression types and decompresses accordingly
+        '''
+        compression_sig = magic.from_file(path).split(',')[0]
+        if compression_sig == 'directory':
+            return path #it's an unzipped directory, so get to copying
+            logging.info('%s appears to be a %s - continuing', path, compression_sig)
+        elif compression_sig == 'gzip compressed data' or compression_sig == 'XZ compressed data':
+            p = tarfile.open(path, 'r')
+
+            timestamp = strftime("%Y%m%d%H%M%S", gmtime())
+            dir_path = "/tmp/soscleaner-%s" % timestamp
+            logging.info('%s appears to be %s - decompressing into %s', path, compression_sig, dir_path)
+            extract_path = '/tmp/soscleaner-origin-%s' % dir_path
+
+            return extract_path
+
+        else:
+            raise Exception('CompressionError: Unable To Determine Compression Type')
 
     def _sub_ip(self, line):
         '''
