@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 05 Dec 2013 01:31:01 PM EST
+# Last Modified : Thu 05 Dec 2013 01:41:37 PM EST
 # Purpose :
 
 import os
@@ -39,6 +39,7 @@ class SOSCleaner:
     compress - will create a gzip'd tarball of the cleaned sosreport - defaults to yes. Can disable if user wants to eyeball scan afterwards
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
+    xsos - instead of copying over the whole sosreport, we perform an xsos-style operation, outputting summary data instead
     '''
     def __init__(self, sosreport, compress, loglevel, reporting, xsos):
 
@@ -47,18 +48,23 @@ class SOSCleaner:
         self.compress = compress
         self.loglevel = loglevel
         self.reporting = reporting
+        self.xsos = xsos
         self.ip_db = {}
         self.start_ip = '10.230.230.0'
         self.hn_db = {}
         self.hostname_count = 0
         self.domain = 'example.com'
 
-        self._make_dest_env()   #create the working directory
-        self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
+        if not self.xsos:
+            self._make_dest_env()   #create the working directory
+            self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
-        self.logfile = os.path.join(self.working_dir, 'soscleaner.log')
-        loglevel_config = 'logging.%s' % self.loglevel
-        logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
+            self.logfile = os.path.join(self.working_dir, 'soscleaner.log')
+            loglevel_config = 'logging.%s' % self.loglevel
+            logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
+        else:
+            pass
+            #call the xsos class/functions
 
     def _skip_file(self, d, files):
         '''
