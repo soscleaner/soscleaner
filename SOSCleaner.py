@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 05 Dec 2013 10:20:59 PM EST
+# Last Modified : Thu 05 Dec 2013 10:31:27 PM EST
 # Purpose :
 
 import os
@@ -112,7 +112,8 @@ class SOSCleaner:
 
                 return return_path
 
-            except:
+            except Exception, e:
+                logging.exception(e)
                 raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, extract_path)
         else:
             raise Exception('CompressionError: Unable To Determine Compression Type')
@@ -176,7 +177,8 @@ class SOSCleaner:
 
         try:
             shutil.copytree(self.report, dir_path, symlinks=True, ignore=self._skip_file)
-        except:
+        except Exception, e:
+            logging.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
 
     def _get_hostname(self):
@@ -199,7 +201,8 @@ class SOSCleaner:
 
             return hostname, domainname, is_fqdn
 
-        except:
+        except Exception, e:
+            logging.exception(e)
             raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
 
     def _ip2int(self, ipstr):
@@ -273,7 +276,8 @@ class SOSCleaner:
                 dir_list[dirName] = x
 
             return dir_list
-        except:
+        except Exception, e:
+            logging.exception(e)
             raise Exception("WalkReport Error: Unable to Walk Report")
 
     def _file_list(self, folder):
@@ -311,7 +315,8 @@ class SOSCleaner:
 
                     tmp_file.seek(0)
 
-            except:
+            except Exception, e:
+                logging.exception(e)
                 raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
             try:
@@ -320,7 +325,8 @@ class SOSCleaner:
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
-            except:
+            except Exception, e:
+                logging.exception(e)
                 raise Exception("CleanFile Error: Cannot Write to New File - %s" % f)
 
             finally:
