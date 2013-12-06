@@ -15,7 +15,7 @@ setup(
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='SOSCleaner is an application to filer out sensitive and un-scan-able data from a standard sosreport',
-    packages=['python-magic'],
+    packages=['python_magic'],
     py_modules=['SOSCleaner'],
     scripts = ['soscleaner'],
     data_files=[
