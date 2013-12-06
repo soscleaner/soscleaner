@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 05 Dec 2013 02:47:06 PM EST
+# Last Modified : Thu 05 Dec 2013 10:20:59 PM EST
 # Purpose :
 
 import os
@@ -45,7 +45,6 @@ class SOSCleaner:
     def __init__(self, sosreport, compress, loglevel, reporting, xsos):
 
         self.version = '0.1'
-        self.report = self._extract_sosreport(sosreport)
         self.compress = compress
         self.loglevel = loglevel
         self.reporting = reporting
@@ -55,14 +54,15 @@ class SOSCleaner:
         self.hn_db = {}
         self.hostname_count = 0
         self.domain = 'example.com'
+        self.working_dir, self.logfile = self._get_workingdir()
+        loglevel_config = 'logging.%s' % self.loglevel
+        logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
+        self.report = self._get_sosreport_path(sosreport)
 
         if not self.xsos:
             self._make_dest_env()   #create the working directory
             self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
-            self.logfile = os.path.join(self.working_dir, 'soscleaner.log')
-            loglevel_config = 'logging.%s' % self.loglevel
-            logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
         else:
             pass
             #call the xsos class/functions
@@ -89,24 +89,31 @@ class SOSCleaner:
 
         return skip_list
 
-    def _extract_sosreport(self, path):
+    def _get_sosreport_path(self, path):
         '''
         This will look for common compression types and decompresses accordingly
         '''
+        logging.info("Beginning SOSReport Extraction")
         compression_sig = magic.from_file(path).split(',')[0]
-        if compression_sig == 'directory':
-            return path #it's an unzipped directory, so get to copying
+        if 'directory' in compression_sig:
             logging.info('%s appears to be a %s - continuing', path, compression_sig)
-        elif compression_sig == 'gzip compressed data' or compression_sig == 'XZ compressed data':
+            return path #it's an unzipped directory, so get to copying
+
+        elif 'compressed data' in compression_sig:
             p = tarfile.open(path, 'r')
 
             timestamp = strftime("%Y%m%d%H%M%S", gmtime())
             dir_path = "/tmp/soscleaner-%s" % timestamp
             logging.info('%s appears to be %s - decompressing into %s', path, compression_sig, dir_path)
-            extract_path = '/tmp/soscleaner-origin-%s' % dir_path
+            extract_path = '/tmp/soscleaner-origin-%s' % timestamp
+            try:
+                p.extractall(extract_path)
+                return_path = os.path.join(extract_path, os.path.commonprefix(p.getnames()))
 
-            return extract_path
+                return return_path
 
+            except:
+                raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, extract_path)
         else:
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
@@ -152,18 +159,23 @@ class SOSCleaner:
 
         return line
 
+    def _get_workingdir(self):
+
+        timestamp = strftime("%Y%m%d%H%M%S", gmtime())
+        dir_path = "/tmp/soscleaner-%s" % timestamp
+        logfile = "/tmp/soscleaner-%s.log" % timestamp
+
+        return dir_path, logfile
+
     def _make_dest_env(self):
         '''
         This will create the folder in /tmp to store the sanitized files and populate it using shutil
         These are the files that will be scrubbed
         '''
-
-        timestamp = strftime("%Y%m%d%H%M%S", gmtime())
-        dir_path = "/tmp/soscleaner-%s" % timestamp
+        dir_path = self.working_dir
 
         try:
             shutil.copytree(self.report, dir_path, symlinks=True, ignore=self._skip_file)
-            self.working_dir = dir_path
         except:
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
 
