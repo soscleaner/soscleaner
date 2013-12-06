@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 01:29:13 PM EST
+# Last Modified : Fri 06 Dec 2013 04:35:56 PM EST
 # Purpose :
 
 import os
@@ -133,7 +133,8 @@ class SOSCleaner:
         This is called in the self._clean_line function, along with user _sub_* functions to scrub a given line in a file.
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
-        pattern = r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)([ (\[]?(\.|dot)[ )\]]?(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
+        pattern = r"(((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))"
+        #pattern = r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)([ (\[]?(\.|dot)[ )\]]?(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
         ips = [each[0] for each in re.findall(pattern, line)]
         if len(ips) > 0:
             for ip in ips:
