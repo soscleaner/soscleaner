@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 10:35:37 AM EST
+# Last Modified : Fri 06 Dec 2013 12:34:12 PM EST
 # Purpose :
 
 import os
@@ -44,6 +44,7 @@ class SOSCleaner:
     '''
     def __init__(self, sosreport, compress, loglevel, reporting, xsos):
 
+        self._check_uid()
         self.version = '0.1'
         self.compress = compress
         self.loglevel = loglevel
@@ -64,8 +65,12 @@ class SOSCleaner:
             self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
         else:
-            pass
-            #call the xsos class/functions
+            raise Exception("This IS COMING SOON!")
+
+    def _check_uid(self):
+        uid = os.getuid()
+        if uid != 0:
+            raise Exception("You Must Execute soscleaner As Root")
 
     def _skip_file(self, d, files):
         '''
@@ -109,6 +114,7 @@ class SOSCleaner:
             try:
                 p.extractall(extract_path)
                 return_path = os.path.join(extract_path, os.path.commonprefix(p.getnames()))
+                self.origin_dir = extract_path
 
                 return return_path
 
@@ -164,8 +170,8 @@ class SOSCleaner:
 
         timestamp = strftime("%Y%m%d%H%M%S", gmtime())
         dir_path = "/tmp/soscleaner-%s" % timestamp
-        logfile = "/tmp/soscleaner-%s.log" % timestamp
         session = "soscleaner-%s" % timestamp
+        logfile = "/tmp/%s.log" % session
 
         return dir_path, logfile, session
 
@@ -192,11 +198,24 @@ class SOSCleaner:
                 f = os.path.join(dirpath,f)
                 logging.debug('adding %s to %s archive', f, archive)
                 t.add(f)
+        self._clean_up()
+        logging.info('Archiving Complete')
+        logging.info('SOSCleaner Complete')
+        t.add(self.logfile)
         t.close()
 
     def _clean_up(self):
         '''This will clean up origin directories, etc.'''
-        pass
+        logging.info('Beginning Clean Up Process')
+        try:
+            if self.origin_dir:
+                logging.info('Removing Origin Directory - %s', self.origin_dir)
+                shutil.rmtree(self.origin_dir)
+            logging.info('Compression Enabled - Removing Working Directory - %s', self.working_dir)
+            shutil.rmtree(self.working_dir)
+            logging.info('Clean Up Process Complete')
+        except Exception, e:
+            logging.exception(e)
 
     def _get_hostname(self):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
@@ -321,7 +340,9 @@ class SOSCleaner:
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             mode = oct(os.stat(f).st_mode)[-3:]
-            if mode == '555' or mode == '232':
+            if mode == '555' or mode == '500':
+                os.system('chmod 777 %s' % f)
+            if mode == '232':
                 os.system('chmod 666 %s' % f)
             tmp_file = tempfile.TemporaryFile()
             try:
@@ -372,6 +393,6 @@ class SOSCleaner:
         logging.info("Files Cleaned - %s", self.file_count)
         if self.compress:
             self._create_archive()
-            logging.info("Archiving Complete")
         else:
             logging.info("Compression Not Enabled - No Archive Created")
+            logging.info("SOSCleaner Complete")
