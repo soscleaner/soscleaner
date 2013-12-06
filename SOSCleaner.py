@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 12:19:47 AM EST
+# Last Modified : Fri 06 Dec 2013 10:35:37 AM EST
 # Purpose :
 
 import os
@@ -54,7 +54,7 @@ class SOSCleaner:
         self.hn_db = {}
         self.hostname_count = 0
         self.domain = 'example.com'
-        self.working_dir, self.logfile = self._get_workingdir()
+        self.working_dir, self.logfile, self.session = self._get_workingdir()
         loglevel_config = 'logging.%s' % self.loglevel
         logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
         self.report = self._get_sosreport_path(sosreport)
@@ -104,7 +104,7 @@ class SOSCleaner:
 
             timestamp = strftime("%Y%m%d%H%M%S", gmtime())
             dir_path = "/tmp/soscleaner-%s" % timestamp
-            logging.info('%s appears to be %s - decompressing into %s', path, compression_sig, dir_path)
+            logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, dir_path)
             extract_path = '/tmp/soscleaner-origin-%s' % timestamp
             try:
                 p.extractall(extract_path)
@@ -165,8 +165,9 @@ class SOSCleaner:
         timestamp = strftime("%Y%m%d%H%M%S", gmtime())
         dir_path = "/tmp/soscleaner-%s" % timestamp
         logfile = "/tmp/soscleaner-%s.log" % timestamp
+        session = "soscleaner-%s" % timestamp
 
-        return dir_path, logfile
+        return dir_path, logfile, session
 
     def _make_dest_env(self):
         '''
@@ -180,6 +181,22 @@ class SOSCleaner:
         except Exception, e:
             logging.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
+
+    def _create_archive(self):
+        '''This will create a tar.gz compressed archive of the scrubbed directory'''
+        archive = "/tmp/%s.tar.gz" % self.session
+        logging.info('Starting Archiving Process - Creating %s', archive)
+        t = tarfile.open(archive, 'w:gz')
+        for dirpath, dirnames, filenames in os.walk(self.working_dir):
+            for f in filenames:
+                f = os.path.join(dirpath,f)
+                logging.debug('adding %s to %s archive', f, archive)
+                t.add(f)
+        t.close()
+
+    def _clean_up(self):
+        '''This will clean up origin directories, etc.'''
+        pass
 
     def _get_hostname(self):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
@@ -340,7 +357,7 @@ class SOSCleaner:
 
         files = self._file_list(self.working_dir)
         if not self.is_fqdn:
-            logging.warning("The Hostname Does Not Appear to be an FQDN - %s", self.hostname)
+            logging.warning("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
         logging.info("SOSCleaner Started")
         logging.info("Working Directory - %s", self.working_dir)
         print "Working Directory - %s" % self.working_dir
@@ -354,7 +371,7 @@ class SOSCleaner:
         logging.info("Hostnames Obfuscated - %s" , len(self.hn_db))
         logging.info("Files Cleaned - %s", self.file_count)
         if self.compress:
-            #create tarball
-            logging.info("GZip'd Tarball Created at: %s" , 'foo')
+            self._create_archive()
+            logging.info("Archiving Complete")
         else:
             logging.info("Compression Not Enabled - No Archive Created")
