@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 01:13:24 PM EST
+# Last Modified : Fri 06 Dec 2013 01:29:13 PM EST
 # Purpose :
 
 import os
@@ -59,6 +59,9 @@ class SOSCleaner:
         loglevel_config = 'logging.%s' % self.loglevel
         logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
         self.report = self._get_sosreport_path(sosreport)
+
+        if self.reporting:
+            logging.info("Reporting Will Be Enabled Soon")
 
         if not self.xsos:
             self._make_dest_env()   #create the working directory
