@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 05 Dec 2013 10:31:27 PM EST
+# Last Modified : Fri 06 Dec 2013 12:19:47 AM EST
 # Purpose :
 
 import os
@@ -302,7 +302,10 @@ class SOSCleaner:
 
     def _clean_file(self, f):
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file in the same location'''
-        if os.path.exists(f):
+        if os.path.exists(f) and not os.path.islink(f):
+            mode = oct(os.stat(f).st_mode)[-3:]
+            if mode == '555' or mode == '232':
+                os.system('chmod 666 %s' % f)
             tmp_file = tempfile.TemporaryFile()
             try:
                 fh = open(f,'r')
