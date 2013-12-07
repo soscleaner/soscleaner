@@ -14,7 +14,7 @@ def main():
     parser.add_option("-c", "--compress", action="store_true", default=True, dest="compress", help="If used, will tar and gzip the output", metavar="COMPRESS")
     parser.add_option("-r", "--reporting", action="store_true", default=False, dest="reporting", help="Create CSV output for IP and Hostname databases", metavar="REPORTING")
     parser.add_option("-s", "--sosreport", dest="sosreport", help="The SOSReport that is to be cleaned", metavar="SOSREPORT")
-    parser.add_option("-x", "--xsos", action="store_true", default=False, help="XSOS-Style Summary data")
+    parser.add_option("-x", "--xsos", action="store_true", default=False, help="XSOS-Style Summary data (COMING SOON!)")
 
     (options, args) = parser.parse_args()
 

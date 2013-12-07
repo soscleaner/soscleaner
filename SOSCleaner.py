@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 04:35:56 PM EST
+# Last Modified : Fri 06 Dec 2013 11:15:54 PM EST
 # Purpose :
 
 import os
@@ -59,9 +59,6 @@ class SOSCleaner:
         loglevel_config = 'logging.%s' % self.loglevel
         logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
         self.report = self._get_sosreport_path(sosreport)
-
-        if self.reporting:
-            logging.info("Reporting Will Be Enabled Soon")
 
         if not self.xsos:
             self._make_dest_env()   #create the working directory
@@ -133,8 +130,7 @@ class SOSCleaner:
         This is called in the self._clean_line function, along with user _sub_* functions to scrub a given line in a file.
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
-        pattern = r"(((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))"
-        #pattern = r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)([ (\[]?(\.|dot)[ )\]]?(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
+        pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[0-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
         ips = [each[0] for each in re.findall(pattern, line)]
         if len(ips) > 0:
             for ip in ips:
@@ -142,6 +138,35 @@ class SOSCleaner:
                 logging.debug("Obfuscating IP - %s > %s", ip, new_ip)
                 line = line.replace(ip, new_ip)
         return line
+
+    def _create_reports(self):
+        '''
+        this will take the obfuscated ip and hostname databases and output csv files
+        '''
+        try:
+            ip_report_name = "/tmp/%s-ip.csv" % self.session
+            logging.info('Beginning IP Report - %s', ip_report_name)
+            ip_report = open(ip_report_name, 'w')
+            ip_report.write('Obfuscated IP,Original IP\n')
+            for k,v in self.ip_db.items():
+                ip_report.write('%s,%s\n' %(self._int2ip(k),self._int2ip(v)))
+            ip_report.close()
+            logging.info('Completed IP Report')
+        except Exception,e:
+            logging.exception(e)
+            raise Exception('CreateReport Error: Error Creating IP Report')
+        try:
+            hn_report_name = "/tmp/%s-hostname.csv" % self.session
+            logging.info('Beginning Hostname Report - %s', hn_report_name)
+            hn_report = open(hn_report_name, 'w')
+            hn_report.write('Obfuscated Hostname,Original Hostname\n')
+            for k,v in self.hn_db.items():
+                hn_report.write('%s,%s\n' %(k,v))
+            hn_report.close()
+            logging.info('Completed Hostname Report')
+        except Exception,e:
+            logging.exception(e)
+            raise Exception('CreateReport Error: Error Creating Hostname Report')
 
     def _sub_hostname(self, line):
         '''
@@ -395,6 +420,8 @@ class SOSCleaner:
         logging.info("IP Addresses Obfuscated - %s", len(self.ip_db))
         logging.info("Hostnames Obfuscated - %s" , len(self.hn_db))
         logging.info("Files Cleaned - %s", self.file_count)
+        if self.reporting:
+            self._create_reports()
         if self.compress:
             self._create_archive()
         else:
