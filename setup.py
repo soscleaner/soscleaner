@@ -19,7 +19,8 @@ setup(
     py_modules=['SOSCleaner'],
     scripts = ['soscleaner'],
     data_files=[
-            ('/usr/share/doc/SOSCleaner-%s'% version, ['README','README.md','LICENSE']),
+            ('/usr/share/doc/SOSCleaner-%s'% version, ['README','README.md','doc/LICENSE']),
+            ('/usr/share/man/man8', ['doc/soscleaner.1.gz']),
         ],
     )
 
