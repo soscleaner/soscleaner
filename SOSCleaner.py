@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 11:58:30 PM EST
+# Last Modified : Sat 07 Dec 2013 01:21:09 AM EST
 # Purpose :
 
 import os
@@ -128,14 +128,18 @@ class SOSCleaner:
         This is called in the self._clean_line function, along with user _sub_* functions to scrub a given line in a file.
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
-        pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[0-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
-        ips = [each[0] for each in re.findall(pattern, line)]
-        if len(ips) > 0:
-            for ip in ips:
-                new_ip = self._ip2db(ip)
-                logging.debug("Obfuscating IP - %s > %s", ip, new_ip)
-                line = line.replace(ip, new_ip)
-        return line
+        try:
+            pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[0-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
+            ips = [each[0] for each in re.findall(pattern, line)]
+            if len(ips) > 0:
+                for ip in ips:
+                    new_ip = self._ip2db(ip)
+                    logging.debug("Obfuscating IP - %s > %s", ip, new_ip)
+                    line = line.replace(ip, new_ip)
+            return line
+        except Exception,e:
+            logging.exception(e)
+            raise('SubIPError: Unable to Substitute IP Address')
 
     def _create_reports(self):
         '''
@@ -171,14 +175,18 @@ class SOSCleaner:
         This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
         Example:
         '''
-        if self.is_fqdn:
-            regex = re.compile(r'\w*\.%s' % self.domainname)
-            hostnames = [each for each in regex.findall(line)]
-            if len(hostnames) > 0:
-                for hn in hostnames:
-                    new_hn = self._hn2db(hn)
-                    logging.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
-                    line = line.replace(hn, new_hn)
+        try:
+            if self.is_fqdn:
+                regex = re.compile(r'\w*\.%s' % self.domainname)
+                hostnames = [each for each in regex.findall(line)]
+                if len(hostnames) > 0:
+                    for hn in hostnames:
+                        new_hn = self._hn2db(hn)
+                        logging.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
+                        line = line.replace(hn, new_hn)
+        except Exception,e:
+            logging.exception(e)
+            raise Exception('SubHostnameError: Unable to Substitute FQDN')
 
         '''
         logs like secure have a non-FQDN hostname entry on almost every line.
@@ -187,9 +195,13 @@ class SOSCleaner:
         we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
         '''
 
-        new_hn = self._hn2db(self.hostname)
-        logging.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
-        line = line.replace(self.hostname, new_hn)
+        try:
+            new_hn = self._hn2db(self.hostname)
+            logging.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
+            line = line.replace(self.hostname, new_hn)
+        except Exception,e:
+            logging.exception(e)
+            raise Exception('SubHostnameError: Unable to Substitute Non-FQDN')
 
         return line
 
@@ -217,14 +229,18 @@ class SOSCleaner:
 
     def _create_archive(self):
         '''This will create a tar.gz compressed archive of the scrubbed directory'''
-        archive = "/tmp/%s.tar.gz" % self.session
-        logging.info('Starting Archiving Process - Creating %s', archive)
-        t = tarfile.open(archive, 'w:gz')
-        for dirpath, dirnames, filenames in os.walk(self.working_dir):
-            for f in filenames:
-                f = os.path.join(dirpath,f)
-                logging.debug('adding %s to %s archive', f, archive)
-                t.add(f)
+        try:
+            archive = "/tmp/%s.tar.gz" % self.session
+            logging.info('Starting Archiving Process - Creating %s', archive)
+            t = tarfile.open(archive, 'w:gz')
+            for dirpath, dirnames, filenames in os.walk(self.working_dir):
+                for f in filenames:
+                    f = os.path.join(dirpath,f)
+                    logging.debug('adding %s to %s archive', f, archive)
+                    t.add(f)
+        except Exception,e:
+            logging.exception(e)
+            raise Exception('CreateArchiveError: Unable to create Archive')
         self._clean_up()
         logging.info('Archiving Complete')
         logging.info('SOSCleaner Complete')
