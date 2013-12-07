@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 12:50:09 PM EST
+# Last Modified : Sat 07 Dec 2013 03:06:47 PM EST
 # Purpose :
 
 import os
@@ -53,10 +53,10 @@ class SOSCleaner:
         self.hn_db = {}
         self.hostname_count = 0
         self.domain = 'example.com'
-        self.working_dir, self.logfile, self.session = self._get_workingdir()
-        loglevel_config = 'logging.%s' % self.loglevel
-        logging.basicConfig(filename=self.logfile, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
-        self.report = self._get_sosreport_path(sosreport)
+        self.loglevel = loglevel
+
+        #this handles all the extraction and path creation
+        self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
 
         if not self.xsos:
             self._make_dest_env()   #create the working directory
@@ -92,31 +92,41 @@ class SOSCleaner:
 
         return skip_list
 
-    def _get_sosreport_path(self, path):
-        '''
-        This will look for common compression types and decompresses accordingly
-        '''
+    def _start_logging(self, filename):
+        #will get the logging instance going
+        loglevel_config = 'logging.%s' % self.loglevel
+        logging.basicConfig(filename=filename, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
+
+    def _prep_environment(self, path):
+
+        #we set up our various needed directory structures, etc.
+        timestamp = strftime("%Y%m%d%H%M%S", gmtime())
+        origin_path = "/tmp/soscleaner-origin-%s" % timestamp
+        dir_path = "/tmp/soscleaner-%s" % timestamp
+        session = "soscleaner-%s" % timestamp
+        logfile = "/tmp/%s.log" % session
+
+        self._start_logging(logfile)
+
         logging.info("Beginning SOSReport Extraction")
         compression_sig = magic.from_file(path).split(',')[0]
         if 'directory' in compression_sig:
             logging.info('%s appears to be a %s - continuing', path, compression_sig)
-            return path #it's an unzipped directory, so get to copying
+            return path, origin_path, dir_path, session, logfile
 
         elif 'compressed data' in compression_sig:
-
-            timestamp = strftime("%Y%m%d%H%M%S", gmtime())
-            dir_path = "/tmp/soscleaner-%s" % timestamp
-            return_path = str()
-
             if compression_sig == 'XZ compressed data':
                 #This is a hack to account for the fact that the tarfile library doesn't 
                 #handle lzma (XZ) compression until version 3.3 beta
                 try:
-                    logging.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', dir_path)
-                    os.system('tar -xJf %s -C %s' % (path, dir_path))
-                    return_path = os.path.join(dir_path, os.listdir(dir_path)[0])
+                    logging.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', origin_path)
+                    logging.info('LZMA Hack - Creating %s', origin_path)
+                    os.system('mkdir %s' % origin_path)
+                    os.system('tar -xJf %s -C %s' % (path, origin_path))
+                    return_path = os.path.join(origin_path, os.listdir(origin_path)[0])
 
-                    return return_path
+                    return return_path, origin_path, dir_path, session, logfile
+
                 except Exception,e:
                     logging.exception(e)
                     raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
@@ -124,16 +134,12 @@ class SOSCleaner:
             else:
                 p = tarfile.open(path, 'r')
 
-                timestamp = strftime("%Y%m%d%H%M%S", gmtime())
-                dir_path = "/tmp/soscleaner-%s" % timestamp
-                logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, dir_path)
-                extract_path = '/tmp/soscleaner-origin-%s' % timestamp
+                logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, origin_path)
                 try:
-                    p.extractall(extract_path)
-                    return_path = os.path.join(extract_path, os.path.commonprefix(p.getnames()))
-                    self.origin_dir = extract_path
+                    p.extractall(self.origin_path)
+                    return_path = os.path.join(origin_path, os.path.commonprefix(p.getnames()))
 
-                    return return_path
+                    return return_path, origin_path, dir_path, session, logfile
 
                 except Exception, e:
                     logging.exception(e)
@@ -158,7 +164,7 @@ class SOSCleaner:
             return line
         except Exception,e:
             logging.exception(e)
-            raise('SubIPError: Unable to Substitute IP Address')
+            raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
 
     def _create_reports(self):
         '''
@@ -224,24 +230,13 @@ class SOSCleaner:
 
         return line
 
-    def _get_workingdir(self):
-
-        timestamp = strftime("%Y%m%d%H%M%S", gmtime())
-        dir_path = "/tmp/soscleaner-%s" % timestamp
-        session = "soscleaner-%s" % timestamp
-        logfile = "/tmp/%s.log" % session
-
-        return dir_path, logfile, session
-
     def _make_dest_env(self):
         '''
         This will create the folder in /tmp to store the sanitized files and populate it using shutil
         These are the files that will be scrubbed
         '''
-        dir_path = self.working_dir
-
         try:
-            shutil.copytree(self.report, dir_path, symlinks=True, ignore=self._skip_file)
+            shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
         except Exception, e:
             logging.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
@@ -252,7 +247,7 @@ class SOSCleaner:
             archive = "/tmp/%s.tar.gz" % self.session
             logging.info('Starting Archiving Process - Creating %s', archive)
             t = tarfile.open(archive, 'w:gz')
-            for dirpath, dirnames, filenames in os.walk(self.working_dir):
+            for dirpath, dirnames, filenames in os.walk(self.dir_path):
                 for f in filenames:
                     f = os.path.join(dirpath,f)
                     logging.debug('adding %s to %s archive', f, archive)
@@ -270,11 +265,11 @@ class SOSCleaner:
         '''This will clean up origin directories, etc.'''
         logging.info('Beginning Clean Up Process')
         try:
-            if self.origin_dir:
-                logging.info('Removing Origin Directory - %s', self.origin_dir)
-                shutil.rmtree(self.origin_dir)
-            logging.info('Compression Enabled - Removing Working Directory - %s', self.working_dir)
-            shutil.rmtree(self.working_dir)
+            if self.origin_path:
+                logging.info('Removing Origin Directory - %s', self.origin_path)
+                shutil.rmtree(self.origin_path)
+            logging.info('Compression Enabled - Removing Working Directory - %s', self.dir_path)
+            shutil.rmtree(self.dir_path)
             logging.info('Clean Up Process Complete')
         except Exception, e:
             logging.exception(e)
@@ -283,7 +278,7 @@ class SOSCleaner:
         #gets the hostname and stores hostname/domainname so they can be filtered out later
 
         try:
-            hostfile = os.path.join(self.working_dir, 'hostname')
+            hostfile = os.path.join(self.dir_path, 'hostname')
             fh = open(hostfile, 'r')
             name_list = fh.readline().rstrip().split('.')
             is_fqdn = True
@@ -437,14 +432,14 @@ class SOSCleaner:
                 tmp_file.close()
 
     def clean_report(self):
-        '''this will loop through all the files in a working_directory and scrub them'''
+        '''this will loop through all the files in a dir_pathectory and scrub them'''
 
-        files = self._file_list(self.working_dir)
+        files = self._file_list(self.dir_path)
         if not self.is_fqdn:
             logging.warning("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
         logging.info("SOSCleaner Started")
-        logging.info("Working Directory - %s", self.working_dir)
-        print "Working Directory - %s" % self.working_dir
+        logging.info("Working Directory - %s", self.dir_path)
+        print "Working Directory - %s" % self.dir_path
         logging.info("IP Substitution Start Address - %s", self.start_ip)
         logging.info("Domain Name Substitution - %s", self.domain)
         for f in files:
