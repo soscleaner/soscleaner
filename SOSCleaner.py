@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 01:21:09 AM EST
+# Last Modified : Sat 07 Dec 2013 01:27:02 AM EST
 # Purpose :
 
 import os
@@ -383,6 +383,7 @@ class SOSCleaner:
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             mode = oct(os.stat(f).st_mode)[-3:]
+            #TODO Running as root, are these 2 if statements still needed?
             if mode == '555' or mode == '500':
                 os.system('chmod 777 %s' % f)
             if mode == '232':
