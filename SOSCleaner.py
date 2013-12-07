@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 12:46:25 PM EST
+# Last Modified : Sat 07 Dec 2013 12:50:09 PM EST
 # Purpose :
 
 import os
@@ -135,9 +135,9 @@ class SOSCleaner:
 
                     return return_path
 
-            except Exception, e:
-                logging.exception(e)
-                raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, extract_path)
+                except Exception, e:
+                    logging.exception(e)
+                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, extract_path)
         else:
             raise Exception('CompressionError: Unable To Determine Compression Type')
 

@@ -17,7 +17,7 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    cleaner = SOSCleaner(sosreport=options.sosreport, compress=options.compress, loglevel=options.loglevel, reporting=options.reporting, xsos=options.xsos)
+    cleaner = SOSCleaner(sosreport=options.sosreport, loglevel=options.loglevel, reporting=options.reporting, xsos=options.xsos)
     cleaner.clean_report()
 
 if __name__ == '__main__':
