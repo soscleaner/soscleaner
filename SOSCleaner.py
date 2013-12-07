@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 01:27:02 AM EST
+# Last Modified : Sat 07 Dec 2013 12:46:25 PM EST
 # Purpose :
 
 import os
@@ -103,18 +103,37 @@ class SOSCleaner:
             return path #it's an unzipped directory, so get to copying
 
         elif 'compressed data' in compression_sig:
-            p = tarfile.open(path, 'r')
 
             timestamp = strftime("%Y%m%d%H%M%S", gmtime())
             dir_path = "/tmp/soscleaner-%s" % timestamp
-            logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, dir_path)
-            extract_path = '/tmp/soscleaner-origin-%s' % timestamp
-            try:
-                p.extractall(extract_path)
-                return_path = os.path.join(extract_path, os.path.commonprefix(p.getnames()))
-                self.origin_dir = extract_path
+            return_path = str()
 
-                return return_path
+            if compression_sig == 'XZ compressed data':
+                #This is a hack to account for the fact that the tarfile library doesn't 
+                #handle lzma (XZ) compression until version 3.3 beta
+                try:
+                    logging.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', dir_path)
+                    os.system('tar -xJf %s -C %s' % (path, dir_path))
+                    return_path = os.path.join(dir_path, os.listdir(dir_path)[0])
+
+                    return return_path
+                except Exception,e:
+                    logging.exception(e)
+                    raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
+
+            else:
+                p = tarfile.open(path, 'r')
+
+                timestamp = strftime("%Y%m%d%H%M%S", gmtime())
+                dir_path = "/tmp/soscleaner-%s" % timestamp
+                logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, dir_path)
+                extract_path = '/tmp/soscleaner-origin-%s' % timestamp
+                try:
+                    p.extractall(extract_path)
+                    return_path = os.path.join(extract_path, os.path.commonprefix(p.getnames()))
+                    self.origin_dir = extract_path
+
+                    return return_path
 
             except Exception, e:
                 logging.exception(e)
