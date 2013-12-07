@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Dec 2013 11:56:03 PM EST
+# Last Modified : Fri 06 Dec 2013 11:58:30 PM EST
 # Purpose :
 
 import os
@@ -421,6 +421,3 @@ class SOSCleaner:
         if self.reporting:
             self._create_reports()
         self._create_archive()
-        else:
-            logging.info("Compression Not Enabled - No Archive Created")
-            logging.info("SOSCleaner Complete")
