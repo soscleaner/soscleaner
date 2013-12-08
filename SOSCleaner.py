@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 09:34:40 PM EST
+# Last Modified : Sat 07 Dec 2013 10:15:06 PM EST
 # Purpose :
 
 import os
@@ -154,8 +154,8 @@ class SOSCleaner:
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
         try:
-            pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
-            #pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[0-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
+            pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
+            #pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
