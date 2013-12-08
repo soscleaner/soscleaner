@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 03:06:47 PM EST
+# Last Modified : Sat 07 Dec 2013 09:34:40 PM EST
 # Purpose :
 
 import os
@@ -136,14 +136,14 @@ class SOSCleaner:
 
                 logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, origin_path)
                 try:
-                    p.extractall(self.origin_path)
+                    p.extractall(origin_path)
                     return_path = os.path.join(origin_path, os.path.commonprefix(p.getnames()))
 
                     return return_path, origin_path, dir_path, session, logfile
 
                 except Exception, e:
                     logging.exception(e)
-                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, extract_path)
+                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, origin_path)
         else:
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
@@ -154,7 +154,8 @@ class SOSCleaner:
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
         try:
-            pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[0-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
+            pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
+            #pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[0-9][0-9]|\b[0-9]))(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
@@ -268,7 +269,7 @@ class SOSCleaner:
             if self.origin_path:
                 logging.info('Removing Origin Directory - %s', self.origin_path)
                 shutil.rmtree(self.origin_path)
-            logging.info('Compression Enabled - Removing Working Directory - %s', self.dir_path)
+            logging.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             logging.info('Clean Up Process Complete')
         except Exception, e:
