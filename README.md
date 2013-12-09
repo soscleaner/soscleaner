@@ -47,13 +47,9 @@ Options:
 
 How Do I See The Obfuscated Data?
 ---------------------------------
-* The data is available if accessing the Python class directly. It will soon be available optionally from the application. Within the application, it is stored within a key/value dictionary. It's format is 
+The data is available from within the Python class, and as an option passed into the executable script.
 
-```
-{'obfuscated_ip':'original_ip',...}
-```
-
-* To View The Data from a cleaned report:
+* If accessing the Python class directly 
 
 ```
 from SOSCleaner import SOSCleaner
@@ -66,3 +62,28 @@ x.ip_db
 x.hn_db
 {'server1.myserverfarm.com':'host0.example.com'}
 ```
+
+* If passing the -r option to soscleaner
+
+```
+$ sudo soscleaner -s ~/sosreport.tar.gz -r
+[sudo] password for jduncan:
+Working Directory - /tmp/soscleaner-20131209111927
+$ ll /tmp/soscleaner*
+-rw-r--r--. 1 root root      54 Dec  9 06:19 /tmp/soscleaner-20131209111927-hostname.csv
+-rw-r--r--. 1 root root    3442 Dec  9 06:19 /tmp/soscleaner-20131209111927-ip.csv
+-rw-r--r--. 1 root root    1676 Dec  9 06:20 /tmp/soscleaner-20131209111927.log
+-rw-r--r--. 1 root root 4834715 Dec  9 06:20 /tmp/soscleaner-20131209111927.tar.gz
+
+```
+
+* soscleaner-<id>-hostname.csv is a csv of hostnames that have been obfuscated
+* soscleaner-<id>-ip.csv is a csv of ip addresses that have been obfuscated
+ 
+What Is Created?
+----------------
+
+* soscleaner-<id>.log is a log of all events that occurred
+* soscleaner-<id>.tar.gz is a gzip'd tarball containing the obfuscated sosreport
+* soscleaner-<id>-hostname.csv is a csv of hostnames that have been obfuscated
+* soscleaner-<id>-ip.csv is a csv of ip addresses that have been obfuscated
