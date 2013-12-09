@@ -85,5 +85,5 @@ What Is Created?
 
 * soscleaner-<id>.log is a log of all events that occurred
 * soscleaner-<id>.tar.gz is a gzip'd tarball containing the obfuscated sosreport
-* soscleaner-<id>-hostname.csv is a csv of hostnames that have been obfuscated
-* soscleaner-<id>-ip.csv is a csv of ip addresses that have been obfuscated
+* soscleaner-<id>-hostname.csv is a csv of hostnames that have been obfuscated (when using the -r option)
+* soscleaner-<id>-ip.csv is a csv of ip addresses that have been obfuscated (when using the -r option)
