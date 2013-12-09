@@ -27,6 +27,24 @@ x = SOSCleaner('path/to/sosreport/directory')
 x.clean_report()
 ```
 
+* If intalling the RPM and/or using the executable 
+
+```
+$ /usr/bin/soscleaner --help
+Usage: soscleaner -s [-l -c -r -x]
+
+Options:
+  -h, --help            show this help message and exit
+  -l LOGLEVEL, --log_level=LOGLEVEL
+                        The Desired Log Level (default = INFO) Options are
+                        DEBUG, INFO, WARNING, ERROR
+  -r, --reporting       Create CSV output for IP and Hostname databases
+  -s SOSREPORT, --sosreport=SOSREPORT
+                        The SOSReport that is to be cleaned
+  -x, --xsos            XSOS-Style Summary data (COMING SOON!)
+
+```
+
 How Do I See The Obfuscated Data?
 ---------------------------------
 * The data is available if accessing the Python class directly. It will soon be available optionally from the application. Within the application, it is stored within a key/value dictionary. It's format is 
