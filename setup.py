@@ -2,10 +2,11 @@
 from distutils.core import setup
 
 version = '0.1'
+name = 'SOSCleaner'
 
 setup(
-    name='SOSCleaner',
-    license = 'GPLv2',
+    name=name,
+    license = 'GPLv2+',
     version=version,
     description='To clean and filter sensitive data from a standard sosreport',
     author='Jamie Duncan',
@@ -19,7 +20,7 @@ setup(
     py_modules=['SOSCleaner'],
     scripts = ['soscleaner'],
     data_files=[
-            ('/usr/share/doc/SOSCleaner-%s'% version, ['README','README.md','doc/LICENSE']),
+            ('/usr/share/doc/%s-%s' % (name,version), ['doc/README','doc/LICENSE']),
             ('/usr/share/man/man8', ['doc/soscleaner.8.gz']),
         ],
     )
