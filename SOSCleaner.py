@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Dec 2013 10:43:33 PM EST
+# Last Modified : Sun 29 Dec 2013 09:15:54 PM EST
 # Purpose :
 
 import os
@@ -39,15 +39,13 @@ class SOSCleaner:
     Parameters:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
-    xsos - instead of copying over the whole sosreport, we perform an xsos-style operation, outputting summary data instead
     '''
-    def __init__(self, sosreport, loglevel, reporting, xsos):
+    def __init__(self, sosreport, loglevel, reporting):
 
         self._check_uid()
         self.version = '0.1'
         self.loglevel = loglevel
         self.reporting = reporting
-        self.xsos = xsos
         self.ip_db = {}
         self.start_ip = '10.230.230.0'
         self.hn_db = {}
@@ -58,12 +56,8 @@ class SOSCleaner:
         #this handles all the extraction and path creation
         self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
 
-        if not self.xsos:
-            self._make_dest_env()   #create the working directory
-            self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
-
-        else:
-            raise Exception("This IS COMING SOON!")
+        self._make_dest_env()   #create the working directory
+        self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
     def _check_uid(self):
         uid = os.getuid()
