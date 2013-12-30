@@ -31,7 +31,7 @@ x.clean_report()
 
 ```
 $ /usr/bin/soscleaner --help
-Usage: soscleaner -s [-l -c -r -x]
+Usage: soscleaner -s [-l -c -r]
 
 Options:
   -h, --help            show this help message and exit
@@ -41,7 +41,6 @@ Options:
   -r, --reporting       Create CSV output for IP and Hostname databases
   -s SOSREPORT, --sosreport=SOSREPORT
                         The SOSReport that is to be cleaned
-  -x, --xsos            XSOS-Style Summary data (COMING SOON!)
 
 ```
 
