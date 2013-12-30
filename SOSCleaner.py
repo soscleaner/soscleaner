@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 30 Dec 2013 03:20:57 PM EST
+# Last Modified : Mon 30 Dec 2013 03:25:40 PM EST
 # Purpose :
 
 import os
@@ -149,7 +149,6 @@ class SOSCleaner:
         '''
         try:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
-            #pattern = r"(((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
