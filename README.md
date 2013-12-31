@@ -31,7 +31,7 @@ x.clean_report()
 
 ```
 $ /usr/bin/soscleaner --help
-Usage: soscleaner -s [-l -c -r]
+Usage: soscleaner -h [-s [-l -r]]
 
 Options:
   -h, --help            show this help message and exit
