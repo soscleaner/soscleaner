@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 30 Dec 2013 03:25:40 PM EST
+# Last Modified : Mon 30 Dec 2013 08:22:31 PM EST
 # Purpose :
 
 import os
@@ -103,13 +103,13 @@ class SOSCleaner:
         self._start_logging(logfile)
 
         logging.info("Beginning SOSReport Extraction")
-        compression_sig = magic.from_file(path).split(',')[0]
+        compression_sig = magic.from_file(path).split(',')[0].lower()
         if 'directory' in compression_sig:
             logging.info('%s appears to be a %s - continuing', path, compression_sig)
             return path, origin_path, dir_path, session, logfile
 
         elif 'compressed data' in compression_sig:
-            if compression_sig == 'XZ compressed data':
+            if compression_sig == 'xz compressed data':
                 #This is a hack to account for the fact that the tarfile library doesn't 
                 #handle lzma (XZ) compression until version 3.3 beta
                 try:
