@@ -2,7 +2,7 @@ SOSCleaner
 ==========
 Purpose
 -------
-SOSCleaner is intended to help users in environments that have data restrictions clean up an sosreport so it can be safely uploaded to a support group for analysis. IT IS NOT all that should be done for this process, but it intended to help with the most common and repetitive items.
+SOSCleaner helps users in environments that have data export restrictions clean up an sosreport so it can be safely uploaded to a support group for analysis. IT IS NOT ALL that should be done for this process, but it does help with the most common and repetitive items.
 
 What Does it Do?
 ----------------
