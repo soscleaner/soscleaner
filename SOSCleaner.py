@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 01 Jan 2014 12:52:24 PM EST
+# Last Modified : Wed 01 Jan 2014 12:55:23 PM EST
 # Purpose :
 
 import os
@@ -32,7 +32,6 @@ import tempfile
 import textwrap
 import logging
 import tarfile
-from contextlib import closing
 
 class SOSCleaner:
     '''
