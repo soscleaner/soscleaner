@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 30 Dec 2013 08:22:31 PM EST
+# Last Modified : Wed 01 Jan 2014 12:52:24 PM EST
 # Purpose :
 
 import os
@@ -32,6 +32,7 @@ import tempfile
 import textwrap
 import logging
 import tarfile
+from contextlib import closing
 
 class SOSCleaner:
     '''
@@ -89,7 +90,9 @@ class SOSCleaner:
     def _start_logging(self, filename):
         #will get the logging instance going
         loglevel_config = 'logging.%s' % self.loglevel
-        logging.basicConfig(filename=filename, level=eval(loglevel_config), format='%(asctime)s : %(levelname)s : %(message)s')
+        logging.basicConfig(filename=filename, 
+            level=eval(loglevel_config), 
+            format='%(asctime)s : %(levelname)s : %(message)s')
 
     def _prep_environment(self, path):
 
@@ -144,7 +147,8 @@ class SOSCleaner:
     def _sub_ip(self, line):
         '''
         This will substitute an obfuscated IP for each instance of a given IP in a file
-        This is called in the self._clean_line function, along with user _sub_* functions to scrub a given line in a file.
+        This is called in the self._clean_line function, along with user _sub_* functions to scrub a given 
+        line in a file.
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
         try:
@@ -243,16 +247,17 @@ class SOSCleaner:
             t = tarfile.open(archive, 'w:gz')
             for dirpath, dirnames, filenames in os.walk(self.dir_path):
                 for f in filenames:
-                    f = os.path.join(dirpath,f)
-                    logging.debug('adding %s to %s archive', f, archive)
-                    t.add(f)
+                    f_full = os.path.join(dirpath, f)
+                    f_archive = f_full.replace('/tmp','')
+                    logging.debug('adding %s to %s archive', f_archive, archive)
+                    t.add(f_full, arcname=f_archive)
         except Exception,e:
             logging.exception(e)
             raise Exception('CreateArchiveError: Unable to create Archive')
         self._clean_up()
         logging.info('Archiving Complete')
         logging.info('SOSCleaner Complete')
-        t.add(self.logfile)
+        t.add(self.logfile, arcname=self.logfile.replace('/tmp',''))
         t.close()
 
     def _clean_up(self):
@@ -306,7 +311,8 @@ class SOSCleaner:
 
     def _ip2db(self, ip):
         '''
-        adds an IP address to the IP database and returns the obfuscated entry, or returns the existing obfuscated IP entry
+        adds an IP address to the IP database and returns the obfuscated entry, or returns the 
+        existing obfuscated IP entry
         FORMAT:
         {$obfuscated_ip: $original_ip,}
         '''
@@ -331,7 +337,8 @@ class SOSCleaner:
 
     def _hn2db(self, hn):
         '''
-        This will add a hostname for an FQDN on the same domain as the host to an obfuscation database, or return an existing entry
+        This will add a hostname for an FQDN on the same domain as the host to an obfuscation database, 
+        or return an existing entry
         '''
         db = self.hn_db
         hn_found = False
@@ -388,7 +395,8 @@ class SOSCleaner:
         return new_line
 
     def _clean_file(self, f):
-        '''this will take a given file path, scrub it accordingly, and save a new copy of the file in the same location'''
+        '''this will take a given file path, scrub it accordingly, and save a new copy of the file 
+        in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
             try:
