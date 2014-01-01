@@ -19,8 +19,8 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 01 Jan 2014 12:55:23 PM EST
-# Purpose :
+# Last Modified : Wed 01 Jan 2014 05:06:51 PM EST
+# Purpose : an sosreport scrubber
 
 import os
 import re
@@ -29,7 +29,6 @@ from time import strftime, gmtime
 import shutil
 import struct, socket
 import tempfile
-import textwrap
 import logging
 import tarfile
 
@@ -42,12 +41,12 @@ class SOSCleaner:
     '''
     def __init__(self, sosreport, loglevel, reporting):
 
-        self._check_uid()
+        self._check_uid()   #make sure it's soscleaner is running as root
         self.version = '0.1'
         self.loglevel = loglevel
         self.reporting = reporting
         self.ip_db = {}
-        self.start_ip = '10.230.230.0'
+        self.start_ip = '10.230.230.1'
         self.hn_db = {}
         self.hostname_count = 0
         self.domain = 'example.com'
@@ -60,8 +59,7 @@ class SOSCleaner:
         self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
     def _check_uid(self):
-        uid = os.getuid()
-        if uid != 0:
+        if os.getuid() != 0:
             raise Exception("You Must Execute soscleaner As Root")
 
     def _skip_file(self, d, files):
@@ -89,8 +87,8 @@ class SOSCleaner:
     def _start_logging(self, filename):
         #will get the logging instance going
         loglevel_config = 'logging.%s' % self.loglevel
-        logging.basicConfig(filename=filename, 
-            level=eval(loglevel_config), 
+        logging.basicConfig(filename=filename,
+            level=eval(loglevel_config),
             format='%(asctime)s : %(levelname)s : %(message)s')
 
     def _prep_environment(self, path):
@@ -112,7 +110,7 @@ class SOSCleaner:
 
         elif 'compressed data' in compression_sig:
             if compression_sig == 'xz compressed data':
-                #This is a hack to account for the fact that the tarfile library doesn't 
+                #This is a hack to account for the fact that the tarfile library doesn't
                 #handle lzma (XZ) compression until version 3.3 beta
                 try:
                     logging.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', origin_path)
@@ -146,7 +144,7 @@ class SOSCleaner:
     def _sub_ip(self, line):
         '''
         This will substitute an obfuscated IP for each instance of a given IP in a file
-        This is called in the self._clean_line function, along with user _sub_* functions to scrub a given 
+        This is called in the self._clean_line function, along with user _sub_* functions to scrub a given
         line in a file.
         It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
         '''
@@ -310,7 +308,7 @@ class SOSCleaner:
 
     def _ip2db(self, ip):
         '''
-        adds an IP address to the IP database and returns the obfuscated entry, or returns the 
+        adds an IP address to the IP database and returns the obfuscated entry, or returns the
         existing obfuscated IP entry
         FORMAT:
         {$obfuscated_ip: $original_ip,}
@@ -336,7 +334,7 @@ class SOSCleaner:
 
     def _hn2db(self, hn):
         '''
-        This will add a hostname for an FQDN on the same domain as the host to an obfuscation database, 
+        This will add a hostname for an FQDN on the same domain as the host to an obfuscation database,
         or return an existing entry
         '''
         db = self.hn_db
@@ -394,7 +392,7 @@ class SOSCleaner:
         return new_line
 
     def _clean_file(self, f):
-        '''this will take a given file path, scrub it accordingly, and save a new copy of the file 
+        '''this will take a given file path, scrub it accordingly, and save a new copy of the file
         in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
