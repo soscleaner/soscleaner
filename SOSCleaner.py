@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 01 Jan 2014 05:06:51 PM EST
+# Last Modified : Thu 10 Apr 2014 05:22:51 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -39,7 +39,7 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, sosreport, loglevel, reporting):
+    def __init__(self, sosreport, loglevel='INFO', reporting=True):
 
         self._check_uid()   #make sure it's soscleaner is running as root
         self.version = '0.1'
@@ -174,6 +174,8 @@ class SOSCleaner:
                 ip_report.write('%s,%s\n' %(self._int2ip(k),self._int2ip(v)))
             ip_report.close()
             logging.info('Completed IP Report')
+
+            self.ip_report = ip_report_name
         except Exception,e:
             logging.exception(e)
             raise Exception('CreateReport Error: Error Creating IP Report')
@@ -186,6 +188,8 @@ class SOSCleaner:
                 hn_report.write('%s,%s\n' %(k,v))
             hn_report.close()
             logging.info('Completed Hostname Report')
+
+            self.hn_report = hn_report_name
         except Exception,e:
             logging.exception(e)
             raise Exception('CreateReport Error: Error Creating Hostname Report')
@@ -240,6 +244,7 @@ class SOSCleaner:
         '''This will create a tar.gz compressed archive of the scrubbed directory'''
         try:
             archive = "/tmp/%s.tar.gz" % self.session
+            self.archive_path = archive
             logging.info('Starting Archiving Process - Creating %s', archive)
             t = tarfile.open(archive, 'w:gz')
             for dirpath, dirnames, filenames in os.walk(self.dir_path):
@@ -432,7 +437,7 @@ class SOSCleaner:
             logging.warning("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
         logging.info("SOSCleaner Started")
         logging.info("Working Directory - %s", self.dir_path)
-        print "Working Directory - %s" % self.dir_path
+        #print "Working Directory - %s" % self.dir_path
         logging.info("IP Substitution Start Address - %s", self.start_ip)
         logging.info("Domain Name Substitution - %s", self.domain)
         for f in files:
@@ -445,3 +450,7 @@ class SOSCleaner:
         if self.reporting:
             self._create_reports()
         self._create_archive()
+
+        return_data = (self.archive_path, self.logfile, self.ip_report, self.hn_report)
+
+        return return_data

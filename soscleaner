@@ -13,10 +13,12 @@ def main():
     parser.add_option("-l", "--log_level", dest="loglevel", default='INFO', help="The Desired Log Level (default = INFO) Options are DEBUG, INFO, WARNING, ERROR", metavar="LOGLEVEL")
     parser.add_option("-r", "--reporting", action="store_true", default=False, dest="reporting", help="Create CSV output for IP and Hostname databases", metavar="REPORTING")
     parser.add_option("-s", "--sosreport", dest="sosreport", help="The SOSReport that is to be cleaned", metavar="SOSREPORT")
+    parser.add_option("-no4", "--noipv4", action="store_true", default=False, dest="ipv4", metavar="IPV4")
+    parser.add_option("-no6", "--noipv6", action="store_true", default=False, dest="ipv6", metavar="IPV6")
 
     (options, args) = parser.parse_args()
 
-    cleaner = SOSCleaner(sosreport=options.sosreport, loglevel=options.loglevel, reporting=options.reporting)
+    cleaner = SOSCleaner(options)
     cleaner.clean_report()
 
 if __name__ == '__main__':
