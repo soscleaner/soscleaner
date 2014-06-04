@@ -11,10 +11,10 @@ BuildRequires: python-setuptools
 Url: https://github.com/jduncan-rva/SOSCleaner
 
 %description
-SOSCleaner helps filter out sensitive and controlled data from a standard SOSReport
+SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 
 %prep
-%setup -n %{name}-%{version}
+%setup -n %{name}-%{version} --quiet
 
 %build
 %{__python2} setup.py build
