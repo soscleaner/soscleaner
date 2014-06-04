@@ -1,44 +1,38 @@
-%define name soscleaner
-%define version 0.1
-%define unmangled_version 0.1
-%define release 11
-
 Summary: To clean and filter sensitive data from a standard sosreport
-Name: %{name}
-Version: %{version}
-Release: %{release}
-Source0: %{name}-%{unmangled_version}.tar.gz
+Name: soscleaner
+Version: 0.1
+Release: 12
+Source0: %{name}-%{version}.tar.gz
 License: GPLv2
-Group: Applications
 BuildArch: noarch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-Prefix: %{_prefix}
-BuildArch: noarch
-Vendor: Jamie Duncan <jduncan@redhat.com>
-Packager: Jamie Duncan <jduncan@redhat.com>
 Requires: python-magic
 BuildRequires: python2-devel
+BuildRequires: python-setuptools
 Url: https://github.com/jduncan-rva/SOSCleaner
 
 %description
 SOSCleaner is an application to filer out sensitive and un-scan-able data from a standard sosreport
 
 %prep
-%setup -n %{name}-%{unmangled_version}
+%setup -n %{name}-%{version}
 
 %build
 %{__python2} setup.py build
 
 %install
-%{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+%{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-%files -f INSTALLED_FILES
-%defattr(-,root,root)
+%files
+%doc /usr/share/doc/%{name}-%{version}/LICENSE
+%doc /usr/share/man/man8/%{name}.8.gz
+%{python2_sitelib}/*egg-info
+%{python2_sitelib}/SOSCleaner*
+%{_bindir}/soscleaner
 
 %changelog
+* Tue Jun 03 2014 Jamie Duncan <jduncan@redhat.com> 0.1-12
+- rebuilt the entire process to be inline with Fedora standards, I hope
+
 * Tue Jun 03 2014 Jamie Duncan <jduncan@redhat.com> 0.1-11
 - refactored packaging and clean up
 - dropped included version of python-magic - so no RHEL 5 functionality
