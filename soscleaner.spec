@@ -2,7 +2,7 @@ Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
 Version: 0.1
 Release: 12
-Source0: %{name}-%{version}.tar.gz
+Source0: http://people.redhat.com/jduncan/%{name}/%{name}-%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
 Requires: python-magic
@@ -11,7 +11,7 @@ BuildRequires: python-setuptools
 Url: https://github.com/jduncan-rva/SOSCleaner
 
 %description
-SOSCleaner is an application to filer out sensitive and un-scan-able data from a standard sosreport
+SOSCleaner helps filter out sensitive and un-scan-able data from a standard sosreport
 
 %prep
 %setup -n %{name}-%{version}
