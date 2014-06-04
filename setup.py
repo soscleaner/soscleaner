@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 version = '0.1'
-name = 'SOSCleaner'
+name = 'soscleaner'
 
 setup(
     name=name,
