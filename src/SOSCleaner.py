@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
-# Copyright (C) 2013  Jamie Duncan (jamie.e.duncan@gmail.com)
+# Copyright (C) 2013  Jamie Duncan (jduncan@redhat.com)
 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,7 +19,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 10 Apr 2014 05:22:51 PM EDT
+# Last Modified : Wed 04 Jun 2014 06:32:11 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
