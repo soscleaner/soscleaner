@@ -27,10 +27,10 @@ SOSCleaner is an application to filer out sensitive and un-scan-able data from a
 %setup -n %{name}-%{unmangled_version}
 
 %build
-%{__python} setup.py build
+%{__python2} setup.py build
 
 %install
-%{__python} setup.py install -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+%{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
 
 %clean
 rm -rf $RPM_BUILD_ROOT
