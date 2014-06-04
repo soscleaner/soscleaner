@@ -14,10 +14,10 @@ Url: https://github.com/jduncan-rva/SOSCleaner
 SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 
 %prep
-%setup -n %{name}-%{version} --quiet
+%setup -n %{name}-%{version}
 
 %build
-%{__python2} setup.py build
+%{__python2} setup.py build --quiet
 
 %install
 %{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT
