@@ -17,7 +17,7 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %setup -n %{name}-%{version}
 
 %build
-%{__python2} setup.py build --quiet
+%{__python2} setup.py build 
 
 %install
 %{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT
