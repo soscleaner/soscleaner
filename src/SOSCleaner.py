@@ -37,7 +37,7 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, sosreport, loglevel='INFO', reporting=True):
+    def __init__(self, options, loglevel='INFO', reporting=True):
 
         self._check_uid()   #make sure it's soscleaner is running as root
         self.version = '0.1'
@@ -50,6 +50,7 @@ class SOSCleaner:
         self.domain = 'example.com'
         self.loglevel = loglevel
 
+        sosreport = options.sosreport
         #this handles all the extraction and path creation
         self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
 
