@@ -17,12 +17,12 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 05 Jun 2014 10:03:27 AM EDT
+# Last Modified : Fri 06 Jun 2014 10:44:42 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
 import re
-from python_magic import magic
+import magic
 from time import strftime, gmtime
 import shutil
 import struct, socket

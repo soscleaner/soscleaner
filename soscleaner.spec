@@ -1,7 +1,7 @@
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
 Version: 0.1
-Release: 12
+Release: 12%{dist}
 Source0: http://people.redhat.com/jduncan/%{name}/%{name}-%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
@@ -14,7 +14,7 @@ Url: https://github.com/jduncan-rva/SOSCleaner
 SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 
 %prep
-%setup -n %{name}-%{version}
+%setup -q -n %{name}-%{version}
 
 %build
 %{__python2} setup.py build
@@ -23,8 +23,9 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT
 
 %files
-%doc /usr/share/doc/%{name}-%{version}/LICENSE
-%doc /usr/share/man/man8/%{name}.8.gz
+%dir %{_docdir}/%{name}-%{version}
+%{_docdir}/%{name}-%{version}/*
+%{_mandir}/man8/%{name}.8*
 %{python2_sitelib}/*egg-info
 %{python2_sitelib}/SOSCleaner*
 %{_bindir}/soscleaner
