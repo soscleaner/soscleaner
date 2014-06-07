@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 06 Jun 2014 10:44:42 AM EDT
+# Last Modified : Sat 07 Jun 2014 04:50:24 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -78,6 +78,8 @@ class SOSCleaner:
             if not os.path.isdir(f_full):
                 if not os.path.islink(f_full):
                     mode = oct(os.stat(f_full).st_mode)[-3:]
+                    # executing as root makes this first if clause useless.
+                    # i thought i'd already removed it. - jduncan
                     if mode == '200' or mode == '444' or mode == '400':
                         skip_list.append(f)
                     if self.magic.buffer(f_full) == 'data':

@@ -15,7 +15,9 @@ Project Information
 * Maintainer - Jamie Duncan (jduncan@redhat.com)
 * Source and Issues - https://github.com/jduncan-rva/soscleaner
 * Git Hub Pages - http://jduncan-rva.github.io/soscleaner/
-* Mailing List - If this gets off the ground
+* Mailing Lists
+  * Development - soscleaner-dev@googlegroups.com
+  * Announce - soscleaner-announce@googlegroups.com
 
 Usage Basics
 ------------
@@ -75,10 +77,9 @@ $ ll /tmp/soscleaner*
 -rw-r--r--. 1 root root 4834715 Dec  9 06:20 /tmp/soscleaner-20131209111927.tar.gz
 
 ```
-
 * soscleaner-$session-hostname.csv is a csv of hostnames that have been obfuscated
 * soscleaner-$session-ip.csv is a csv of ip addresses that have been obfuscated
- 
+
 What Is Created?
 ----------------
 
