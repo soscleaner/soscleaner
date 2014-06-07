@@ -37,7 +37,7 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, sosreport, loglevel='INFO', reporting=True):
+    def __init__(self, options, loglevel='INFO', reporting=True):
 
         self._check_uid()   #make sure it's soscleaner is running as root
         self.version = '0.1'
@@ -49,7 +49,10 @@ class SOSCleaner:
         self.hostname_count = 0
         self.domain = 'example.com'
         self.loglevel = loglevel
-
+        self.magic = magic.open(magic.MAGIC_NONE)
+        # required for compression type magic patterns
+        self.magic.load()
+        sosreport = options.sosreport
         #this handles all the extraction and path creation
         self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
 
@@ -77,7 +80,7 @@ class SOSCleaner:
                     mode = oct(os.stat(f_full).st_mode)[-3:]
                     if mode == '200' or mode == '444' or mode == '400':
                         skip_list.append(f)
-                    if magic.from_file(f_full) == 'data':
+                    if self.magic.buffer(f_full) == 'data':
                         skip_list.append(f)
 
         return skip_list
@@ -101,7 +104,7 @@ class SOSCleaner:
         self._start_logging(logfile)
 
         logging.info("Beginning SOSReport Extraction")
-        compression_sig = magic.from_file(path).split(',')[0].lower()
+        compression_sig = self.magic.file(path).lower()
         if 'directory' in compression_sig:
             logging.info('%s appears to be a %s - continuing', path, compression_sig)
             return path, origin_path, dir_path, session, logfile
