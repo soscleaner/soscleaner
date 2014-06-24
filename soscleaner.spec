@@ -31,6 +31,8 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{_bindir}/soscleaner
 
 %changelog
+* Sat Jun 07 2014 Jamie Duncan <jduncan@redhat.com> 0.1-12
+- pulled in merge from brm to fix #
 * Tue Jun 03 2014 Jamie Duncan <jduncan@redhat.com> 0.1-12
 - rebuilt the entire process to be inline with Fedora standards, I hope
 
