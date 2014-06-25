@@ -17,11 +17,12 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 07 Jun 2014 04:50:24 PM EDT
+# Last Modified : Wed 25 Jun 2014 10:04:39 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
 import re
+import sys
 import magic
 from time import strftime, gmtime
 import shutil
@@ -40,6 +41,7 @@ class SOSCleaner:
     def __init__(self, options, loglevel='INFO', reporting=True):
 
         self._check_uid()   #make sure it's soscleaner is running as root
+        self.name = 'soscleaner'
         self.version = '0.1'
         self.loglevel = loglevel
         self.reporting = reporting
@@ -55,7 +57,7 @@ class SOSCleaner:
         sosreport = options.sosreport
         #this handles all the extraction and path creation
         self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
-
+        self._get_disclaimer()
         self._make_dest_env()   #create the working directory
         self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
 
@@ -92,7 +94,16 @@ class SOSCleaner:
         loglevel_config = 'logging.%s' % self.loglevel
         logging.basicConfig(filename=filename,
             level=eval(loglevel_config),
-            format='%(asctime)s : %(levelname)s : %(message)s')
+            format='%(asctime)s : %(name)s : %(levelname)s : %(message)s',
+            datefmt = '%m-%d %H:%M'
+            )
+        console = logging.StreamHandler(sys.stdout)
+        console.setLevel(logging.WARNING)
+        c_format = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+        console.setFormatter(c_format)
+	self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(console)
+
 
     def _prep_environment(self, path):
 
@@ -105,10 +116,10 @@ class SOSCleaner:
 
         self._start_logging(logfile)
 
-        logging.info("Beginning SOSReport Extraction")
+        self.logger.warning("Beginning SOSReport Extraction")
         compression_sig = self.magic.file(path).lower()
         if 'directory' in compression_sig:
-            logging.info('%s appears to be a %s - continuing', path, compression_sig)
+            self.logger.info('%s appears to be a %s - continuing', path, compression_sig)
             return path, origin_path, dir_path, session, logfile
 
         elif 'compressed data' in compression_sig:
@@ -116,8 +127,8 @@ class SOSCleaner:
                 #This is a hack to account for the fact that the tarfile library doesn't
                 #handle lzma (XZ) compression until version 3.3 beta
                 try:
-                    logging.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', origin_path)
-                    logging.info('LZMA Hack - Creating %s', origin_path)
+                    self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', origin_path)
+                    self.logger.info('LZMA Hack - Creating %s', origin_path)
                     os.system('mkdir %s' % origin_path)
                     os.system('tar -xJf %s -C %s' % (path, origin_path))
                     return_path = os.path.join(origin_path, os.listdir(origin_path)[0])
@@ -125,13 +136,13 @@ class SOSCleaner:
                     return return_path, origin_path, dir_path, session, logfile
 
                 except Exception,e:
-                    logging.exception(e)
+                    self.logger.exception(e)
                     raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
 
             else:
                 p = tarfile.open(path, 'r')
 
-                logging.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, origin_path)
+                self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, origin_path)
                 try:
                     p.extractall(origin_path)
                     return_path = os.path.join(origin_path, os.path.commonprefix(p.getnames()))
@@ -139,7 +150,7 @@ class SOSCleaner:
                     return return_path, origin_path, dir_path, session, logfile
 
                 except Exception, e:
-                    logging.exception(e)
+                    self.logger.exception(e)
                     raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, origin_path)
         else:
             raise Exception('CompressionError: Unable To Determine Compression Type')
@@ -157,12 +168,18 @@ class SOSCleaner:
             if len(ips) > 0:
                 for ip in ips:
                     new_ip = self._ip2db(ip)
-                    logging.debug("Obfuscating IP - %s > %s", ip, new_ip)
+                    self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
                     line = line.replace(ip, new_ip)
             return line
         except Exception,e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
+
+    def _get_disclaimer(self):
+        #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
+
+        disclaimer = "** %s - %s**\n\n%s is a tool to help obfuscate sensitive information from an existing sosreport.\n\nThere is no guarantee that %s can obfuscate all sensitive information from an sosreport. Please review the content before passing it along to any third party." % (self.name, self.version, self.name, self.name)
+        self.logger.warning(disclaimer)
 
     def _create_reports(self):
         '''
@@ -170,31 +187,31 @@ class SOSCleaner:
         '''
         try:
             ip_report_name = "/tmp/%s-ip.csv" % self.session
-            logging.info('Beginning IP Report - %s', ip_report_name)
+            self.logger.warning('Beginning IP Report - %s', ip_report_name)
             ip_report = open(ip_report_name, 'w')
             ip_report.write('Obfuscated IP,Original IP\n')
             for k,v in self.ip_db.items():
                 ip_report.write('%s,%s\n' %(self._int2ip(k),self._int2ip(v)))
             ip_report.close()
-            logging.info('Completed IP Report')
+            self.logger.info('Completed IP Report')
 
             self.ip_report = ip_report_name
         except Exception,e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating IP Report')
         try:
             hn_report_name = "/tmp/%s-hostname.csv" % self.session
-            logging.info('Beginning Hostname Report - %s', hn_report_name)
+            self.logger.warning('Beginning Hostname Report - %s', hn_report_name)
             hn_report = open(hn_report_name, 'w')
             hn_report.write('Obfuscated Hostname,Original Hostname\n')
             for k,v in self.hn_db.items():
                 hn_report.write('%s,%s\n' %(k,v))
             hn_report.close()
-            logging.info('Completed Hostname Report')
+            self.logger.info('Completed Hostname Report')
 
             self.hn_report = hn_report_name
         except Exception,e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating Hostname Report')
 
     def _sub_hostname(self, line):
@@ -209,10 +226,10 @@ class SOSCleaner:
                 if len(hostnames) > 0:
                     for hn in hostnames:
                         new_hn = self._hn2db(hn)
-                        logging.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
+                        self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
         except Exception,e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('SubHostnameError: Unable to Substitute FQDN')
 
         '''
@@ -224,10 +241,10 @@ class SOSCleaner:
 
         try:
             new_hn = self._hn2db(self.hostname)
-            logging.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
+            self.logger.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
             line = line.replace(self.hostname, new_hn)
         except Exception,e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('SubHostnameError: Unable to Substitute Non-FQDN')
 
         return line
@@ -240,7 +257,7 @@ class SOSCleaner:
         try:
             shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
         except Exception, e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
 
     def _create_archive(self):
@@ -248,35 +265,35 @@ class SOSCleaner:
         try:
             archive = "/tmp/%s.tar.gz" % self.session
             self.archive_path = archive
-            logging.info('Starting Archiving Process - Creating %s', archive)
+            self.logger.warning('Starting Archiving Process - Creating %s', archive)
             t = tarfile.open(archive, 'w:gz')
             for dirpath, dirnames, filenames in os.walk(self.dir_path):
                 for f in filenames:
                     f_full = os.path.join(dirpath, f)
                     f_archive = f_full.replace('/tmp','')
-                    logging.debug('adding %s to %s archive', f_archive, archive)
+                    self.logger.debug('adding %s to %s archive', f_archive, archive)
                     t.add(f_full, arcname=f_archive)
         except Exception,e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('CreateArchiveError: Unable to create Archive')
         self._clean_up()
-        logging.info('Archiving Complete')
-        logging.info('SOSCleaner Complete')
+        self.logger.warning('Archiving Complete')
+        self.logger.warning('SOSCleaner Complete')
         t.add(self.logfile, arcname=self.logfile.replace('/tmp',''))
         t.close()
 
     def _clean_up(self):
         '''This will clean up origin directories, etc.'''
-        logging.info('Beginning Clean Up Process')
+        self.logger.info('Beginning Clean Up Process')
         try:
             if self.origin_path:
-                logging.info('Removing Origin Directory - %s', self.origin_path)
+                self.logger.info('Removing Origin Directory - %s', self.origin_path)
                 shutil.rmtree(self.origin_path)
-            logging.info('Removing Working Directory - %s', self.dir_path)
+            self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
-            logging.info('Clean Up Process Complete')
+            self.logger.info('Clean Up Process Complete')
         except Exception, e:
-            logging.exception(e)
+            self.logger.exception(e)
 
     def _get_hostname(self):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
@@ -299,7 +316,7 @@ class SOSCleaner:
             return hostname, domainname, is_fqdn
 
         except Exception, e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
 
     def _ip2int(self, ipstr):
@@ -376,7 +393,7 @@ class SOSCleaner:
 
             return dir_list
         except Exception, e:
-            logging.exception(e)
+            self.logger.exception(e)
             raise Exception("WalkReport Error: Unable to Walk Report")
 
     def _file_list(self, folder):
@@ -416,7 +433,7 @@ class SOSCleaner:
                     tmp_file.seek(0)
 
             except Exception, e:
-                logging.exception(e)
+                self.logger.exception(e)
                 raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
             try:
@@ -426,7 +443,7 @@ class SOSCleaner:
                         new_fh.write(line)
                     new_fh.close()
             except Exception, e:
-                logging.exception(e)
+                self.logger.exception(e)
                 raise Exception("CleanFile Error: Cannot Write to New File - %s" % f)
 
             finally:
@@ -437,19 +454,18 @@ class SOSCleaner:
 
         files = self._file_list(self.dir_path)
         if not self.is_fqdn:
-            logging.warning("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
-        logging.info("SOSCleaner Started")
-        logging.info("Working Directory - %s", self.dir_path)
-        #print "Working Directory - %s" % self.dir_path
-        logging.info("IP Substitution Start Address - %s", self.start_ip)
-        logging.info("Domain Name Substitution - %s", self.domain)
+            self.logger.warning("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
+        self.logger.warning("SOSCleaner Started")
+        self.logger.warning("Working Directory - %s", self.dir_path)
+        self.logger.warning("IP Substitution Start Address - %s", self.start_ip)
+        self.logger.warning("Domain Name Substitution - %s", self.domain)
         for f in files:
-            logging.debug("Cleaning %s", f)
+            self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
-        logging.info("SOSCleaner Completed")
-        logging.info("IP Addresses Obfuscated - %s", len(self.ip_db))
-        logging.info("Hostnames Obfuscated - %s" , len(self.hn_db))
-        logging.info("Files Cleaned - %s", self.file_count)
+        self.logger.warning("SOSCleaner Completed")
+        self.logger.warning("IP Addresses Obfuscated - %s", len(self.ip_db))
+        self.logger.warning("Hostnames Obfuscated - %s" , len(self.hn_db))
+        self.logger.warning("Files Cleaned - %s", self.file_count)
         if self.reporting:
             self._create_reports()
         self._create_archive()
