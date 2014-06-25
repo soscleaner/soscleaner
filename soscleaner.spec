@@ -33,6 +33,7 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %changelog
 * Tue Jun 24 2014 Jamie Duncan <jduncan@redhat.com> 0.1-13
 - added disclaimer to beginning of stdout. fixes #14
+- cleaned up logging and made it a little prettier
 
 * Sat Jun 07 2014 Jamie Duncan <jduncan@redhat.com> 0.1-12
 - pulled in merge from brm to fix #
