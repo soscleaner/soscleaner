@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 25 Jun 2014 08:51:51 PM EDT
+# Last Modified : Thu 26 Jun 2014 11:34:41 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -188,9 +188,9 @@ class SOSCleaner:
     def _get_disclaimer(self):
         #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
 
-        self.logger.con_out("%s - %s" % (self.name, self.version))
-        self.logger.con_out("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
-        self.logger.con_out("Please review the content before passing it along to any third party.")
+        self.logger.con_out("%s version %s" % (self.name, self.version))
+        self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
+        self.logger.warning("Please review the content before passing it along to any third party.")
 
     def _create_reports(self):
         '''
@@ -210,20 +210,24 @@ class SOSCleaner:
         except Exception,e:
             self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating IP Report')
-        try:
-            hn_report_name = "/tmp/%s-hostname.csv" % self.session
-            self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
-            hn_report = open(hn_report_name, 'w')
-            hn_report.write('Obfuscated Hostname,Original Hostname\n')
-            for k,v in self.hn_db.items():
-                hn_report.write('%s,%s\n' %(k,v))
-            hn_report.close()
-            self.logger.info('Completed Hostname Report')
+        if self.process_hostnames:
+            try:
+                hn_report_name = "/tmp/%s-hostname.csv" % self.session
+                self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
+                hn_report = open(hn_report_name, 'w')
+                hn_report.write('Obfuscated Hostname,Original Hostname\n')
+                for k,v in self.hn_db.items():
+                    hn_report.write('%s,%s\n' %(k,v))
+                hn_report.close()
+                self.logger.info('Completed Hostname Report')
 
-            self.hn_report = hn_report_name
-        except Exception,e:
-            self.logger.exception(e)
-            raise Exception('CreateReport Error: Error Creating Hostname Report')
+                self.hn_report = hn_report_name
+            except Exception,e:
+                self.logger.exception(e)
+                raise Exception('CreateReport Error: Error Creating Hostname Report')
+        else:
+            self.logger.warning('Hostname Report Not Generated - Unable to determine hostname')
+            self.hn_report = None
 
     def _sub_hostname(self, line):
         '''
@@ -310,6 +314,7 @@ class SOSCleaner:
         #gets the hostname and stores hostname/domainname so they can be filtered out later
 
         try:
+            self.process_hostnames = True
             hostfile = os.path.join(self.dir_path, 'hostname')
             fh = open(hostfile, 'r')
             name_list = fh.readline().rstrip().split('.')
@@ -326,9 +331,24 @@ class SOSCleaner:
 
             return hostname, domainname, is_fqdn
 
+        except IOError, e: #the 'hostname' file doesn't exist or isn't readable for some reason
+            self.process_hostnames = False
+            self.logger.warning("Unable to determine system hostname!!!")
+            self.logger.warning("Hostname Data Obfuscation Will Not Occur!!!")
+            self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
+            self.logger.warning("and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
+            self.logger.exception(e)
+
+            hostname = 'unknown'
+            domainname = 'unknown'
+            is_fqdn = False
+
+            return hostname, domainname, is_fqdn
+
         except Exception, e:
             self.logger.exception(e)
             raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
+
 
     def _ip2int(self, ipstr):
         #converts a dotted decimal IP address into an integer that can be incremented
@@ -423,7 +443,8 @@ class SOSCleaner:
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
         new_line = self._sub_ip(l)  #IP substitution
-        new_line = self._sub_hostname(new_line)    #Hostname substitution
+        if self.process_hostnames:
+            new_line = self._sub_hostname(new_line)    #Hostname substitution
 
         return new_line
 
@@ -464,12 +485,14 @@ class SOSCleaner:
         '''this will loop through all the files in a dir_pathectory and scrub them'''
 
         files = self._file_list(self.dir_path)
-        if not self.is_fqdn:
-            self.logger.con_out("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
+        if self.process_hostnames:
+            if not self.is_fqdn:
+                self.logger.con_out("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
         self.logger.con_out("SOSCleaner Started")
         self.logger.con_out("Working Directory - %s", self.dir_path)
         self.logger.con_out("IP Substitution Start Address - %s", self.start_ip)
-        self.logger.con_out("Domain Name Substitution - %s", self.domain)
+        if self.process_hostnames:
+            self.logger.con_out("Domain Name Substitution - %s", self.domain)
         for f in files:
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
