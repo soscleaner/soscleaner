@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 25 Jun 2014 11:24:07 AM EDT
+# Last Modified : Wed 25 Jun 2014 08:51:51 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -38,7 +38,7 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, options, loglevel='INFO', reporting=True):
+    def __init__(self, options, sosreport, loglevel='INFO', reporting=True):
 
         self._check_uid()   #make sure it's soscleaner is running as root
         self.name = 'soscleaner'
@@ -54,7 +54,6 @@ class SOSCleaner:
         self.magic = magic.open(magic.MAGIC_NONE)
         # required for compression type magic patterns
         self.magic.load()
-        sosreport = options.sosreport
         #this handles all the extraction and path creation
         self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
         self._get_disclaimer()
