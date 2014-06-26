@@ -1,7 +1,7 @@
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
 Version: 0.1
-Release: 13%{dist}
+Release: 14%{dist}
 Source0: http://people.redhat.com/jduncan/%{name}/%{name}-%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
@@ -31,6 +31,11 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{_bindir}/soscleaner
 
 %changelog
+* Thu Jun 26 2014 Jamie Duncan <jduncan@redhat.com> 0.1-14
+- print help statement if no sosreport is passed in. fixes #16
+- updating man page to reflect new parameter workflow. updates #15
+- handling issue where hostname file in sosreport does not exist. fixes #17
+
 * Tue Jun 24 2014 Jamie Duncan <jduncan@redhat.com> 0.1-13
 - added disclaimer to beginning of stdout. fixes #14
 - cleaned up logging and made it a little prettier
