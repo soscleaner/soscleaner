@@ -4,6 +4,7 @@
 
 from SOSCleaner import SOSCleaner
 from optparse import OptionParser
+import sys
 
 version = '0.1'
 
@@ -14,6 +15,9 @@ def main():
     parser.add_option("-r", "--reporting", action="store_true", default=False, dest="reporting", help="Create CSV output for IP and Hostname databases (enabled by default)", metavar="REPORTING")
 
     (options, args) = parser.parse_args()
+    if not args:
+        parser.print_help()
+        sys.exit(1)
     sosreport = args[0] #grab the sosreport path
     cleaner = SOSCleaner(options, sosreport)
     cleaner.clean_report()
