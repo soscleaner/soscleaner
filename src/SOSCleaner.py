@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 26 Jun 2014 11:34:41 AM EDT
+# Last Modified : Sat 28 Jun 2014 12:50:20 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -38,27 +38,41 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, options, sosreport, loglevel='INFO', reporting=True):
+    def __init__(self, options, sosreport):
 
         self._check_uid()   #make sure it's soscleaner is running as root
         self.name = 'soscleaner'
         self.version = '0.1'
-        self.loglevel = loglevel
-        self.reporting = reporting
-        self.ip_db = {}
+
+        #command-line parameters
+        self.loglevel = options.loglevel
+
+        #IP obfuscation information
+        self.ip_db = dict() #IP database
         self.start_ip = '10.230.230.1'
-        self.hn_db = {}
+
+        #Hostname obfuscation information
+        self.hn_db = dict() #hostname database
         self.hostname_count = 0
-        self.domain = 'example.com'
-        self.loglevel = loglevel
+
+        #Domainname obfuscation information
+        self.dn_db = dict() #domainname database
+        self.domains = options.domains
+        self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
+
         self.magic = magic.open(magic.MAGIC_NONE)
         # required for compression type magic patterns
         self.magic.load()
         #this handles all the extraction and path creation
+
+        #data initialization
         self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
         self._get_disclaimer()
         self._make_dest_env()   #create the working directory
-        self.hostname, self.domainname, self.is_fqdn = self._get_hostname()
+        self.hostname, self.domainname = self._get_hostname()
+        self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
+        self._domains2db()
+
 
     def _check_uid(self):
         if os.getuid() != 0:
@@ -228,6 +242,22 @@ class SOSCleaner:
         else:
             self.logger.warning('Hostname Report Not Generated - Unable to determine hostname')
             self.hn_report = None
+        if self.domain_count >= 1:
+            try:
+                dn_report_name = "/tmp/%s-dn.csv" % self.session
+                self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
+                dn_report = open(dn_report_name, 'w')
+                dn_report.write('Obfuscated Domain,Original Domain\n')
+                for k,v in self.dn_db.items():
+                    dn_report.write('%s,%s\n' %(k,v))
+                dn_report.close()
+                self.logger.info('Completed Domainname Report')
+
+                self.dn_report = dn_report_name
+
+            except Exception, e:
+                self.logger.exception(e)
+                raise Exception('CreateReport Error: Error Creating Domainname Report')
 
     def _sub_hostname(self, line):
         '''
@@ -235,8 +265,8 @@ class SOSCleaner:
         Example:
         '''
         try:
-            if self.is_fqdn:
-                regex = re.compile(r'\w*\.%s' % self.domainname)
+            for od,d in self.dn_db.items():
+                regex = re.compile(r'\w*\.%s' % d)
                 hostnames = [each for each in regex.findall(line)]
                 if len(hostnames) > 0:
                     for hn in hostnames:
@@ -280,7 +310,7 @@ class SOSCleaner:
         try:
             archive = "/tmp/%s.tar.gz" % self.session
             self.archive_path = archive
-            self.logger.con_out('Starting Archiving Process - Creating %s', archive)
+            self.logger.con_out('Creating SOSCleaner Archive - %s', archive)
             t = tarfile.open(archive, 'w:gz')
             for dirpath, dirnames, filenames in os.walk(self.dir_path):
                 for f in filenames:
@@ -292,7 +322,7 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('CreateArchiveError: Unable to create Archive')
         self._clean_up()
-        self.logger.con_out('Archiving Complete')
+        self.logger.info('Archiving Complete')
         self.logger.con_out('SOSCleaner Complete')
         t.add(self.logfile, arcname=self.logfile.replace('/tmp',''))
         t.close()
@@ -310,6 +340,28 @@ class SOSCleaner:
         except Exception, e:
             self.logger.exception(e)
 
+    def _domains2db(self):
+        #adds any additional domainnames to the domain database to be searched for
+        try:
+            #we will add the root domain for an FQDN as well.
+            if self.domainname is not None:
+                self.dn_db[self.root_domain] = self.domainname
+                self.logger.con_out("Obfuscated Domain Created - %s" % self.root_domain)
+
+            split_root_d = self.root_domain.split('.')
+
+            for d in self.domains:
+                if d not in self.dn_db.values(): #no duplicates
+                    d_number = len(self.dn_db)
+                    o_domain = "%s%s.%s" % (split_root_d[0], d_number, split_root_d[1])
+                    self.dn_db[o_domain] = d
+                    self.logger.con_out("Obfuscated Domain Created - %s" % o_domain)
+
+            self.domain_count = len(self.dn_db)
+            return True
+        except Exception, e:
+            self.logger.exception(e)
+
     def _get_hostname(self):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
 
@@ -318,18 +370,14 @@ class SOSCleaner:
             hostfile = os.path.join(self.dir_path, 'hostname')
             fh = open(hostfile, 'r')
             name_list = fh.readline().rstrip().split('.')
-            is_fqdn = True
-
-            if len(name_list) == 1: #if it's not an FQDN - no dots
-                is_fqdn = False
 
             hostname = name_list[0]
-            if is_fqdn:
+            if len(name_list) > 1:
                 domainname = '.'.join(name_list[1:len(name_list)])
             else:
-                domainname = 'not-an-fqdn'
+                domainname = None
 
-            return hostname, domainname, is_fqdn
+            return hostname, domainname
 
         except IOError, e: #the 'hostname' file doesn't exist or isn't readable for some reason
             self.process_hostnames = False
@@ -341,9 +389,8 @@ class SOSCleaner:
 
             hostname = 'unknown'
             domainname = 'unknown'
-            is_fqdn = False
 
-            return hostname, domainname, is_fqdn
+            return hostname, domainname
 
         except Exception, e:
             self.logger.exception(e)
@@ -390,8 +437,7 @@ class SOSCleaner:
 
     def _hn2db(self, hn):
         '''
-        This will add a hostname for an FQDN on the same domain as the host to an obfuscation database,
-        or return an existing entry
+        This will add a hostname for a hostname for an included domain or return an existing entry
         '''
         db = self.hn_db
         hn_found = False
@@ -403,10 +449,11 @@ class SOSCleaner:
             return ret_hn
         else:
             self.hostname_count += 1    #we have a new hostname, so we increment the counter to get the host ID number
-            if self.is_fqdn:    #it's an fqdn, so we add in the obfuscated domainname
-                new_hn = "host%s.%s" % (self.hostname_count, self.domain)
-            else:
-                new_hn = "host%s" % self.hostname_count
+            o_domain = self.domainname
+            for od,d in self.dn_db.items():
+                if d in hn:
+                    o_domain = od
+            new_hn = "host%s.%s" % (self.hostname_count, o_domain)
             self.hn_db[new_hn] = hn
 
             return new_hn
@@ -485,25 +532,25 @@ class SOSCleaner:
         '''this will loop through all the files in a dir_pathectory and scrub them'''
 
         files = self._file_list(self.dir_path)
-        if self.process_hostnames:
-            if not self.is_fqdn:
-                self.logger.con_out("The Hostname Does Not Appear to be an FQDN - Limited Cleaning Available")
-        self.logger.con_out("SOSCleaner Started")
-        self.logger.con_out("Working Directory - %s", self.dir_path)
-        self.logger.con_out("IP Substitution Start Address - %s", self.start_ip)
-        if self.process_hostnames:
-            self.logger.con_out("Domain Name Substitution - %s", self.domain)
+        self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
+        self.logger.con_out("*** SOSCleaner Processing ***")
+        self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
-        self.logger.con_out("SOSCleaner Completed")
+        self.logger.con_out("*** SOSCleaner Statistics ***")
         self.logger.con_out("IP Addresses Obfuscated - %s", len(self.ip_db))
         self.logger.con_out("Hostnames Obfuscated - %s" , len(self.hn_db))
-        self.logger.con_out("Files Cleaned - %s", self.file_count)
-        if self.reporting:
-            self._create_reports()
+        self.logger.con_out("Domains Obfuscated - %s" , len(self.dn_db))
+        self.logger.con_out("Total Files Analyzed - %s", self.file_count)
+        self.logger.con_out("*** SOSCleaner Artifacts ***")
+        self._create_reports()
         self._create_archive()
 
-        return_data = (self.archive_path, self.logfile, self.ip_report, self.hn_report)
+        return_data = [self.archive_path, self.logfile, self.ip_report]
+        if self.process_hostnames:
+            return_data.append(self.hn_report)
+        if len(self.dn_db) >= 1:
+            return_data.append(self.dn_report)
 
         return return_data
