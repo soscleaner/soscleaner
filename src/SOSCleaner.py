@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 28 Jun 2014 12:50:20 AM EDT
+# Last Modified : Wed 02 Jul 2014 07:19:52 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -38,14 +38,11 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, options, sosreport):
+    def __init__(self):
 
         self._check_uid()   #make sure it's soscleaner is running as root
         self.name = 'soscleaner'
         self.version = '0.1'
-
-        #command-line parameters
-        self.loglevel = options.loglevel
 
         #IP obfuscation information
         self.ip_db = dict() #IP database
@@ -57,22 +54,10 @@ class SOSCleaner:
 
         #Domainname obfuscation information
         self.dn_db = dict() #domainname database
-        self.domains = options.domains
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
 
         self.magic = magic.open(magic.MAGIC_NONE)
-        # required for compression type magic patterns
         self.magic.load()
-        #this handles all the extraction and path creation
-
-        #data initialization
-        self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
-        self._get_disclaimer()
-        self._make_dest_env()   #create the working directory
-        self.hostname, self.domainname = self._get_hostname()
-        self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
-        self._domains2db()
-
 
     def _check_uid(self):
         if os.getuid() != 0:
@@ -273,6 +258,9 @@ class SOSCleaner:
                         new_hn = self._hn2db(hn)
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
+            line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
+
+            return line
         except Exception,e:
             self.logger.exception(e)
             raise Exception('SubHostnameError: Unable to Substitute FQDN')
@@ -528,8 +516,17 @@ class SOSCleaner:
             finally:
                 tmp_file.close()
 
-    def clean_report(self):
-        '''this will loop through all the files in a dir_pathectory and scrub them'''
+    def clean_report(self, options, sosreport):
+        '''this is the primary function, to put everything together and analyze an sosreport'''
+
+        self.loglevel = options.loglevel
+        self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
+        self.domains = options.domains
+        self._get_disclaimer()
+        self._make_dest_env()   #create the working directory
+        self.hostname, self.domainname = self._get_hostname()
+        self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
+        self._domains2db()
 
         files = self._file_list(self.dir_path)
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)

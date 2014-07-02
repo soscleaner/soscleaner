@@ -18,9 +18,10 @@ def main():
     if not args:
         parser.print_help()
         sys.exit(1)
+    print type(options)
     sosreport = args[0] #grab the sosreport path
-    cleaner = SOSCleaner(options, sosreport)
-    cleaner.clean_report()
+    cleaner = SOSCleaner()
+    cleaner.clean_report(options, sosreport)
 
 if __name__ == '__main__':
     main()
