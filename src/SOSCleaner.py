@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 02 Jul 2014 07:19:52 PM EDT
+# Last Modified : Wed 02 Jul 2014 08:57:26 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -40,9 +40,9 @@ class SOSCleaner:
     '''
     def __init__(self):
 
-        self._check_uid()   #make sure it's soscleaner is running as root
         self.name = 'soscleaner'
         self.version = '0.1'
+        self.loglevel = 'INFO' #this can be overridden by the command-line app
 
         #IP obfuscation information
         self.ip_db = dict() #IP database
@@ -55,6 +55,8 @@ class SOSCleaner:
         #Domainname obfuscation information
         self.dn_db = dict() #domainname database
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
+        self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment()
+        self._start_logging(self.logfile)
 
         self.magic = magic.open(magic.MAGIC_NONE)
         self.magic.load()
@@ -114,7 +116,7 @@ class SOSCleaner:
 
         self.logger.con_out("Log File Created at %s" % filename)
 
-    def _prep_environment(self, path):
+    def _prep_environment(self):
 
         #we set up our various needed directory structures, etc.
         timestamp = strftime("%Y%m%d%H%M%S", gmtime())
@@ -123,26 +125,28 @@ class SOSCleaner:
         session = "soscleaner-%s" % timestamp
         logfile = "/tmp/%s.log" % session
 
-        self._start_logging(logfile)
+        return origin_path, dir_path, session, logfile
+
+    def _extract_sosreport(self, path):
 
         self.logger.con_out("Beginning SOSReport Extraction")
         compression_sig = self.magic.file(path).lower()
         if 'directory' in compression_sig:
             self.logger.info('%s appears to be a %s - continuing', path, compression_sig)
-            return path, origin_path, dir_path, session, logfile
+            return path
 
         elif 'compressed data' in compression_sig:
             if compression_sig == 'xz compressed data':
                 #This is a hack to account for the fact that the tarfile library doesn't
                 #handle lzma (XZ) compression until version 3.3 beta
                 try:
-                    self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', origin_path)
-                    self.logger.info('LZMA Hack - Creating %s', origin_path)
-                    os.system('mkdir %s' % origin_path)
-                    os.system('tar -xJf %s -C %s' % (path, origin_path))
-                    return_path = os.path.join(origin_path, os.listdir(origin_path)[0])
+                    self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
+                    self.logger.info('LZMA Hack - Creating %s', self.origin_path)
+                    os.system('mkdir %s' % self.origin_path)
+                    os.system('tar -xJf %s -C %s' % (path, self.origin_path))
+                    return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
-                    return return_path, origin_path, dir_path, session, logfile
+                    return return_path
 
                 except Exception,e:
                     self.logger.exception(e)
@@ -151,16 +155,16 @@ class SOSCleaner:
             else:
                 p = tarfile.open(path, 'r')
 
-                self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, origin_path)
+                self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
                 try:
-                    p.extractall(origin_path)
-                    return_path = os.path.join(origin_path, os.path.commonprefix(p.getnames()))
+                    p.extractall(self.origin_path)
+                    return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
 
-                    return return_path, origin_path, dir_path, session, logfile
+                    return return_path
 
                 except Exception, e:
                     self.logger.exception(e)
-                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, origin_path)
+                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
         else:
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
@@ -519,8 +523,9 @@ class SOSCleaner:
     def clean_report(self, options, sosreport):
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
+        self._check_uid()   #make sure it's soscleaner is running as root
         self.loglevel = options.loglevel
-        self.report, self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment(sosreport)
+        self.report = self._extract_sosreport(sosreport)
         self.domains = options.domains
         self._get_disclaimer()
         self._make_dest_env()   #create the working directory
