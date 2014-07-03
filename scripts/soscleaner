@@ -2,7 +2,7 @@
 #
 #SOSCleaner Executable
 
-from soscleaner import soscleaner
+from soscleaner import SOSCleaner
 from optparse import OptionParser
 import sys
 
@@ -20,7 +20,7 @@ def main():
         sys.exit(1)
     print type(options)
     sosreport = args[0] #grab the sosreport path
-    cleaner = soscleaner()
+    cleaner = SOSCleaner()
     cleaner.clean_report(options, sosreport)
 
 if __name__ == '__main__':
