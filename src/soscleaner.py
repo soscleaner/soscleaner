@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 03 Jul 2014 02:45:50 PM EDT
+# Last Modified : Thu 03 Jul 2014 03:56:27 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -85,7 +85,7 @@ class SOSCleaner:
                     # i thought i'd already removed it. - jduncan
                     #if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
-                    if self.magic.buffer(f_full) == 'data':
+                    if 'text' not in self.magic.file(f_full):
                         skip_list.append(f)
 
         return skip_list
