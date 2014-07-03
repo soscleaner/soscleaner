@@ -31,10 +31,10 @@ setup(
     platform=['Linux'],
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
-    long_description='SOSCleaner is an application to filer out sensitive and un-scan-able data from a standard sosreport',
+    long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     package_dir={'': 'src'},
     # packages=['python_magic'],
-    py_modules=['SOSCleaner'],
+    py_modules=['soscleaner'],
     scripts = ['scripts/soscleaner'],
     data_files=[
             ('/usr/share/doc/%s-%s' % (name,version), ['doc/LICENSE']),
