@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Wed 02 Jul 2014 08:57:26 PM EDT
+# Last Modified : Thu 03 Jul 2014 02:45:50 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -38,10 +38,11 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self):
+    def __init__(self, testing=False):
 
         self.name = 'soscleaner'
         self.version = '0.1'
+        self.testing = testing #for running tests to disable annoying output
         self.loglevel = 'INFO' #this can be overridden by the command-line app
 
         #IP obfuscation information
@@ -61,7 +62,7 @@ class SOSCleaner:
         self.magic = magic.open(magic.MAGIC_NONE)
         self.magic.load()
 
-    def _check_uid(self):
+    def _check_uid(self): # pragma no cover
         if os.getuid() != 0:
             raise Exception("You Must Execute soscleaner As Root")
 
@@ -79,11 +80,11 @@ class SOSCleaner:
             f_full = os.path.join(d, f)
             if not os.path.isdir(f_full):
                 if not os.path.islink(f_full):
-                    mode = oct(os.stat(f_full).st_mode)[-3:]
+                    #mode = oct(os.stat(f_full).st_mode)[-3:]
                     # executing as root makes this first if clause useless.
                     # i thought i'd already removed it. - jduncan
-                    if mode == '200' or mode == '444' or mode == '400':
-                        skip_list.append(f)
+                    #if mode == '200' or mode == '444' or mode == '400':
+                    #    skip_list.append(f)
                     if self.magic.buffer(f_full) == 'data':
                         skip_list.append(f)
 
@@ -107,12 +108,14 @@ class SOSCleaner:
             format='%(asctime)s %(name)s %(levelname)s: %(message)s',
             datefmt = '%m-%d %H:%M:%S'
             )
-        console = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m-%d %H:%M:%S')
-        console.setFormatter(formatter)
-        console.setLevel(console_log_level)
+        if not self.testing:
+            console = logging.StreamHandler(sys.stdout)
+            formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m-%d %H:%M:%S')
+            console.setFormatter(formatter)
+            console.setLevel(console_log_level)
 	self.logger = logging.getLogger(__name__)
-        self.logger.addHandler(console)
+        if not self.testing:
+            self.logger.addHandler(console) # pragma: no cover
 
         self.logger.con_out("Log File Created at %s" % filename)
 
@@ -351,7 +354,8 @@ class SOSCleaner:
 
             self.domain_count = len(self.dn_db)
             return True
-        except Exception, e:
+
+        except Exception, e: # pragma: no cover
             self.logger.exception(e)
 
     def _get_hostname(self):
@@ -384,10 +388,9 @@ class SOSCleaner:
 
             return hostname, domainname
 
-        except Exception, e:
+        except Exception, e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
-
 
     def _ip2int(self, ipstr):
         #converts a dotted decimal IP address into an integer that can be incremented
@@ -524,7 +527,6 @@ class SOSCleaner:
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
         self._check_uid()   #make sure it's soscleaner is running as root
-        self.loglevel = options.loglevel
         self.report = self._extract_sosreport(sosreport)
         self.domains = options.domains
         self._get_disclaimer()
