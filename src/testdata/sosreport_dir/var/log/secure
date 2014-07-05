@@ -1,0 +1,11 @@
+Jun 24 17:04:26 myhost sshd[14272]: Received disconnect from 192.168.1.119: 11: disconnected by user
+Jun 24 17:04:26 myhost sshd[14268]: pam_unix(sshd:session): session closed for user myuser
+Jun 24 17:07:14 myhost sshd[14780]: warning: /etc/hosts.allow, line 12: host name/name mismatch: myhost2.myserver.com != myhost2.myserver.com.myserver.com
+Jun 24 17:07:14 myhost sshd[14780]: Accepted publickey for myuser from 192.168.1.119 port 42860 ssh2: RSA e5:51:ac:87:e3:a7:b0:c3:47:c1:fa:11:13:83:18:d8
+Jun 24 17:07:14 myhost sshd[14780]: pam_unix(sshd:session): session opened for user myuser by (uid=0)
+Jun 24 21:05:35 myhost sudo: pam_unix(sudo:auth): authentication failure; logname=myuser uid=623600001 euid=0 tty=/dev/pts/0 ruser=myuser rhost=  user=myuser
+Jun 24 21:05:35 myhost sudo: pam_sss(sudo:auth): authentication success; logname=myuser uid=623600001 euid=0 tty=/dev/pts/0 ruser=myuser rhost= user=myuser
+Jun 24 21:05:36 myhost sudo: myuser : TTY=pts/0 ; PWD=/home/myuser/soscleaner ; USER=root ; COMMAND=/bin/yum /home/myuser/rpmbuild/RPMS/noarch/soscleaner-0.1-12.el7.noarch.rpm
+Jun 24 21:05:44 myhost sudo: myuser : TTY=pts/0 ; PWD=/home/myuser/soscleaner ; USER=root ; COMMAND=/bin/yum install /home/myuser/rpmbuild/RPMS/noarch/soscleaner-0.1-12.el7.noarch.rpm
+Jun 24 21:06:01 myhost sudo: myuser : TTY=pts/0 ; PWD=/home/myuser/soscleaner ; USER=root ; COMMAND=/sbin/sosreport
+

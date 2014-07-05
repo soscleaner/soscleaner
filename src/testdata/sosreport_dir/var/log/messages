@@ -1,0 +1,12 @@
+Jun 24 21:06:18 foohost.foo.com foouser: some log file entry goes here
+Jun 24 21:06:19 myhost myuser: os-prober: debug: running /usr/libexec/os-probes/mounted/80minix on mounted /dev/vda1
+Jun 24 21:06:19 myhost myuser: os-prober: debug: running /usr/libexec/os-probes/mounted/83haiku on mounted /dev/vda1
+Jun 24 21:06:20 myhost myuser: 83haiku: debug: /dev/vda1 is not a BeFS partition: exiting
+Jun 24 21:06:20 myhost myuser: os-prober: debug: running /usr/libexec/os-probes/mounted/90linux-distro on mounted /dev/vda1
+Jun 24 21:06:20 myhost myuser: os-prober: debug: running /usr/libexec/os-probes/mounted/90solaris on mounted /dev/vda1
+Jun 24 21:06:20 myhost myuser: os-prober: debug: /dev/vda2: is active swap
+Jun 24 21:06:20 myhost myuser: os-prober: debug: running /usr/libexec/os-probes/50mounted-tests on /dev/vda3
+Jun 24 21:06:20 myhost myuser: 50mounted-tests: debug: skipping LVM2 Volume Group on /dev/vda3
+Jun 24 21:06:21 myhost kernel: nr_pdflush_threads exported in /proc is scheduled for removal
+Jun 24 21:06:21 myhost kernel: sysctl: The scan_unevictable_pages sysctl/node-interface has been disabled for lack of a legitimate use case.  If you have one, please send an email to linux-mm@kvack.org.
+
