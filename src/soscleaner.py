@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Thu 03 Jul 2014 03:56:27 PM EDT
+# Last Modified : Fri 04 Jul 2014 11:08:12 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -56,7 +56,7 @@ class SOSCleaner:
         #Domainname obfuscation information
         self.dn_db = dict() #domainname database
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
-        self.origin_path, self.dir_path, self.session, self.logfile = self._prep_environment()
+        self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
 
         self.magic = magic.open(magic.MAGIC_NONE)
@@ -108,7 +108,7 @@ class SOSCleaner:
             format='%(asctime)s %(name)s %(levelname)s: %(message)s',
             datefmt = '%m-%d %H:%M:%S'
             )
-        if not self.testing:
+        if not self.testing: # pragma: no cover
             console = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m-%d %H:%M:%S')
             console.setFormatter(formatter)
@@ -128,7 +128,7 @@ class SOSCleaner:
         session = "soscleaner-%s" % timestamp
         logfile = "/tmp/%s.log" % session
 
-        return origin_path, dir_path, session, logfile
+        return origin_path, dir_path, session, logfile, timestamp
 
     def _extract_sosreport(self, path):
 
@@ -151,7 +151,7 @@ class SOSCleaner:
 
                     return return_path
 
-                except Exception,e:
+                except Exception,e: # pragma: no cover
                     self.logger.exception(e)
                     raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
 
@@ -165,10 +165,10 @@ class SOSCleaner:
 
                     return return_path
 
-                except Exception, e:
+                except Exception, e:    # pragma: no cover
                     self.logger.exception(e)
                     raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
-        else:
+        else:   # pragma: no cover
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
     def _sub_ip(self, line):
@@ -187,18 +187,18 @@ class SOSCleaner:
                     self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
                     line = line.replace(ip, new_ip)
             return line
-        except Exception,e:
+        except Exception,e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
 
-    def _get_disclaimer(self):
+    def _get_disclaimer(self):  # pragma: no cover
         #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
 
         self.logger.con_out("%s version %s" % (self.name, self.version))
         self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
         self.logger.warning("Please review the content before passing it along to any third party.")
 
-    def _create_reports(self):
+    def _create_ip_report(self):
         '''
         this will take the obfuscated ip and hostname databases and output csv files
         '''
@@ -213,9 +213,11 @@ class SOSCleaner:
             self.logger.info('Completed IP Report')
 
             self.ip_report = ip_report_name
-        except Exception,e:
+        except Exception,e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating IP Report')
+
+    def _create_hn_report(self):
         if self.process_hostnames:
             try:
                 hn_report_name = "/tmp/%s-hostname.csv" % self.session
@@ -228,12 +230,14 @@ class SOSCleaner:
                 self.logger.info('Completed Hostname Report')
 
                 self.hn_report = hn_report_name
-            except Exception,e:
+            except Exception,e: #pragma: no cover
                 self.logger.exception(e)
                 raise Exception('CreateReport Error: Error Creating Hostname Report')
         else:
             self.logger.warning('Hostname Report Not Generated - Unable to determine hostname')
             self.hn_report = None
+
+    def _create_dn_report(self):
         if self.domain_count >= 1:
             try:
                 dn_report_name = "/tmp/%s-dn.csv" % self.session
@@ -247,9 +251,15 @@ class SOSCleaner:
 
                 self.dn_report = dn_report_name
 
-            except Exception, e:
+            except Exception, e: # pragma: no cover
                 self.logger.exception(e)
                 raise Exception('CreateReport Error: Error Creating Domainname Report')
+
+    def _create_reports(self): # pragma: no cover
+
+        self.create_ip_report()
+        self.create_hn_report()
+        self.create_dn_report()
 
     def _sub_hostname(self, line):
         '''
@@ -268,26 +278,9 @@ class SOSCleaner:
             line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
 
             return line
-        except Exception,e:
+        except Exception,e: # pragma: no cover
             self.logger.exception(e)
-            raise Exception('SubHostnameError: Unable to Substitute FQDN')
-
-        '''
-        logs like secure have a non-FQDN hostname entry on almost every line.
-        So we will always run this bit of code to clean up as much as possibe, in addition
-        to searching for all of the FQDNs that we know exist.
-        we don't have an FQDN, so we will only do a 1:1 replacement for the hostname
-        '''
-
-        try:
-            new_hn = self._hn2db(self.hostname)
-            self.logger.debug("Obfuscating Non-FQDN - %s > %s", self.hostname, new_hn)
-            line = line.replace(self.hostname, new_hn)
-        except Exception,e:
-            self.logger.exception(e)
-            raise Exception('SubHostnameError: Unable to Substitute Non-FQDN')
-
-        return line
+            raise Exception('SubHostnameError: Unable to Substitute Hostname/Domainname')
 
     def _make_dest_env(self):
         '''
@@ -296,26 +289,26 @@ class SOSCleaner:
         '''
         try:
             shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
-        except Exception, e:
+        except Exception, e:    #pragma: no cover
             self.logger.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
 
     def _create_archive(self):
         '''This will create a tar.gz compressed archive of the scrubbed directory'''
         try:
-            archive = "/tmp/%s.tar.gz" % self.session
-            self.archive_path = archive
-            self.logger.con_out('Creating SOSCleaner Archive - %s', archive)
-            t = tarfile.open(archive, 'w:gz')
+            self.archive_path = "/tmp/%s.tar.gz" % self.session
+            self.logger.con_out('Creating SOSCleaner Archive - %s', self.archive_path)
+            t = tarfile.open(self.archive_path, 'w:gz')
             for dirpath, dirnames, filenames in os.walk(self.dir_path):
                 for f in filenames:
                     f_full = os.path.join(dirpath, f)
                     f_archive = f_full.replace('/tmp','')
-                    self.logger.debug('adding %s to %s archive', f_archive, archive)
+                    self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
-        except Exception,e:
+        except Exception,e: #pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateArchiveError: Unable to create Archive')
+
         self._clean_up()
         self.logger.info('Archiving Complete')
         self.logger.con_out('SOSCleaner Complete')
@@ -332,7 +325,7 @@ class SOSCleaner:
             self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
-        except Exception, e:
+        except Exception, e:    #pragma: no cover
             self.logger.exception(e)
 
     def _domains2db(self):
@@ -444,7 +437,7 @@ class SOSCleaner:
             return ret_hn
         else:
             self.hostname_count += 1    #we have a new hostname, so we increment the counter to get the host ID number
-            o_domain = self.domainname
+            o_domain = self.root_domain
             for od,d in self.dn_db.items():
                 if d in hn:
                     o_domain = od
@@ -465,7 +458,7 @@ class SOSCleaner:
                 dir_list[dirName] = x
 
             return dir_list
-        except Exception, e:
+        except Exception, e: # pragma: no cover
             self.logger.exception(e)
             raise Exception("WalkReport Error: Unable to Walk Report")
 
@@ -506,7 +499,7 @@ class SOSCleaner:
 
                     tmp_file.seek(0)
 
-            except Exception, e:
+            except Exception, e: # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
@@ -516,17 +509,17 @@ class SOSCleaner:
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
-            except Exception, e:
+            except Exception, e: # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CleanFile Error: Cannot Write to New File - %s" % f)
 
             finally:
                 tmp_file.close()
 
-    def clean_report(self, options, sosreport):
+    def clean_report(self, options, sosreport): # pragma: no cover
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
-        self._check_uid()   #make sure it's soscleaner is running as root
+        self._check_uid() #make sure it's soscleaner is running as root
         self.report = self._extract_sosreport(sosreport)
         self.domains = options.domains
         self._get_disclaimer()
