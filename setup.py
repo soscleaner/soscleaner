@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from distutils.core import setup
+from setuptools import setup
 
 version = '0.1'
 name = 'soscleaner'
@@ -28,7 +28,6 @@ setup(
     author='Jamie Duncan',
     author_email='jduncan@redhat.com',
     url='https://github.com/jduncan-rva/SOSCleaner',
-    platform=['Linux'],
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
