@@ -19,9 +19,10 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Fri 04 Jul 2014 11:05:30 PM EDT
+# Last Modified : Fri 04 Jul 2014 11:35:43 PM EDT
 # Purpose : SOSCleaner unittests
-
+import sys
+sys.path.append('src/')
 import unittest
 from soscleaner import SOSCleaner
 import logging
