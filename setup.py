@@ -35,6 +35,7 @@ setup(
     package_dir={'': 'src'},
     # packages=['python_magic'],
     py_modules=['soscleaner'],
+    test_suite = 'tests',
     scripts = ['scripts/soscleaner'],
     data_files=[
             ('/usr/share/doc/%s-%s' % (name,version), ['doc/LICENSE']),
