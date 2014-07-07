@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 04 Jul 2014 11:08:12 PM EDT
+# Last Modified : Mon 07 Jul 2014 03:55:25 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -268,7 +268,8 @@ class SOSCleaner:
         '''
         try:
             for od,d in self.dn_db.items():
-                regex = re.compile(r'\w*\.%s' % d)
+                #regex = re.compile(r'\w*\.%s' % d)
+                regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
                 hostnames = [each for each in regex.findall(line)]
                 if len(hostnames) > 0:
                     for hn in hostnames:
