@@ -33,16 +33,14 @@ x.clean_report()
 
 ```
 $ /usr/bin/soscleaner --help
-Usage: soscleaner -h [-s [-l -r]]
+Usage: soscleaner -h [-dl]
 
 Options:
   -h, --help            show this help message and exit
   -l LOGLEVEL, --log_level=LOGLEVEL
                         The Desired Log Level (default = INFO) Options are
                         DEBUG, INFO, WARNING, ERROR
-  -r, --reporting       Create CSV output for IP and Hostname databases
-  -s SOSREPORT, --sosreport=SOSREPORT
-                        The SOSReport that is to be cleaned
+  -d, --domain       additional domain to be analyzed (optional)
 
 ```
 
@@ -53,9 +51,9 @@ The data is available from within the Python class, and as an option passed into
 * If accessing the Python class directly 
 
 ```
-from SOSCleaner import SOSCleaner
-x = SOSCleaner('path/to/sosreport/directory')
-x.clean_report()
+from soscleaner import SOSCleaner
+x = SOSCleaner()
+x.clean_report('/path/to/sosreport')
 
 x.ip_db
 {'192.168.1.4':'10.10.10.123', ...}
@@ -64,26 +62,27 @@ x.hn_db
 {'server1.myserverfarm.com':'host0.example.com'}
 ```
 
-* If passing the -r option to soscleaner
+* If using the command-line application
 
 ```
-$ sudo soscleaner -s ~/sosreport.tar.gz -r
-[sudo] password for jduncan:
+# soscleaner ~/sosreport.tar.gz
 Working Directory - /tmp/soscleaner-20131209111927
-$ ll /tmp/soscleaner*
+...
+# ll /tmp/soscleaner*
 -rw-r--r--. 1 root root      54 Dec  9 06:19 /tmp/soscleaner-20131209111927-hostname.csv
 -rw-r--r--. 1 root root    3442 Dec  9 06:19 /tmp/soscleaner-20131209111927-ip.csv
+-rw-r--r--. 1 root root    3542 Dec  9 06:19 /tmp/soscleaner-20131209111927-dn.csv
 -rw-r--r--. 1 root root    1676 Dec  9 06:20 /tmp/soscleaner-20131209111927.log
 -rw-r--r--. 1 root root 4834715 Dec  9 06:20 /tmp/soscleaner-20131209111927.tar.gz
 
 ```
-* soscleaner-$session-hostname.csv is a csv of hostnames that have been obfuscated
-* soscleaner-$session-ip.csv is a csv of ip addresses that have been obfuscated
 
 What Is Created?
 ----------------
 
 * soscleaner-$session.log is a log of all events that occurred
 * soscleaner-$session.tar.gz is a gzip'd tarball containing the obfuscated sosreport
-* soscleaner-$session-hostname.csv is a csv of hostnames that have been obfuscated (when using the -r option)
-* soscleaner-$session-ip.csv is a csv of ip addresses that have been obfuscated (when using the -r option)
+* soscleaner-$session-hostname.csv is a csv of hostnames that have been obfuscated
+* soscleaner-$session-ip.csv is a csv of ip addresses that have been obfuscated
+* soscleaner-$session-dn.csv is a csv of domainnames that have been obfuscated
+
