@@ -19,7 +19,7 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Fri 04 Jul 2014 11:35:43 PM EDT
+# Last Modified : Mon 07 Jul 2014 04:37:03 PM EDT
 # Purpose : SOSCleaner unittests
 import sys
 sys.path.append('src/')
@@ -49,7 +49,8 @@ class SOSCleanerTests(unittest.TestCase):
     def setUp(self):
         self.testdir = 'testdata/sosreport_dir'
         print "SOSCleanerTest:setUp_:begin"
-        self.cleaner = SOSCleaner(testing=True)
+        self.cleaner = SOSCleaner(quiet=True)
+        self.cleaner.quiet = True
         print "SOSCleanerTest:setUp_:end"
 
     def _artifact_cleanup(self,directory):
@@ -317,6 +318,17 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner._hn2db('foohost.foo.com') in data)
         os.remove(test_file)    #clean up
         print "SOSCleanerTest:test_clean_file:end"
+
+    def test_sub_hostname_hyphens(self):
+        print "SOSCleanerTest:test_sub_hostname_hyphens:begin"
+        self.cleaner.domains=['myserver.com']
+        self.cleaner.domainname='myserver.com'
+        self.cleaner.hostname='myhost'
+        self.cleaner._domains2db()
+        line = 'this is myhost.myserver.com and this is my-host.myserver.com'
+        new_line = self.cleaner._sub_hostname(line)
+        self.assertTrue('my' not in new_line)
+        print "SOSCleanerTest:test_sub_hostname_hyphens:end"
 
 if __name__ == '__main__':
     unittest.main()
