@@ -19,7 +19,6 @@ def main():
     if not args:
         parser.print_help()
         sys.exit(1)
-    print type(options)
     sosreport = args[0] #grab the sosreport path
     cleaner = SOSCleaner(quiet=options.quiet)
     cleaner.clean_report(options, sosreport)

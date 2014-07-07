@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 07 Jul 2014 04:15:21 PM EDT
+# Last Modified : Mon 07 Jul 2014 04:57:03 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -257,9 +257,9 @@ class SOSCleaner:
 
     def _create_reports(self): # pragma: no cover
 
-        self.create_ip_report()
-        self.create_hn_report()
-        self.create_dn_report()
+        self._create_ip_report()
+        self._create_hn_report()
+        self._create_dn_report()
 
     def _sub_hostname(self, line):
         '''
