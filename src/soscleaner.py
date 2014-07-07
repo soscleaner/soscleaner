@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 07 Jul 2014 03:55:25 PM EDT
+# Last Modified : Mon 07 Jul 2014 04:15:21 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -38,12 +38,12 @@ class SOSCleaner:
     debug - will generate add'l output to STDOUT. defaults to no
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
-    def __init__(self, testing=False):
+    def __init__(self, quiet=False):
 
         self.name = 'soscleaner'
         self.version = '0.1'
-        self.testing = testing #for running tests to disable annoying output
         self.loglevel = 'INFO' #this can be overridden by the command-line app
+        self.quiet = quiet
 
         #IP obfuscation information
         self.ip_db = dict() #IP database
@@ -108,13 +108,13 @@ class SOSCleaner:
             format='%(asctime)s %(name)s %(levelname)s: %(message)s',
             datefmt = '%m-%d %H:%M:%S'
             )
-        if not self.testing: # pragma: no cover
+        if not self.quiet: # pragma: no cover
             console = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m-%d %H:%M:%S')
             console.setFormatter(formatter)
             console.setLevel(console_log_level)
 	self.logger = logging.getLogger(__name__)
-        if not self.testing:
+        if not self.quiet:
             self.logger.addHandler(console) # pragma: no cover
 
         self.logger.con_out("Log File Created at %s" % filename)
