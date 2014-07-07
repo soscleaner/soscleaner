@@ -1,3 +1,6 @@
+%{!?__python2: %global __python2 /usr/bin/python2}
+%global python2_sitelib %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")
+
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
 Version: 0.2
