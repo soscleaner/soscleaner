@@ -19,8 +19,12 @@ def main():
         parser.print_help()
         sys.exit(1)
 
-    sosreport = args[0] #grab the sosreport path
-    cleaner = SOSCleaner(quiet=options.quiet)
+    cleaner = SOSCleaner(quiet = options.quiet)
+
+    sosreport = None
+    if args:
+        sosreport = args[0] #grab the sosreport path
+
     cleaner.clean_report(options, sosreport)
 
 if __name__ == '__main__':

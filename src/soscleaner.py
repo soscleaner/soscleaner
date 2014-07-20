@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sun 20 Jul 2014 12:35:06 AM EDT
+# Last Modified : Sun 20 Jul 2014 10:24:31 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -42,9 +42,12 @@ class SOSCleaner:
     def __init__(self, quiet=False):
 
         self.name = 'soscleaner'
-        self.version = '0.1'
+        self.version = '0.2.1'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
         self.quiet = quiet
+        self.domain_count = 0
+        self.domains = list()
+        self.domainname = None
 
         #IP obfuscation information
         self.ip_db = dict() #IP database
@@ -53,6 +56,7 @@ class SOSCleaner:
         #Hostname obfuscation information
         self.hn_db = dict() #hostname database
         self.hostname_count = 0
+        self.hostname = None
 
         #Domainname obfuscation information
         self.dn_db = dict() #domainname database
@@ -60,7 +64,6 @@ class SOSCleaner:
         self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
 
-        self.has_sosreport = True
         self.magic = magic.open(magic.MAGIC_NONE)
         self.magic.load()
 
@@ -220,42 +223,43 @@ class SOSCleaner:
             raise Exception('CreateReport Error: Error Creating IP Report')
 
     def _create_hn_report(self):
-        if self.process_hostnames:
-            try:
-                hn_report_name = "/tmp/%s-hostname.csv" % self.session
-                self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
-                hn_report = open(hn_report_name, 'w')
-                hn_report.write('Obfuscated Hostname,Original Hostname\n')
+        try:
+            hn_report_name = "/tmp/%s-hostname.csv" % self.session
+            self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
+            hn_report = open(hn_report_name, 'w')
+            hn_report.write('Obfuscated Hostname,Original Hostname\n')
+            if self.hostname_count > 0:
                 for k,v in self.hn_db.items():
                     hn_report.write('%s,%s\n' %(k,v))
-                hn_report.close()
-                self.logger.info('Completed Hostname Report')
+            else:
+                hn_report.write('None,None\n')
+            hn_report.close()
+            self.logger.info('Completed Hostname Report')
 
-                self.hn_report = hn_report_name
-            except Exception,e: #pragma: no cover
-                self.logger.exception(e)
-                raise Exception('CreateReport Error: Error Creating Hostname Report')
-        else:
-            self.logger.warning('Hostname Report Not Generated - Unable to determine hostname')
-            self.hn_report = None
+            self.hn_report = hn_report_name
+        except Exception,e: #pragma: no cover
+            self.logger.exception(e)
+            raise Exception('CreateReport Error: Error Creating Hostname Report')
 
     def _create_dn_report(self):
-        if self.domain_count >= 1:
-            try:
-                dn_report_name = "/tmp/%s-dn.csv" % self.session
-                self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
-                dn_report = open(dn_report_name, 'w')
-                dn_report.write('Obfuscated Domain,Original Domain\n')
+        try:
+            dn_report_name = "/tmp/%s-dn.csv" % self.session
+            self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
+            dn_report = open(dn_report_name, 'w')
+            dn_report.write('Obfuscated Domain,Original Domain\n')
+            if self.domain_count > 0:
                 for k,v in self.dn_db.items():
                     dn_report.write('%s,%s\n' %(k,v))
-                dn_report.close()
-                self.logger.info('Completed Domainname Report')
+            else:
+                dn_report.write('None,None\n')
+            dn_report.close()
+            self.logger.info('Completed Domainname Report')
 
-                self.dn_report = dn_report_name
+            self.dn_report = dn_report_name
 
-            except Exception, e: # pragma: no cover
-                self.logger.exception(e)
-                raise Exception('CreateReport Error: Error Creating Domainname Report')
+        except Exception, e: # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('CreateReport Error: Error Creating Domainname Report')
 
     def _create_reports(self): # pragma: no cover
 
@@ -278,7 +282,8 @@ class SOSCleaner:
                         new_hn = self._hn2db(hn)
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
-            line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
+            if self.hostname:
+                line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
 
             return line
         except Exception,e: # pragma: no cover
@@ -291,11 +296,7 @@ class SOSCleaner:
         These are the files that will be scrubbed
         '''
         try:
-            if self.has_sosreport:
-                shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
-            else:
-                #we don't have an sosreport, and we've just copied the specified files into origin_path, so we'll copy that.
-                shutil.copytree(self.origin_path, self.dir_path, symlinks=True, ignore=self._skip_file)
+            shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
 
         except Exception, e:    #pragma: no cover
             self.logger.exception(e)
@@ -364,11 +365,9 @@ class SOSCleaner:
         #gets the hostname and stores hostname/domainname so they can be filtered out later
 
         try:
-            self.process_hostnames = True
             hostfile = os.path.join(self.dir_path, 'hostname')
             fh = open(hostfile, 'r')
             name_list = fh.readline().rstrip().split('.')
-
             hostname = name_list[0]
             if len(name_list) > 1:
                 domainname = '.'.join(name_list[1:len(name_list)])
@@ -378,15 +377,14 @@ class SOSCleaner:
             return hostname, domainname
 
         except IOError, e: #the 'hostname' file doesn't exist or isn't readable for some reason
-            self.process_hostnames = False
             self.logger.warning("Unable to determine system hostname!!!")
-            self.logger.warning("Hostname Data Obfuscation Will Not Occur!!!")
+            self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
             self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
             self.logger.warning("and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
             self.logger.exception(e)
 
-            hostname = 'unknown'
-            domainname = 'unknown'
+            hostname = None
+            domainname = None
 
             return hostname, domainname
 
@@ -487,8 +485,7 @@ class SOSCleaner:
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
         new_line = self._sub_ip(l)  #IP substitution
-        if self.process_hostnames:
-            new_line = self._sub_hostname(new_line)    #Hostname substitution
+        new_line = self._sub_hostname(new_line)    #Hostname substitution
 
         return new_line
 
@@ -532,7 +529,7 @@ class SOSCleaner:
             for f in files:
                 self.logger.con_out("adding additional file for analysis: %s"  % f)
                 fname = os.path.basename(f)
-                f_new = os.path.join(self.origin_path, fname)
+                f_new = os.path.join(self.dir_path, fname)
                 shutil.copyfile(f,f_new)
         except IOError, e:
             self.logger.con_out("ExtraFileError: %s is not readable or does not exist. Skipping File" % f)
@@ -545,9 +542,13 @@ class SOSCleaner:
     def _clean_files_only(self, files):
         ''' if a user only wants to process one or more specific files, instead of a full sosreport '''
         try:
-            os.makedirs(self.origin_path)    # create the origin directory
+            if not (os.path.exists(self.origin_path)):
+                self.logger.info("Creating Origin Path - %s" % self.origin_path)
+                os.makedirs(self.origin_path) # create the origin_path directory
+            if not (os.path.exists(self.dir_path)):
+                self.logger.info("Creating Directory Path - %s" % self.dir_path)
+                os.makedirs(self.dir_path)    # create the dir_path directory
             self._add_extra_files(files)
-            self.has_sosreport = False
 
         except OSError, e:
             if e.errno == errno.EEXIST:
@@ -565,23 +566,33 @@ class SOSCleaner:
 
         self._check_uid() #make sure it's soscleaner is running as root
         self._get_disclaimer()
-        self.domains = options.domains
-        if options.files and sosreport == None: #files to process, but no sosreport
+        if options.domains:
+            self.domains = options.domains
+
+        if not sosreport:
+            if not options.files:
+                raise Exception("Error: You must supply either an sosreport and/or files to process")
+
+            self.logger.con_out("No sosreport supplied. Only processing specific files")
             self._clean_files_only(options.files)
-        else:
+
+        else:   #we DO have an sosreport to analyze
             self.report = self._extract_sosreport(sosreport)
-            if not self.hostname == 'unknown':
+            self._make_dest_env()   #create the working directory
+            self.hostname, self.domainname = self._get_hostname()
+
+            if options.files:
+                self._add_extra_files(options.files)
+
+            if self.hostname:   #if we have a hostname that's not a None type
                 self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
-        self._make_dest_env()   #create the working directory
-        self.hostname, self.domainname = self._get_hostname()
+
         self._domains2db()
-        if options.files and self.has_sosreport:
-            self._add_extra_files(options.files)
-        sosreport_files = self._file_list(self.dir_path)
+        files = self._file_list(self.dir_path)
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
-        for f in sosreport_files:
+        for f in files:
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
@@ -594,7 +605,7 @@ class SOSCleaner:
         self._create_archive()
 
         return_data = [self.archive_path, self.logfile, self.ip_report]
-        if self.process_hostnames:
+        if self.hostname:
             return_data.append(self.hn_report)
         if len(self.dn_db) >= 1:
             return_data.append(self.dn_report)
