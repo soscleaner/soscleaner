@@ -33,8 +33,10 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{_bindir}/soscleaner
 
 %changelog
-* Sun Jul 13 2014 Jamie Duncan <jduncan@redhat.com> 0.2.1-1
+* Sun Jul 20 2014 Jamie Duncan <jduncan@redhat.com> 0.2.1-1
 - cleaned up version and help output for binary - #29,#35
+- made uuid random instead of time-based - #36
+- allow for aritrary file scanning - #28
 
 * Mon Jul 7 2014 Jamie Duncan <jduncan@redhat.com> 0.2-1
 - added quiet mode option - fixes #25
