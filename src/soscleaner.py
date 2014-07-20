@@ -17,11 +17,12 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Mon 07 Jul 2014 04:57:03 PM EDT
+# Last Modified : Sat 19 Jul 2014 11:07:15 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
 import re
+import errno
 import sys
 import magic
 from time import strftime, gmtime
@@ -59,6 +60,7 @@ class SOSCleaner:
         self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
 
+        self.has_sosreport = True
         self.magic = magic.open(magic.MAGIC_NONE)
         self.magic.load()
 
@@ -122,11 +124,11 @@ class SOSCleaner:
     def _prep_environment(self):
 
         #we set up our various needed directory structures, etc.
-        timestamp = strftime("%Y%m%d%H%M%S", gmtime())
-        origin_path = "/tmp/soscleaner-origin-%s" % timestamp
-        dir_path = "/tmp/soscleaner-%s" % timestamp
-        session = "soscleaner-%s" % timestamp
-        logfile = "/tmp/%s.log" % session
+        timestamp = strftime("%Y%m%d%H%M%S", gmtime())          # the timestamp we will use as a uuid
+        origin_path = "/tmp/soscleaner-origin-%s" % timestamp   # the origin dir we'll copy the files into
+        dir_path = "/tmp/soscleaner-%s" % timestamp             # the dir we will put our cleaned files into
+        session = "soscleaner-%s" % timestamp                   # short-hand for the soscleaner session to create reports, etc.
+        logfile = "/tmp/%s.log" % session                       # the primary logfile
 
         return origin_path, dir_path, session, logfile, timestamp
 
@@ -289,7 +291,12 @@ class SOSCleaner:
         These are the files that will be scrubbed
         '''
         try:
-            shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
+            if self.has_sosreport:
+                shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
+            else:
+                #we don't have an sosreport, and we've just copied the specified files into origin_path, so we'll copy that.
+                shutil.copytree(self.origin_path, self.dir_path, symlinks=True, ignore=self._skip_file)
+
         except Exception, e:    #pragma: no cover
             self.logger.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
@@ -517,23 +524,59 @@ class SOSCleaner:
             finally:
                 tmp_file.close()
 
+    def _add_extra_files(self, files):
+        '''if extra files are to be analyzed with an sosreport, this will add them to the origin path to be analyzed'''
+
+        try:
+            for f in files:
+                self.logger.con_out("adding additional file for analysis: %s"  % f)
+                fname = os.path.basename(f)
+                f_new = os.path.join(self.origin_path, fname)
+                shutil.copyfile(f,f_new)
+        except IOError, e:
+            self.logger.con_out("ExtraFileError: %s is not readable or does not exist. Skipping File" % f)
+            self.logger.exception(e)
+            pass
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("ExtraFileError: Unable to Process Extra File - %s" % f)
+
+    def _clean_files_only(self, files):
+        ''' if a user only wants to process one or more specific files, instead of a full sosreport '''
+        try:
+            os.makedirs(self.origin_path)    # create the origin directory
+            self._add_extra_files(files)
+            self.has_sosreport = False
+
+        except OSError, e:
+            if exception.errno != errno.EEXIST:
+                raise
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("CleanFilesOnlyError: unable to process")
+
     def clean_report(self, options, sosreport): # pragma: no cover
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
         self._check_uid() #make sure it's soscleaner is running as root
-        self.report = self._extract_sosreport(sosreport)
-        self.domains = options.domains
         self._get_disclaimer()
+        self.domains = options.domains
+        if options.files and sosreport == None: #files to process, but no sosreport
+            self._clean_files_only(options.files)
+        else:
+            self.report = self._extract_sosreport(sosreport)
+            if not self.hostname == 'unknown':
+                self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
         self._make_dest_env()   #create the working directory
         self.hostname, self.domainname = self._get_hostname()
-        self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
         self._domains2db()
-
-        files = self._file_list(self.dir_path)
+        if options.files and self.has_sosreport:
+            self._add_extra_files(options.files)
+        sosreport_files = self._file_list(self.dir_path)
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
-        for f in files:
+        for f in sosreport_files:
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
