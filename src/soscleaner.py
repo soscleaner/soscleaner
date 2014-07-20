@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 19 Jul 2014 11:33:09 PM EDT
+# Last Modified : Sun 20 Jul 2014 12:35:06 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -130,7 +130,7 @@ class SOSCleaner:
         session = "soscleaner-%s" % ran_uuid                        # short-hand for the soscleaner session to create reports, etc.
         logfile = "/tmp/%s.log" % session                       # the primary logfile
 
-        return origin_path, dir_path, session, logfile, uuid
+        return origin_path, dir_path, session, logfile, ran_uuid
 
     def _extract_sosreport(self, path):
 
@@ -320,7 +320,8 @@ class SOSCleaner:
         self._clean_up()
         self.logger.info('Archiving Complete')
         self.logger.con_out('SOSCleaner Complete')
-        t.add(self.logfile, arcname=self.logfile.replace('/tmp',''))
+        if not self.quiet:  # pragma: no cover
+            t.add(self.logfile, arcname=self.logfile.replace('/tmp',''))
         t.close()
 
     def _clean_up(self):
@@ -549,8 +550,12 @@ class SOSCleaner:
             self.has_sosreport = False
 
         except OSError, e:
-            if exception.errno != errno.EEXIST:
-                raise
+            if e.errno == errno.EEXIST:
+                pass
+            else:   # pragma: no cover
+                self.logger.exception(e)
+                raise e
+
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("CleanFilesOnlyError: unable to process")

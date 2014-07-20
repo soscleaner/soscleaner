@@ -19,7 +19,7 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Mon 07 Jul 2014 04:37:03 PM EDT
+# Last Modified : Sun 20 Jul 2014 12:30:51 AM EDT
 # Purpose : SOSCleaner unittests
 import sys
 sys.path.append('src/')
@@ -28,6 +28,7 @@ from soscleaner import SOSCleaner
 import logging
 import os
 import shutil
+from time import sleep
 
 class SOSCleanerTests(unittest.TestCase):
 
@@ -47,10 +48,9 @@ class SOSCleanerTests(unittest.TestCase):
         fh.close()
 
     def setUp(self):
+        print "\nSOSCleanerTest:setUp_:begin"
         self.testdir = 'testdata/sosreport_dir'
-        print "SOSCleanerTest:setUp_:begin"
         self.cleaner = SOSCleaner(quiet=True)
-        self.cleaner.quiet = True
         print "SOSCleanerTest:setUp_:end"
 
     def _artifact_cleanup(self,directory):
@@ -86,7 +86,6 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test_sub_ip_new(self):
         # _sub_ip() should substitute a new IP into the IP database
-
         print "SOSCleanerTest:test_sub_ip_new:begin"
         line = 'test test2 192.168.1.1 test3'
         new_line = self.cleaner._sub_ip(line)
@@ -176,7 +175,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test_skip_files(self):
         print "SOSCleanerTest:test_skip_files:begin"
-        d = 'testdata/sosreport_dir' 
+        d = 'testdata/sosreport_dir'
         files = ['test.bin','test.txt']
         skip_list = self.cleaner._skip_file(d,files)
         self.assertTrue('test.bin' in skip_list)
@@ -192,19 +191,22 @@ class SOSCleanerTests(unittest.TestCase):
     def test_extract_sosreport_gz(self):
         print "SOSCleaner:test_extract_sosreport_gz:begin"
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.gz')
-        self.assertTrue(d == '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid)
+        check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
+        self.assertTrue(d == check_d)
         print "SOSCleaner:test_extract_sosreport_gz:end"
 
     def test_extract_sosreport_bz(self):
         print "SOSCleaner:test_extract_sosreport_bz:begin"
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.gz')
-        self.assertTrue(d == '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid)
+        check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
+        self.assertTrue(d == check_d)
         print "SOSCleaner:test_extract_sosreport_bz:end"
 
     def test_extract_sosreport_xz(self):
         print "SOSCleaner:test_extract_sosreport_xz:begin"
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.xz')
-        self.assertTrue(d == '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid)
+        check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
+        self.assertTrue(d == check_d)
         print "SOSCleaner:test_extract_sosreport_xz:end"
 
     def test_clean_line(self):
@@ -236,6 +238,8 @@ class SOSCleanerTests(unittest.TestCase):
                 shutil.copytree(self.testdir, d)
         self.cleaner.origin_path = origin_test
         self.cleaner.dir_path = dir_test
+        print self.cleaner.logfile
+        print os.path.isfile(self.cleaner.logfile)
         self.cleaner._create_archive()
         self.assertTrue(os.path.isfile(self.cleaner.archive_path))
         self.assertFalse(os.path.exists(origin_test))
@@ -329,6 +333,38 @@ class SOSCleanerTests(unittest.TestCase):
         new_line = self.cleaner._sub_hostname(line)
         self.assertTrue('my' not in new_line)
         print "SOSCleanerTest:test_sub_hostname_hyphens:end"
+
+    def test_extra_files(self):
+        print "SOSCleanerTest:test_extra_files:begin"
+        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
+        self.cleaner._clean_files_only(files)
+        self.assertTrue(os.path.isdir(self.cleaner.origin_path))
+        self.assertTrue(os.path.exists(os.path.join(self.cleaner.origin_path, 'extrafile3')))
+        print "SOSCleanerTest:test_extra_files:end"
+
+    def test_create_archive_nososreport(self):
+        print "SOSCleanerTest:test_create_archive_nososreport:begin"
+        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
+        self.cleaner._clean_files_only(files)
+        self.cleaner._make_dest_env()
+        self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
+        print "SOSCleanerTest:test_create_archive_nososreport:end"
+
+    def test_extra_files_nonexistent(self):
+        print "SOSCleanerTest:test_extra_files_nonexistent:begin"
+        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
+        self.cleaner._clean_files_only(files)
+        self.assertTrue(os.path.exists(os.path.join(self.cleaner.origin_path, 'extrafile3')))
+        self.assertFalse(os.path.exists(os.path.join(self.cleaner.origin_path, 'bogusfile')))
+        print "SOSCleanerTest:test_extra_files_nonexistent:end"
+
+    def test_clean_files_only_originexists(self):
+        print "SOSCleanerTest:test_clean_files_only_originexists:begin"
+        os.makedirs(self.cleaner.origin_path)
+        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
+        self.cleaner._clean_files_only(files)
+        self.assertTrue(os.path.exists(self.cleaner.origin_path))
+        print "SOSCleanerTest:test_clean_files_only_originexists:end"
 
 if __name__ == '__main__':
     unittest.main()
