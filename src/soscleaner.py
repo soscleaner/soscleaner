@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 19 Jul 2014 11:07:15 PM EDT
+# Last Modified : Sat 19 Jul 2014 11:30:16 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -25,7 +25,7 @@ import re
 import errno
 import sys
 import magic
-from time import strftime, gmtime
+import uuid
 import shutil
 import struct, socket
 import tempfile
@@ -124,13 +124,13 @@ class SOSCleaner:
     def _prep_environment(self):
 
         #we set up our various needed directory structures, etc.
-        timestamp = strftime("%Y%m%d%H%M%S", gmtime())          # the timestamp we will use as a uuid
-        origin_path = "/tmp/soscleaner-origin-%s" % timestamp   # the origin dir we'll copy the files into
-        dir_path = "/tmp/soscleaner-%s" % timestamp             # the dir we will put our cleaned files into
-        session = "soscleaner-%s" % timestamp                   # short-hand for the soscleaner session to create reports, etc.
+        uuid = str(uuid.uuid4().int)[:16]                       # 16 digit random string
+        origin_path = "/tmp/soscleaner-origin-%s" % uuid        # the origin dir we'll copy the files into
+        dir_path = "/tmp/soscleaner-%s" % uuid                  # the dir we will put our cleaned files into
+        session = "soscleaner-%s" % uuid                        # short-hand for the soscleaner session to create reports, etc.
         logfile = "/tmp/%s.log" % session                       # the primary logfile
 
-        return origin_path, dir_path, session, logfile, timestamp
+        return origin_path, dir_path, session, logfile, uuid
 
     def _extract_sosreport(self, path):
 
