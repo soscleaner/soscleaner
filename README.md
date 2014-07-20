@@ -9,6 +9,9 @@ What Does it Do?
 * Scrubs Binary Files - Binary Files cannot easily be visually scanned. They are left out of a 'cleaned' sosreport
 * IP Address Obfuscation - IPv4 addresses in the sosreport are obfuscated consistently throughout all files.  For example, if 192.168.100.5 is obfuscated to 10.0.0.68, it will appear as 10.0.0.68 in all files within the sosreport. This means that troubleshooting can still take place.
 * Hostname Obfuscation - Hostnames are obfuscated consistently troughout all files, much like the IP Address functionality. Based on the system's hostname, if the hostname for the system in question is an FQDN (Fully Qualified Domain Name), all hostnames on that domain are obfuscated. If the hostname is NOT an FQDN, then all examples of that hostname itself are obfuscated.
+* Multiple Domains - multiple domains can by analyzed by using the -d flag 1 or more times
+* Additional Files - additional files can be added for analysis by using the -f flag 1 or more times
+* Only Scan Files - You can also supply one or more files using the -f flag, and supply no sosreport at all. These files will be analyzed and archived together.
 
 Project Information
 --------------------
@@ -33,15 +36,21 @@ x.clean_report()
 
 ```
 $ /usr/bin/soscleaner --help
-Usage: soscleaner -h [-dl]
+Usage: soscleaner [-ldfq] /path/to/sosreport
 
 Options:
+  --version             show program's version number and exit
   -h, --help            show this help message and exit
   -l LOGLEVEL, --log_level=LOGLEVEL
                         The Desired Log Level (default = INFO) Options are
                         DEBUG, INFO, WARNING, ERROR
-  -d, --domain       additional domain to be analyzed (optional)
-
+  -d DOMAIN, --domain=DOMAIN
+                        additional domain to obfuscate (optional). use a flag
+                        for each additional domain
+  -f FILES, --file=FILES
+                        addtional files to be analyzed in addition to or in
+                        exception of sosreport
+  -q, --quiet           disable output to STDOUT
 ```
 
 How Do I See The Obfuscated Data?
@@ -77,7 +86,7 @@ Working Directory - /tmp/soscleaner-20131209111927
 
 ```
 
-What Is Created?
+What Artifacts are Created?
 ----------------
 
 * soscleaner-$session.log is a log of all events that occurred
