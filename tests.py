@@ -19,7 +19,7 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Sun 20 Jul 2014 12:30:51 AM EDT
+# Last Modified : Sun 20 Jul 2014 02:57:13 PM EDT
 # Purpose : SOSCleaner unittests
 import sys
 sys.path.append('src/')
@@ -128,8 +128,8 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(remove=True)
         host,domain = self.cleaner._get_hostname()
-        self.assertTrue(host == 'unknown')
-        self.assertTrue(domain == 'unknown')
+        self.assertTrue(host == None)
+        self.assertTrue(domain == None)
 
     def test_ip2int(self):
         print "SOSCleanerTest:test_ip2int:begin"
@@ -247,14 +247,14 @@ class SOSCleanerTests(unittest.TestCase):
         print "SOSCleanerTest:test_create_archive:end"
 
     def test_domains2db_fqdn(self):
-        print "SOSCleanerTest:test_create_archive:begin"
+        print "SOSCleanerTest:test_domains2db_fqdn:begin"
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.domains = ['foo.com','bar.com']
         self.cleaner._domains2db()
         self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.values())
         self.assertTrue('foo.com' in self.cleaner.dn_db.values())
         self.assertTrue('bar.com' in self.cleaner.dn_db.values())
-        print "SOSCleanerTest:test_create_archive:end"
+        print "SOSCleanerTest:test_domains2db_fqdn:end"
 
     def test_file_list(self):
         print "SOSCleanerTest:test_file_list:begin"
@@ -291,7 +291,9 @@ class SOSCleanerTests(unittest.TestCase):
         print "SOSCleanerTest:test_create_hn_report_nohn:begin"
         self.cleaner.process_hostnames = False
         self.cleaner._create_hn_report()
-        self.assertTrue(self.cleaner.hn_report == None)
+        fh = open(self.cleaner.hn_report, 'r')
+        lines = fh.readlines()
+        self.assertTrue(lines[1] == 'None,None\n')
         print "SOSCleanerTest:test_create_hn_report_nohn:end"
 
     def test_create_dn_report(self):
@@ -338,15 +340,14 @@ class SOSCleanerTests(unittest.TestCase):
         print "SOSCleanerTest:test_extra_files:begin"
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
         self.cleaner._clean_files_only(files)
-        self.assertTrue(os.path.isdir(self.cleaner.origin_path))
-        self.assertTrue(os.path.exists(os.path.join(self.cleaner.origin_path, 'extrafile3')))
+        self.assertTrue(os.path.isdir(self.cleaner.dir_path))
+        self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
         print "SOSCleanerTest:test_extra_files:end"
 
     def test_create_archive_nososreport(self):
         print "SOSCleanerTest:test_create_archive_nososreport:begin"
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
         self.cleaner._clean_files_only(files)
-        self.cleaner._make_dest_env()
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
         print "SOSCleanerTest:test_create_archive_nososreport:end"
 
@@ -354,8 +355,8 @@ class SOSCleanerTests(unittest.TestCase):
         print "SOSCleanerTest:test_extra_files_nonexistent:begin"
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
-        self.assertTrue(os.path.exists(os.path.join(self.cleaner.origin_path, 'extrafile3')))
-        self.assertFalse(os.path.exists(os.path.join(self.cleaner.origin_path, 'bogusfile')))
+        self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
+        self.assertFalse(os.path.exists(os.path.join(self.cleaner.dir_path, 'bogusfile')))
         print "SOSCleanerTest:test_extra_files_nonexistent:end"
 
     def test_clean_files_only_originexists(self):
