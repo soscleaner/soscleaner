@@ -9,10 +9,21 @@ import sys
 def main():
 
     parser = OptionParser(usage="%prog [-ldfq] /path/to/sosreport",version="%prog 0.2.1")
-    parser.add_option("-l", "--log_level", dest="loglevel", default='INFO', help="The Desired Log Level (default = INFO) Options are DEBUG, INFO, WARNING, ERROR", metavar="LOGLEVEL")
-    parser.add_option("-d", "--domain", action="append", default=[], dest="domains", help="additional domain to obfuscate (optional). use a flag for each additional domain", metavar="DOMAIN")
-    parser.add_option("-f", "--file", action="append", default=[], dest="files", help="addtional files to be analyzed in addition to or in exception of sosreport", metavar="FILES")
-    parser.add_option("-q", "--quiet", action="store_true", default=False, dest='quiet', help="disable output to STDOUT", metavar="QUIET")
+    parser.add_option("-l", "--log_level", dest="loglevel", default='INFO', 
+        help="The Desired Log Level (default = INFO) Options are DEBUG, INFO, WARNING, ERROR", 
+        metavar="LOGLEVEL")
+    parser.add_option("-d", "--domain", action="append", default=[], dest="domains", 
+        help="additional domain to obfuscate (optional). use a flag for each additional domain", 
+        metavar="DOMAIN")
+    parser.add_option("-f", "--file", action="append", default=[], dest="files", 
+        help="addtional files to be analyzed in addition to or in exception of sosreport", 
+        metavar="FILES")
+    parser.add_option("-q", "--quiet", action="store_true", default=False, dest='quiet', 
+        help="disable output to STDOUT", 
+        metavar="QUIET")
+    parser.add_option("-r", "--report_dir", dest="report_dir",
+        help="optional directory to store artifacts. default is /tmp",
+        metavar="DIRECTORY")
 
     (options, args) = parser.parse_args()
     if not args and not options.files: #we don't have an sosreport

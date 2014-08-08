@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sun 20 Jul 2014 10:51:25 AM EDT
+# Last Modified : Fri 08 Aug 2014 04:12:50 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -48,6 +48,7 @@ class SOSCleaner:
         self.domain_count = 0
         self.domains = list()
         self.domainname = None
+        self.report_dir = '/tmp'
 
         #IP obfuscation information
         self.ip_db = dict() #IP database
@@ -566,6 +567,9 @@ class SOSCleaner:
 
         self._check_uid() #make sure it's soscleaner is running as root
         self._get_disclaimer()
+        if options.report_dir:
+            if os.path.isdir(options.report_dir):
+                self.report_dir = options.report_dir
         if options.domains:
             self.domains = options.domains
 
