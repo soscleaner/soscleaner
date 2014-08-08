@@ -11,7 +11,7 @@ BuildArch: noarch
 Requires: python-magic
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
-Url: https://github.com/jduncan-rva/SOSCleaner
+Url: https://github.com/RedHatGov/SOSCleaner
 
 %description
 SOSCleaner helps filter out controlled or sensitive data from an SOSReport

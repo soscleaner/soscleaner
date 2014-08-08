@@ -16,8 +16,8 @@ What Does it Do?
 Project Information
 --------------------
 * Maintainer - Jamie Duncan (jduncan@redhat.com)
-* Source and Issues - https://github.com/jduncan-rva/soscleaner
-* Git Hub Pages - http://jduncan-rva.github.io/soscleaner/
+* Source and Issues - https://github.com/RedHatGov/soscleaner
+* Git Hub Pages - http://RedHatGov.github.io/soscleaner/
 * Mailing Lists
   * Development - soscleaner-dev@googlegroups.com
   * Announce - soscleaner-announce@googlegroups.com

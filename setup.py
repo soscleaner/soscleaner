@@ -27,7 +27,7 @@ setup(
     description='To clean and filter sensitive data from a standard sosreport',
     author='Jamie Duncan',
     author_email='jduncan@redhat.com',
-    url='https://github.com/jduncan-rva/SOSCleaner',
+    url='https://github.com/RedHatGov/SOSCleaner',
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
