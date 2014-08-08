@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 08 Aug 2014 04:12:50 PM EDT
+# Last Modified : Fri 08 Aug 2014 04:19:16 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -69,8 +69,16 @@ class SOSCleaner:
         self.magic.load()
 
     def _check_uid(self): # pragma no cover
-        if os.getuid() != 0:
-            raise Exception("You Must Execute soscleaner As Root")
+
+        try:
+            if os.getuid() != 0:
+                self.logger.con_out("soscleaner must be executed by the root user in the same manner as sosreport")
+                self.logger.con_out("soscleaner cannot continue. Exiting...")
+
+                sys.exit(8)
+
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
 
     def _skip_file(self, d, files):
         '''
