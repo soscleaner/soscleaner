@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 08 Aug 2014 04:19:16 PM EDT
+# Last Modified : Fri 08 Aug 2014 05:58:39 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -47,6 +47,7 @@ class SOSCleaner:
         self.quiet = quiet
         self.domain_count = 0
         self.domains = list()
+        self.keywords = list()
         self.domainname = None
         self.report_dir = '/tmp'
 
@@ -62,8 +63,12 @@ class SOSCleaner:
         #Domainname obfuscation information
         self.dn_db = dict() #domainname database
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
+
         self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
+
+        #Keyword obfuscation information
+        self.kw_db = dict() #keyword database
 
         self.magic = magic.open(magic.MAGIC_NONE)
         self.magic.load()
@@ -370,6 +375,44 @@ class SOSCleaner:
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
 
+    def _keywords2db(self):
+        #processes optional keywords to add to be obfuscated
+        try:
+            if os.path.isfile(self.keywords):
+                k_count = 0
+                with open(self.keywords, 'r') as klist:
+                    for keyword in klist.readlines():
+                        o_kw = "keyword%s" % k_count
+                        self.kw_db[o_kw] = keyword
+                        self.logger.con_out("Added Obfuscated Keyword - %s" % o_kw)
+            self.kw_count = len(self.kw_db)
+
+            else:
+                self.logger.con_out("%s does not seem to be an available file. Not adding any keywords" % self.keywords)
+
+        except Exception, e: # pragma: no cover
+            self.logger.exception(e)
+
+    def _kw2db(self, keyword):
+        #returns the obfuscated value for a keyword
+
+        return self.kw_db[keyword]
+
+    def _sub_keywords(self, line):
+        # this will substitute out any keyword entries on a given line
+        try:
+            if self.kw_count > 0    # we have obfuscated keywords to work with
+                for kw in self.kw_db.items():
+                    if kw in line:
+                        line.replace(kw, self._kw2db(kw))
+                        self.logger.debug("Obfuscating Keyword - %s > %s", kw, self._kw2db(kw))
+
+            return line
+
+        except Exception, e: # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('SubKeywordError: Unable to Substitute Keywords')
+
     def _get_hostname(self):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
 
@@ -493,8 +536,9 @@ class SOSCleaner:
     def _clean_line(self, l):
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
-        new_line = self._sub_ip(l)  #IP substitution
-        new_line = self._sub_hostname(new_line)    #Hostname substitution
+        new_line = self._sub_ip(l)                  # IP substitution
+        new_line = self._sub_hostname(new_line)     # Hostname substitution
+        new_line = self._sub_keywords(new_line)     # Keyword Substitution
 
         return new_line
 
@@ -580,7 +624,9 @@ class SOSCleaner:
                 self.report_dir = options.report_dir
         if options.domains:
             self.domains = options.domains
-
+        if options.keywords:
+            self.keywords = options.keywords
+            self._keywords2db()
         if not sosreport:
             if not options.files:
                 raise Exception("Error: You must supply either an sosreport and/or files to process")
