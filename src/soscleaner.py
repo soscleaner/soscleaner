@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 09 Aug 2014 09:16:52 AM EDT
+# Last Modified : Sat 09 Aug 2014 11:40:53 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -51,23 +51,23 @@ class SOSCleaner:
         self.domainname = None
         self.report_dir = '/tmp'
 
-        #IP obfuscation information
+        # IP obfuscation information
         self.ip_db = dict() #IP database
         self.start_ip = '10.230.230.1'
 
-        #Hostname obfuscation information
+        # Hostname obfuscation information
         self.hn_db = dict() #hostname database
         self.hostname_count = 0
         self.hostname = None
 
-        #Domainname obfuscation information
+        # Domainname obfuscation information
         self.dn_db = dict() #domainname database
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
 
         self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
 
-        #Keyword obfuscation information
+        # Keyword obfuscation information
         self.kw_db = dict() #keyword database
 
         self.magic = magic.open(magic.MAGIC_NONE)
@@ -667,16 +667,18 @@ class SOSCleaner:
             self.logger.con_out("No sosreport supplied. Only processing specific files")
             self._clean_files_only(options.files)
 
-        else:   #we DO have an sosreport to analyze
+        else:   # we DO have an sosreport to analyze
             self.report = self._extract_sosreport(sosreport)
-            self._make_dest_env()   #create the working directory
+            self._make_dest_env()   # create the working directory
             self.hostname, self.domainname = self._get_hostname()
 
             if options.files:
                 self._add_extra_files(options.files)
 
-            if self.hostname:   #if we have a hostname that's not a None type
-                self.hn_db['host0'] = self.hostname     #we'll prime the hostname pump to clear out a ton of useless logic later
+            if self.hostname:   # if we have a hostname that's not a None type
+                self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
+
+            self._process_hosts_file(self)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
         files = self._file_list(self.dir_path)
