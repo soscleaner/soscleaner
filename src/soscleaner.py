@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 09 Aug 2014 07:58:45 AM EDT
+# Last Modified : Sat 09 Aug 2014 09:16:52 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -349,6 +349,35 @@ class SOSCleaner:
             self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
+        except Exception, e:    #pragma: no cover
+            self.logger.exception(e)
+
+    def _process_hosts_file(self):
+        # this will process the hosts file more thoroughly to try and capture as many server short names/aliases as possible
+        # could lead to false positives if people use dumb things for server aliases, like 'file' or 'server' or other common terms
+        # this may be an option that can be enabled... --hosts or similar?
+
+        try:
+            if os.path.isfile(os.path.join(self.dir_path, 'etc/hosts'):
+                with open(os.path.join(self.dir_path, 'etc/hosts') as f:
+                    self.logger.con_out("Processing hosts file for better obfuscation coverage")
+                    data = f.readlines()
+                    for line in data:
+                        x = re.split('\ |\t', line.rstrip())    #chunk up the line, delimiting with spaces and tabs (both used in hosts files)
+                        # the first item in each line of a hosts file is the IP address.
+                        # so we'll add that to the IP database
+                        new_ip = self._ip2db(x[0])
+                        self.logger.debug("Added to IP database through hosts file processing - %s > %s", x[0], new_ip)
+                        # then we will run through the rest of the items in a given line
+                        # skipping over the 'localhost' and 'localdomain' entries
+                        for item in x[1:len(x)]:
+                            if len(item) > 0:
+                                if all('localhost' not in item, 'localdomain' not in item):
+                                    new_host = self._hn2db(item)
+                                    self.logger.debug("Added to hostname database through hosts file processing - %s > %s", % item, new_host)
+            else:
+                self.logger.con_out("Unable to Process Hosts File. Hosts File Processing Disabled")
+
         except Exception, e:    #pragma: no cover
             self.logger.exception(e)
 
