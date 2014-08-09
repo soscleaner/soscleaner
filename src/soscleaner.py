@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Fri 08 Aug 2014 05:58:39 PM EDT
+# Last Modified : Sat 09 Aug 2014 07:58:45 AM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -378,17 +378,21 @@ class SOSCleaner:
     def _keywords2db(self):
         #processes optional keywords to add to be obfuscated
         try:
-            if os.path.isfile(self.keywords):
+            for f in self.keywords:
                 k_count = 0
-                with open(self.keywords, 'r') as klist:
-                    for keyword in klist.readlines():
-                        o_kw = "keyword%s" % k_count
-                        self.kw_db[o_kw] = keyword
-                        self.logger.con_out("Added Obfuscated Keyword - %s" % o_kw)
-            self.kw_count = len(self.kw_db)
+                if os.path.isfile(f):
+                    with open(f, 'r') as klist:
+                        for keyword in klist.readlines():
+                            o_kw = "keyword%s" % k_count
+                            self.kw_db[o_kw] = keyword.rstrip()
+                            self.logger.debug("Added Obfuscated Keyword - %s", o_kw)
+                            k_count += 1
+                    self.logger.con_out("Added Keyword Contents from file - %s", f)
 
-            else:
-                self.logger.con_out("%s does not seem to be an available file. Not adding any keywords" % self.keywords)
+            self.kw_count = k_count
+
+                else:
+                    self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
 
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
