@@ -36,7 +36,7 @@ x.clean_report()
 
 ```
 $ /usr/bin/soscleaner --help
-Usage: soscleaner [-ldfq] /path/to/sosreport
+Usage: soscleaner [-ldfkqr] /path/to/sosreport
 
 Options:
   --version             show program's version number and exit
@@ -51,6 +51,12 @@ Options:
                         addtional files to be analyzed in addition to or in
                         exception of sosreport
   -q, --quiet           disable output to STDOUT
+  -r DIRECTORY, --report_dir=DIRECTORY
+                        optional directory to store artifacts. default is /tmp
+  -k KEYWORDS, --keywords=KEYWORDS
+                        optional text file to be obfuscated. format is one
+                        word per line. warning: long lists may slow down
+                        soscleaner.
 ```
 
 How Do I See The Obfuscated Data?
