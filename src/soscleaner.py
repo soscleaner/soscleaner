@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 09 Aug 2014 11:40:53 AM EDT
+# Last Modified : Sat 13 Sep 2014 02:42:43 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -68,7 +68,9 @@ class SOSCleaner:
         self._start_logging(self.logfile)
 
         # Keyword obfuscation information
+        self.keywords = None
         self.kw_db = dict() #keyword database
+        self.kw_count = 0
 
         self.magic = magic.open(magic.MAGIC_NONE)
         self.magic.load()
@@ -358,8 +360,8 @@ class SOSCleaner:
         # this may be an option that can be enabled... --hosts or similar?
 
         try:
-            if os.path.isfile(os.path.join(self.dir_path, 'etc/hosts'):
-                with open(os.path.join(self.dir_path, 'etc/hosts') as f:
+            if os.path.isfile(os.path.join(self.dir_path, 'etc/hosts')):
+                with open(os.path.join(self.dir_path, 'etc/hosts')) as f:
                     self.logger.con_out("Processing hosts file for better obfuscation coverage")
                     data = f.readlines()
                     for line in data:
@@ -372,10 +374,10 @@ class SOSCleaner:
                         # skipping over the 'localhost' and 'localdomain' entries
                         for item in x[1:len(x)]:
                             if len(item) > 0:
-                                if all('localhost' not in item, 'localdomain' not in item):
+                                if all(['localhost' not in item, 'localdomain' not in item]):
                                     new_host = self._hn2db(item)
-                                    self.logger.debug("Added to hostname database through hosts file processing - %s > %s", % item, new_host)
-            else:
+                                    self.logger.debug("Added to hostname database through hosts file processing - %s > %s", item, new_host)
+            else: # pragma: no cover
                 self.logger.con_out("Unable to Process Hosts File. Hosts File Processing Disabled")
 
         except Exception, e:    #pragma: no cover
@@ -407,21 +409,22 @@ class SOSCleaner:
     def _keywords2db(self):
         #processes optional keywords to add to be obfuscated
         try:
-            for f in self.keywords:
+            if self.keywords:   # value is set to None by default
                 k_count = 0
-                if os.path.isfile(f):
-                    with open(f, 'r') as klist:
-                        for keyword in klist.readlines():
-                            o_kw = "keyword%s" % k_count
-                            self.kw_db[o_kw] = keyword.rstrip()
-                            self.logger.debug("Added Obfuscated Keyword - %s", o_kw)
-                            k_count += 1
-                    self.logger.con_out("Added Keyword Contents from file - %s", f)
+                for f in self.keywords:
+                    if os.path.isfile(f):
+                        with open(f, 'r') as klist:
+                            for keyword in klist.readlines():
+                                o_kw = "keyword%s" % k_count
+                                self.kw_db[keyword.rstrip()] = o_kw
+                                self.logger.debug("Added Obfuscated Keyword - %s", o_kw)
+                                k_count += 1
+                        self.logger.con_out("Added Keyword Contents from file - %s", f)
+
+                    else:
+                        self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
 
             self.kw_count = k_count
-
-                else:
-                    self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
 
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
@@ -433,18 +436,18 @@ class SOSCleaner:
 
     def _sub_keywords(self, line):
         # this will substitute out any keyword entries on a given line
-        try:
-            if self.kw_count > 0    # we have obfuscated keywords to work with
-                for kw in self.kw_db.items():
-                    if kw in line:
-                        line.replace(kw, self._kw2db(kw))
-                        self.logger.debug("Obfuscating Keyword - %s > %s", kw, self._kw2db(kw))
+        #try:
+        if self.kw_count > 0:    # we have obfuscated keywords to work with
+            for k in self.kw_db.keys():
+                if k in line:
+                    line = line.replace(k, self._kw2db(k))
+                    self.logger.debug("Obfuscating Keyword - %s > %s", k, self._kw2db(k))
 
-            return line
+        return line
 
-        except Exception, e: # pragma: no cover
+        '''except Exception, e: # pragma: no cover
             self.logger.exception(e)
-            raise Exception('SubKeywordError: Unable to Substitute Keywords')
+            raise Exception('SubKeywordError: Unable to Substitute Keywords')'''
 
     def _get_hostname(self):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
@@ -636,7 +639,7 @@ class SOSCleaner:
                 os.makedirs(self.dir_path)    # create the dir_path directory
             self._add_extra_files(files)
 
-        except OSError, e:
+        except OSError, e: # pragma: no cover
             if e.errno == errno.EEXIST:
                 pass
             else:   # pragma: no cover

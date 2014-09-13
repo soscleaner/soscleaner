@@ -19,7 +19,7 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Sun 20 Jul 2014 02:57:13 PM EDT
+# Last Modified : Sat 13 Sep 2014 02:39:58 PM EDT
 # Purpose : SOSCleaner unittests
 import sys
 sys.path.append('src/')
@@ -123,13 +123,21 @@ class SOSCleanerTests(unittest.TestCase):
         print "SOSCleanerTest:test_get_hostname_nonfqdn:end"
 
     def test_get_hostname_nohostnamefile(self):
-        #testing with no hostname file
+        # testing with no hostname file
         print "SOSCleanerTest:test_get_hostname_nohostnamefile:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(remove=True)
         host,domain = self.cleaner._get_hostname()
         self.assertTrue(host == None)
         self.assertTrue(domain == None)
+
+    def test_obfuscate_hosts_file(self):
+        # testing hosts file extra processing
+        print "SOSCleanerTest:test_obfuscate_hosts_file:begin"
+        self.cleaner.dir_path = 'testdata/sosreport_dir'
+        self.cleaner._process_hosts_file()
+        self.assertTrue('myhost' in self.cleaner.hn_db.values())
+        print "SOSCleanerTest:test_obfuscate_hosts_file:end"
 
     def test_ip2int(self):
         print "SOSCleanerTest:test_ip2int:begin"
@@ -307,6 +315,14 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue( self.cleaner.domainname in x[1])
         print "SOSCleanerTest:test_create_dn_report:end"
 
+    def test_create_dn_report_none(self):
+        print "SOSCleanerTest:test_create_dn_report_none:begin"
+        self.cleaner._create_dn_report()
+        fh = open(self.cleaner.dn_report,'r')
+        x = fh.readlines()
+        self.assertTrue( x[1] == 'None,None\n')
+        print "SOSCleanerTest:test_create_dn_report_none:end"
+
     def test_clean_file(self):
         print "SOSCleanerTest:test_clean_file:begin"
         test_file = '/tmp/clean_file_test'
@@ -366,6 +382,30 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(self.cleaner.origin_path))
         print "SOSCleanerTest:test_clean_files_only_originexists:end"
+
+    def test_add_keywords_badfile(self):
+        print "SOSCleanerTest:test_add_keywords_badfile:begin"
+        self.cleaner.keywords = ['testdata/keyword_bad.txt']
+        self.cleaner._keywords2db()
+        self.assertTrue(self.cleaner.kw_count == 0)
+        print "SOSCleanerTest:test_add_keywords_badfile:end"
+
+    def test_add_keywords(self):
+        print "SOSCleanerTest:test_add_keywords:begin"
+        self.cleaner.keywords = ['testdata/keyword1.txt','testdata/keyword2.txt']
+        self.cleaner._keywords2db()
+        self.assertTrue(self.cleaner.kw_count == 8)
+        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(),'some' in self.cleaner.kw_db.keys()]))
+        print "SOSCleanerTest:test_add_keywords:end"
+
+    def test_sub_keywords(self):
+        print "SOSCleanerTest:test_sub_keywords:begin"
+        self.cleaner.keywords = ['testdata/keyword1.txt']
+        self.cleaner._keywords2db()
+        test_line = 'this is a sample foo bar. this should be different bar foo.'
+        new_line = self.cleaner._sub_keywords(test_line)
+        self.assertTrue(all(['keyword0' in new_line, 'keyword1' in new_line]))
+        print "SOSCleanerTest:test_sub_keywords:end"
 
 if __name__ == '__main__':
     unittest.main()
