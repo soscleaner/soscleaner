@@ -19,7 +19,7 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Sat 13 Sep 2014 02:39:58 PM EDT
+# Last Modified : Sat 13 Sep 2014 10:55:29 PM EDT
 # Purpose : SOSCleaner unittests
 import sys
 sys.path.append('src/')
@@ -51,6 +51,8 @@ class SOSCleanerTests(unittest.TestCase):
         print "\nSOSCleanerTest:setUp_:begin"
         self.testdir = 'testdata/sosreport_dir'
         self.cleaner = SOSCleaner(quiet=True)
+        self.cleaner.origin_path, self.cleaner.dir_path, self.cleaner.session, self.cleaner.logfile, self.cleaner.uuid = self.cleaner._prep_environment()
+        self.cleaner._start_logging(self.cleaner.logfile)
         print "SOSCleanerTest:setUp_:end"
 
     def _artifact_cleanup(self,directory):

@@ -3,8 +3,8 @@
 
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
-Version: 0.2.1
-Release: 1%{dist}
+Version: 0.2.2
+Release: 7%{dist}
 Source0: http://people.redhat.com/jduncan/%{name}/%{name}-%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
@@ -33,6 +33,13 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{_bindir}/soscleaner
 
 %changelog
+* Sat Sep 13 2014 Jamie Duncan <jduncan@redhat.com> 0.2.2-1
+- ability to scrub arbitrary keywords from lists - #41
+- updated move to RedHatGov - #40
+- stronger processing for /etc/hosts - #38
+- better error announcements when user is not root - #37
+- artifact location is configurable - #39
+
 * Sun Jul 20 2014 Jamie Duncan <jduncan@redhat.com> 0.2.1-1
 - cleaned up version and help output for binary - #29,#35
 - made uuid random instead of time-based - #36

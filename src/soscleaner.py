@@ -17,7 +17,7 @@
 # File Name : sos-gov.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 13 Sep 2014 02:42:43 PM EDT
+# Last Modified : Sat 13 Sep 2014 10:51:54 PM EDT
 # Purpose : an sosreport scrubber
 
 import os
@@ -42,7 +42,7 @@ class SOSCleaner:
     def __init__(self, quiet=False):
 
         self.name = 'soscleaner'
-        self.version = '0.2.1'
+        self.version = '0.2.2'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
         self.quiet = quiet
         self.domain_count = 0
@@ -64,8 +64,8 @@ class SOSCleaner:
         self.dn_db = dict() #domainname database
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
 
-        self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
-        self._start_logging(self.logfile)
+        # self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
+        # self._start_logging(self.logfile)
 
         # Keyword obfuscation information
         self.keywords = None
@@ -143,11 +143,11 @@ class SOSCleaner:
     def _prep_environment(self):
 
         #we set up our various needed directory structures, etc.
-        ran_uuid = str(uuid.uuid4().int)[:16]                       # 16 digit random string
-        origin_path = "/tmp/soscleaner-origin-%s" % ran_uuid        # the origin dir we'll copy the files into
-        dir_path = "/tmp/soscleaner-%s" % ran_uuid                  # the dir we will put our cleaned files into
-        session = "soscleaner-%s" % ran_uuid                        # short-hand for the soscleaner session to create reports, etc.
-        logfile = "/tmp/%s.log" % session                       # the primary logfile
+        ran_uuid = str(uuid.uuid4().int)[:16]                                                 # 16 digit random string
+        origin_path = os.path.join(self.report_dir, "soscleaner-origin-%s" % ran_uuid)        # the origin dir we'll copy the files into
+        dir_path = os.path.join(self.report_dir, "soscleaner-%s" % ran_uuid)                  # the dir we will put our cleaned files into
+        session = os.path.join(self.report_dir, "soscleaner-%s" % ran_uuid)                   # short-hand for the soscleaner session to create reports, etc.
+        logfile = os.path.join(self.report_dir, "%s.log" % session)                           # the primary logfile
 
         return origin_path, dir_path, session, logfile, ran_uuid
 
@@ -224,7 +224,7 @@ class SOSCleaner:
         this will take the obfuscated ip and hostname databases and output csv files
         '''
         try:
-            ip_report_name = "/tmp/%s-ip.csv" % self.session
+            ip_report_name = os.path.join(self.report_dir, "%s-ip.csv" % self.session)
             self.logger.con_out('Creating IP Report - %s', ip_report_name)
             ip_report = open(ip_report_name, 'w')
             ip_report.write('Obfuscated IP,Original IP\n')
@@ -240,7 +240,7 @@ class SOSCleaner:
 
     def _create_hn_report(self):
         try:
-            hn_report_name = "/tmp/%s-hostname.csv" % self.session
+            hn_report_name = os.path.join(self.report_dir, "%s-hostname.csv" % self.session)
             self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
             hn_report = open(hn_report_name, 'w')
             hn_report.write('Obfuscated Hostname,Original Hostname\n')
@@ -259,7 +259,7 @@ class SOSCleaner:
 
     def _create_dn_report(self):
         try:
-            dn_report_name = "/tmp/%s-dn.csv" % self.session
+            dn_report_name = os.path.join(self.report_dir, "%s-dn.csv" % self.session)
             self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
             dn_report = open(dn_report_name, 'w')
             dn_report.write('Obfuscated Domain,Original Domain\n')
@@ -308,7 +308,7 @@ class SOSCleaner:
 
     def _make_dest_env(self):
         '''
-        This will create the folder in /tmp to store the sanitized files and populate it using shutil
+        This will create the folder in self.report_dir (defaults to /tmp) to store the sanitized files and populate it using shutil
         These are the files that will be scrubbed
         '''
         try:
@@ -321,13 +321,13 @@ class SOSCleaner:
     def _create_archive(self):
         '''This will create a tar.gz compressed archive of the scrubbed directory'''
         try:
-            self.archive_path = "/tmp/%s.tar.gz" % self.session
+            self.archive_path = os.path.join(self.report_dir, "%s.tar.gz" % self.session)
             self.logger.con_out('Creating SOSCleaner Archive - %s', self.archive_path)
             t = tarfile.open(self.archive_path, 'w:gz')
             for dirpath, dirnames, filenames in os.walk(self.dir_path):
                 for f in filenames:
                     f_full = os.path.join(dirpath, f)
-                    f_archive = f_full.replace('/tmp','')
+                    f_archive = f_full.replace(self.report_dir,'')
                     self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
         except Exception,e: #pragma: no cover
@@ -338,7 +338,7 @@ class SOSCleaner:
         self.logger.info('Archiving Complete')
         self.logger.con_out('SOSCleaner Complete')
         if not self.quiet:  # pragma: no cover
-            t.add(self.logfile, arcname=self.logfile.replace('/tmp',''))
+            t.add(self.logfile, arcname=self.logfile.replace(self.report_dir,''))
         t.close()
 
     def _clean_up(self):
@@ -366,11 +366,7 @@ class SOSCleaner:
                     data = f.readlines()
                     for line in data:
                         x = re.split('\ |\t', line.rstrip())    #chunk up the line, delimiting with spaces and tabs (both used in hosts files)
-                        # the first item in each line of a hosts file is the IP address.
-                        # so we'll add that to the IP database
-                        new_ip = self._ip2db(x[0])
-                        self.logger.debug("Added to IP database through hosts file processing - %s > %s", x[0], new_ip)
-                        # then we will run through the rest of the items in a given line
+                        # we run through the rest of the items in a given line, ignoring the IP to be picked up by the normal methods
                         # skipping over the 'localhost' and 'localdomain' entries
                         for item in x[1:len(x)]:
                             if len(item) > 0:
@@ -417,7 +413,7 @@ class SOSCleaner:
                             for keyword in klist.readlines():
                                 o_kw = "keyword%s" % k_count
                                 self.kw_db[keyword.rstrip()] = o_kw
-                                self.logger.debug("Added Obfuscated Keyword - %s", o_kw)
+                                self.logger.con_out("Added Obfuscated Keyword - %s", o_kw)
                                 k_count += 1
                         self.logger.con_out("Added Keyword Contents from file - %s", f)
 
@@ -653,11 +649,13 @@ class SOSCleaner:
     def clean_report(self, options, sosreport): # pragma: no cover
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
-        self._check_uid() #make sure it's soscleaner is running as root
-        self._get_disclaimer()
-        if options.report_dir:
+        if options.report_dir: # override the default location for artifacts (/tmp)
             if os.path.isdir(options.report_dir):
                 self.report_dir = options.report_dir
+        self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
+        self._start_logging(self.logfile)
+        self._check_uid() #make sure it's soscleaner is running as root
+        self._get_disclaimer()
         if options.domains:
             self.domains = options.domains
         if options.keywords:
@@ -681,7 +679,7 @@ class SOSCleaner:
             if self.hostname:   # if we have a hostname that's not a None type
                 self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
 
-            self._process_hosts_file(self)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
+            self._process_hosts_file()  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
         files = self._file_list(self.dir_path)
