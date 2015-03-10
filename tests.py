@@ -47,6 +47,21 @@ class SOSCleanerTests(unittest.TestCase):
 
         fh.close()
 
+    def _setUpHostnamePath(self, t='fqdn', remove=False):
+
+        hostname_f = os.path.join(self.testdir, 'hostname2')
+        if remove:
+            os.remove(hostname_f)
+            return True
+
+        fh = open(hostname_f, 'w')
+        if t == 'non-fqdn':
+            fh.write('myhost2\n')
+        else:
+            fh.write('myhost2.myserver2.com\n')
+
+        fh.close()
+
     def setUp(self):
         print "\nSOSCleanerTest:setUp_:begin"
         self.testdir = 'testdata/sosreport_dir'
@@ -130,6 +145,35 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(remove=True)
         host,domain = self.cleaner._get_hostname()
+        self.assertTrue(host == None)
+        self.assertTrue(domain == None)
+
+    def test_get_hostname_path_fqdn(self):
+        # _get_hostname should return the hostname and domainname from the sosreport. testing with an fqdn
+        print "SOSCleanerTest:test_get_hostname_fqdn:begin"
+        self.cleaner.dir_path = 'testdata/sosreport_dir'
+        self._setUpHostnamePath(t='fqdn')
+        host, domain = self.cleaner._get_hostname('hostname2')
+        self.assertTrue(host == 'myhost2')
+        self.assertTrue(domain == 'myserver2.com')
+        print "SOSCleanerTest:test_get_hostname_fqdn:end"
+
+    def test_get_hostname_path_nonfqdn(self):
+        # testing with a non-fqdn
+        print "SOSCleanerTest:test_get_hostname_nonfqdn:begin"
+        self.cleaner.dir_path = 'testdata/sosreport_dir'
+        self._setUpHostnamePath(t='non-fqdn')
+        host, domain = self.cleaner._get_hostname('hostname2')
+        self.assertTrue(host == 'myhost2')
+        self.assertTrue(domain == None)
+        print "SOSCleanerTest:test_get_hostname_nonfqdn:end"
+
+    def test_get_hostname_path_nohostnamefile(self):
+        # testing with no hostname file
+        print "SOSCleanerTest:test_get_hostname_nohostnamefile:begin"
+        self.cleaner.dir_path = 'testdata/sosreport_dir'
+        self._setUpHostnamePath(remove=True)
+        host,domain = self.cleaner._get_hostname('hostname2')
         self.assertTrue(host == None)
         self.assertTrue(domain == None)
 
