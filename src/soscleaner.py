@@ -117,10 +117,12 @@ class SOSCleaner:
 
         #i'd like the stdout to be under another logging name than 'con_out'
         console_log_level = 25  #between INFO and WARNING
+        quiet = self.quiet
         logging.addLevelName(console_log_level, "CONSOLE")
 
         def con_out(self, message, *args, **kws):
-            self._log(console_log_level, message, args, **kws)
+            if not quiet:
+                self._log(console_log_level, message, args, **kws)
 
         logging.Logger.con_out = con_out
 
@@ -157,6 +159,8 @@ class SOSCleaner:
         compression_sig = self.magic.file(path).lower()
         if 'directory' in compression_sig:
             self.logger.info('%s appears to be a %s - continuing', path, compression_sig)
+            # Clear out origin_path as we don't have one
+            self.origin_path = None
             return path
 
         elif 'compressed data' in compression_sig:
@@ -445,11 +449,11 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('SubKeywordError: Unable to Substitute Keywords')'''
 
-    def _get_hostname(self):
+    def _get_hostname(self, hostname='hostname'):
         #gets the hostname and stores hostname/domainname so they can be filtered out later
 
         try:
-            hostfile = os.path.join(self.dir_path, 'hostname')
+            hostfile = os.path.join(self.dir_path, hostname)
             fh = open(hostfile, 'r')
             name_list = fh.readline().rstrip().split('.')
             hostname = name_list[0]
@@ -465,7 +469,8 @@ class SOSCleaner:
             self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
             self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
             self.logger.warning("and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
-            self.logger.exception(e)
+            if not self.quiet:
+                self.logger.exception(e)
 
             hostname = None
             domainname = None
@@ -671,7 +676,10 @@ class SOSCleaner:
         else:   # we DO have an sosreport to analyze
             self.report = self._extract_sosreport(sosreport)
             self._make_dest_env()   # create the working directory
-            self.hostname, self.domainname = self._get_hostname()
+            if options.hostname_path:
+                self.hostname, self.domainname = self._get_hostname(options.hostname_path)
+            else:
+                self.hostname, self.domainname = self._get_hostname()
 
             if options.files:
                 self._add_extra_files(options.files)
