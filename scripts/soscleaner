@@ -8,7 +8,7 @@ import sys
 
 def main():
 
-    parser = OptionParser(usage="%prog [-ldfkqr] /path/to/sosreport",version="%prog 0.2.1")
+    parser = OptionParser(usage="%prog [-ldfknqr] /path/to/sosreport",version="%prog 0.3.0")
     parser.add_option("-l", "--log_level", dest="loglevel", default='INFO',
         help="The Desired Log Level (default = INFO) Options are DEBUG, INFO, WARNING, ERROR",
         metavar="LOGLEVEL")
@@ -30,6 +30,9 @@ def main():
     parser.add_option("--hostname-path", action="store", default="hostname", dest="hostname_path",
         help="optional path to hostname file.",
         metavar="HOSTNAMEPATH")
+    parser.add_option("-n", "--network", action="append", default=[], dest="networks",
+        help="networks to be obfuscatedi (optional). by default it looks through known routes to generate a list from a sosreport",
+        metavar="NETWORK")
 
     (options, args) = parser.parse_args()
     if not args and not options.files: #we don't have an sosreport

@@ -42,7 +42,6 @@ class SOSCleaner:
     def __init__(self, quiet=False):
 
         self.name = 'soscleaner'
-        self.version = '0.2.2'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
         self.quiet = quiet
         self.domain_count = 0
@@ -52,8 +51,10 @@ class SOSCleaner:
         self.report_dir = '/tmp'
 
         # IP obfuscation information
-        self.ip_db = dict() #IP database
-        self.start_ip = '10.230.230.1'
+        self.ip_db = dict() # IP database
+
+        self.network_db = dict()    # network database
+
 
         # Hostname obfuscation information
         self.hn_db = dict() #hostname database
@@ -219,7 +220,6 @@ class SOSCleaner:
     def _get_disclaimer(self):  # pragma: no cover
         #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
 
-        self.logger.con_out("%s version %s" % (self.name, self.version))
         self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
         self.logger.warning("Please review the content before passing it along to any third party.")
 
@@ -294,7 +294,7 @@ class SOSCleaner:
         '''
         try:
             for od,d in self.dn_db.items():
-                #regex = re.compile(r'\w*\.%s' % d)
+                # regex = re.compile(r'\w*\.%s' % d)
                 regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
                 hostnames = [each for each in regex.findall(line)]
                 if len(hostnames) > 0:
@@ -474,7 +474,7 @@ class SOSCleaner:
 
             hostname = None
             domainname = None
-
+    
             return hostname, domainname
 
         except Exception, e: # pragma: no cover

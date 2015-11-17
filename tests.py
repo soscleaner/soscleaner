@@ -25,10 +25,8 @@ import sys
 sys.path.append('src/')
 import unittest
 from soscleaner import SOSCleaner
-import logging
 import os
 import shutil
-from time import sleep
 
 class SOSCleanerTests(unittest.TestCase):
 
