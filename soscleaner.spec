@@ -13,6 +13,10 @@ BuildRequires: python2-devel
 BuildRequires: python-setuptools
 Url: https://github.com/RedHatGov/SOSCleaner
 
+%if 0%{?srpm_build}
+%undefine dist
+%endif
+
 %description
 SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 

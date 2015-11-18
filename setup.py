@@ -17,7 +17,11 @@
 
 from setuptools import setup
 
-version = '0.2.2'
+fh = open('src/VERSION', 'r')
+app_version = fh.read().rstrip()
+fh.close()
+
+version = app_version
 name = 'soscleaner'
 
 setup(
