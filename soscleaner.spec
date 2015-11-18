@@ -3,8 +3,8 @@
 
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
-Version: 0.2.2
-Release: 7%{dist}
+Version: %{APP_VERSION}
+Release: %{APP_RELEASE}%{dist}
 Source0: http://people.redhat.com/jduncan/%{name}/%{name}-%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
