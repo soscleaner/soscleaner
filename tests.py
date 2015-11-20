@@ -183,48 +183,6 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('myhost' in self.cleaner.hn_db.values())
         print "SOSCleanerTest:test_obfuscate_hosts_file:end"
 
-    def test_ip2int(self):
-        print "SOSCleanerTest:test_ip2int:begin"
-        num = self.cleaner._ip2int('192.168.1.10')
-        self.assertTrue(num == 3232235786)
-        print "SOSCleanerTest:test_ip2int:end"
-
-    def test_int2ip(self):
-        print "SOSCleanerTest:test_int2ip:begin"
-        ip = self.cleaner._int2ip(3232235786)
-        self.assertTrue(ip == '192.168.1.10')
-        print "SOSCleanerTest:test_int2ip:end"
-
-    def test_ip2db_newip(self):
-        print "SOSCleanerTest:test_ip2db_newip:begin"
-        self.cleaner.ip_db = dict()  #initialize a new IP database to be sure
-        test_ip = '192.168.1.10'
-        test_int = self.cleaner._ip2int(test_ip)
-        self.cleaner._ip2db(test_ip)
-        self.assertTrue(test_int in self.cleaner.ip_db.values())
-        print "SOSCleanerTest:test_int2ip_newip:end"
-
-    def test_ip2db_addlip(self):
-        print "SOSCleanerTest:test_ip2db_addlip:begin"
-        self.cleaner.ip_db = dict() #initialize a new IP database to be sure
-        test_ip1 = '192.168.1.10'
-        test_ip2 = '192.168.1.11'
-        test_int2 = self.cleaner._ip2int(test_ip2)
-        self.cleaner._ip2db(test_ip1)
-        self.cleaner._ip2db(test_ip2)
-        self.assertTrue(test_int2 in self.cleaner.ip_db.values())
-        print "SOSCLeanerTest:test_ip2db_addlip:end"
-
-    def test_ip2db_existingip(self):
-        print "SOSCleanerTest:test_ip2db_existingip:begin"
-        self.cleaner.ip_db = dict()
-        orig_ob_ip = self.cleaner._ip2db('192.168.1.10')
-        test_ip = '192.168.1.10'
-        new_ob_ip = self.cleaner._ip2db(test_ip)
-        self.assertTrue(new_ob_ip == orig_ob_ip)
-        self.assertTrue(len(self.cleaner.ip_db) == 1)
-        print "SOSCleanerTest:test_ip2db_existingip:end"
-
     def test_skip_files(self):
         print "SOSCleanerTest:test_skip_files:begin"
         d = 'testdata/sosreport_dir'
@@ -314,17 +272,6 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('testdata/sosreport_dir/var/log/messages' in x)
         self.assertTrue('testdata/sosreport_dir/hostname' in x)
         print "SOSCleanerTest:test_file_list:end"
-
-    def test_create_ip_report(self):
-        print "SOSCleanerTest:test_create_ip_report:begin"
-        test_ip = '192.168.1.10'
-        test_o_ip = self.cleaner._ip2db(test_ip)
-        self.cleaner._create_ip_report()
-        fh = open(self.cleaner.ip_report,'r')
-        x = fh.readlines()
-        self.assertTrue(test_ip in x[1])
-        self.assertTrue(test_o_ip in x[1])
-        print "SOSCleanerTest:test_create_ip_report:end"
 
     def test_create_hn_report(self):
         print "SOSCleanerTest:test_create_hn_report:begin"
