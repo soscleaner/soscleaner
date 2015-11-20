@@ -99,24 +99,6 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('log' in self.cleaner.logfile)
         print "SOSCleanerTest:test_prep_environment:end"
 
-    def test_sub_ip_new(self):
-        # _sub_ip() should substitute a new IP into the IP database
-        print "SOSCleanerTest:test_sub_ip_new:begin"
-        line = 'test test2 192.168.1.1 test3'
-        new_line = self.cleaner._sub_ip(line)
-        self.assertFalse(line == new_line)
-        print "SOSCleanerTest:test_sub_ip_new:end"
-
-    def test_sub_ip_existing(self):
-        # _sub_ip() should retrieve an existing IP from the database
-
-        print "SOSCleanerTest:test_sub_ip_existing:begin"
-        line = 'test test2 192.168.1.2 test3'
-        new_line = self.cleaner._sub_ip(line)
-        newer_line = self.cleaner._sub_ip(line)
-        self.assertTrue(new_line == newer_line)
-        print "SOSCleanerTest:test_sub_ip_existing:end"
-
     def test_get_hostname_fqdn(self):
         # _get_hostname should return the hostname and domainname from the sosreport. testing with an fqdn
         print "SOSCleanerTest:test_get_hostname_fqdn:begin"

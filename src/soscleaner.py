@@ -31,6 +31,7 @@ import struct, socket
 import tempfile
 import logging
 import tarfile
+from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 class SOSCleaner:
     '''
@@ -44,17 +45,67 @@ class SOSCleaner:
         self.name = 'soscleaner'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
         self.quiet = quiet
-        self.domain_count = 0
+        self.domain_count = 1
         self.domains = list()
         self.keywords = list()
         self.domainname = None
         self.report_dir = '/tmp'
 
-        # IP obfuscation information
-        self.ip_db = dict() # IP database
+        """
+        Network Obfuscation Information
 
-        self.network_db = dict()    # network database
+        Beginning with version 0.3.0, soscleaner will use the ipaddr module to manage network objects and their obfuscation
+        This will let the program be much more intelligent with how it obfuscates the data while being network away, etc.
 
+        Each entry in net_db represents a network and its obfuscated value
+        net_db is a list of tuples. Each tuple has the following format:
+
+        (original_network, obfuscated_network)
+        so for each entry in net_db, x[0] is the original network as an IPv4Network object
+        and x[1] is the obfuscated network as an IPv4Network object.
+
+        Each entry in ip_db represents a found IP address and its obfuscated value
+
+        When self.clean_report is run, it will populate net_db.
+        Each time an IP is matched against, it will be compared against the values in net_db to see which network it is member to.
+        The IP is then obfuscated sanely with fidelity to the subnet and relative network space.
+
+        If an IP address is matched that doesn't exist in any other, it will be obfuscated with a 'default' Network defined as self.default_net.
+        self.default_net is also used to begin incrementing for each obfuscated network
+
+        There is also a metadata dictionary for the obfuscated networks. It tracks the number of used hosts so the obfuscated networks can be iterated cleanly.
+        This is self.net_metadata. The keys are set when the networks are defined.
+        Current Values:
+            host_count - used to give out the next obfuscated IP address
+
+        The length of the dictionary is also used to determine how many obfuscated networks are in use.
+
+        Assumptions made:
+        - if you use larger subnets than a /8, you will break the math for creating obfuscating networks.
+          
+          Why?
+          To calculate the next obfuscation subnet, I have no idea what the next subnet mask will be, and I don't want to get into crazy CIDR calculations. 
+          SO
+          I take the default_net's first octet, increment it by the current existing obfuscated networks, and create a subnet with the corresponding subnet mask.
+          So the obfuscated network map could end up like:
+          
+          128.0.0.0/8  - default_net
+          129.0.0.0/24 - an obfuscated network
+          130.0.0.0/16 - network 2
+          131.0.0.0/30 - network 3
+          132.0.0.0/8  - network 4
+          133.0.0.0/32 - network 5
+
+          Essentially I'm burning a lot of IP addresses to keep the math simple. The default network starts 1 above the loopback, so we don't have to account for that.
+          I know there are corner cases here that could break the math. I have to hope common sense will prevail... -jduncan
+        """
+
+        self.net_db = list() # Network Information database
+        self.ip_db = list()
+        self.default_net = IPv4Network('128.0.0.0/8')
+        self.default_netmask = self.default_net.prefixlen
+        self.net_count = 0  # we'll have to keep track of how many networks we have so we don't have to count them each time we need to create a new one.
+        self.net_metadata = dict()
 
         # Hostname obfuscation information
         self.hn_db = dict() #hostname database
@@ -64,9 +115,6 @@ class SOSCleaner:
         # Domainname obfuscation information
         self.dn_db = dict() #domainname database
         self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
-
-        # self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
-        # self._start_logging(self.logfile)
 
         # Keyword obfuscation information
         self.keywords = None
@@ -121,7 +169,7 @@ class SOSCleaner:
         quiet = self.quiet
         logging.addLevelName(console_log_level, "CONSOLE")
 
-        def con_out(self, message, *args, **kws):
+        def con_out(self, message, *args, **kws):   # pragma: no cover
             if not quiet:
                 self._log(console_log_level, message, args, **kws)
 
@@ -202,14 +250,14 @@ class SOSCleaner:
         This will substitute an obfuscated IP for each instance of a given IP in a file
         This is called in the self._clean_line function, along with user _sub_* functions to scrub a given
         line in a file.
-        It scans a given line and if an IP exists, it obfuscates the IP using _ip2db and returns the altered line
+        It scans a given line and if an IP exists, it obfuscates the IP using _ip4_2_db and returns the altered line
         '''
         try:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
-                    new_ip = self._ip2db(ip)
+                    new_ip = self._ip4_2_db(ip)
                     self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
                     line = line.replace(ip, new_ip)
             return line
@@ -222,25 +270,6 @@ class SOSCleaner:
 
         self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
         self.logger.warning("Please review the content before passing it along to any third party.")
-
-    def _create_ip_report(self):
-        '''
-        this will take the obfuscated ip and hostname databases and output csv files
-        '''
-        try:
-            ip_report_name = os.path.join(self.report_dir, "%s-ip.csv" % self.session)
-            self.logger.con_out('Creating IP Report - %s', ip_report_name)
-            ip_report = open(ip_report_name, 'w')
-            ip_report.write('Obfuscated IP,Original IP\n')
-            for k,v in self.ip_db.items():
-                ip_report.write('%s,%s\n' %(self._int2ip(k),self._int2ip(v)))
-            ip_report.close()
-            self.logger.info('Completed IP Report')
-
-            self.ip_report = ip_report_name
-        except Exception,e: # pragma: no cover
-            self.logger.exception(e)
-            raise Exception('CreateReport Error: Error Creating IP Report')
 
     def _create_hn_report(self):
         try:
@@ -481,43 +510,157 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
 
-    def _ip2int(self, ipstr):
-        #converts a dotted decimal IP address into an integer that can be incremented
-        integer = struct.unpack('!I', socket.inet_aton(ipstr))[0]
+    def _process_route_file(self):
+        '''
+        When there is a full sosreport, this will parse the output from the route command to populate self.net_db
+        '''
+        try:
+            route_path = os.path.join(self.dir_path, 'route')
+            fh = open(route_path, 'r')
+            data = fh.readlines()[2:]   # skip the first 2 header lines and get down to the data
+            for line in data:
+                x = line.split()
+                    if not x[0] == '0.0.0.0':   # skip the default gateway
+                        net_string = "%s/%s" % (x[0],x[2])
+                        self._ip4_add_network(net_string)
+            fh.close()
+        except Exception, e:
+            self.logger.exception(e)
+            raise e
 
-        return integer
+    def _ip4_new_obfuscate_net(self, netmask):
+        '''
+        This will return a new IPv4 Network Object for a newly obfuscated network
+        '''
+        try:
+            # this is going to get hacky
+            start_point = self.default_net.broadcast + 1    # this will return an IPv4Address object that is 129.0.0.0
+            x = start_point.compressed.split('.')  # break it apart
+            new_octet = str(int(x[0]) + self.net_count)   # calculate the new first octet
 
-    def _int2ip(self, num):
-        #converts an integer stored in the IP database into a dotted decimal IP
-        ip = socket.inet_ntoa(struct.pack('!I', num))
+            self.net_count += 1
+            new_net_string = "%s.0.0.0/%s" % (new_octet, netmask)   # a new string to create the new obfuscated network object
+            retval = IPv4Network(new_net_string)
 
-        return ip
+            return retval
 
-    def _ip2db(self, ip):
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise e
+
+    def _ip4_parse_network(self, network):
+        '''
+        This will take the input values and return useable objects from them.
+        Generated:
+        an IPv4Network object for the original network
+        a string value for the subnet mask that is used to create the obfuscated network
+        '''
+        try:
+            net = IPv4Network(network)
+            subnet = str(net.prefixlen)            
+             
+            return net, subnet
+
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise e
+
+    def _ip4_network_in_db(self, network):
+        '''
+        This will return True if a network already exists in net_db
+        It is used in _ip4_add_network to ensure we don't get duplicate network entries
+        '''
+        try:
+            if any(network in x for x in self.net_db):
+                return True
+            return False
+
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise e
+
+    def _ip4_add_network(self, network):
+        '''
+        This will take any networks specified via the command-line parameters as well as the routes file (if present)
+        and create obfuscated networks for each of them. 
+        This is called within self._process_route_file as well as in self.clean_report
+        '''
+        try:
+            net, netmask = self._ip4_parse_network(network)
+
+            if not self._ip4_network_in_db(net): # make sure we don't have duplicates
+                new_net = self._ip4_new_obfuscate_net(netmask)    # the obfuscated network
+                new_entry = (net, new_net)
+
+                self.net_db.append(new_entry)
+                self.logger.con_out("Created New Obfuscated Network - %s" % new_net.with_prefixlen) 
+                self.net_metadata[new_net.network.compressed] = dict()
+                self.logger.info("Adding Entry to Network Metadata Database - %s" % new_net.with_prefixlen)
+                self.net_metadata[new_net.network.compressed]['host_count'] = 0
+            else:
+                self.logger.info("Network already exists in database. Not obfuscating. - %s" % network)
+
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception(e)
+
+    def _ip4_find_network(self, ip):
+        '''
+        This will take an IP address and return back the obfuscated network that it belongs to
+        The ip parameter must by an IPv4Address object.
+        This is called by the _ip4_2_db function
+        '''
+        try:
+            for net in self.net_db:
+                if ip in net[0]:
+                    ret_net = net[1]   # we have a match! We'll return the proper obfuscated network
+                else:
+                    ret_net = self.default_net
+
+                return ret_net
+
+        except Exception, e: # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('ip4_find_network error: cannot find a network for this IP address: %s') % ip
+
+    def _ip4_check_db(self, ip):
+        '''
+        Returns True if an IP is found the the obfuscation database
+        Returns False otherwise 
+        The ip parameter is an IPv4Address object
+        This function is called from within _ip4_2_db
+        '''
+        try:
+            if any(ip in x for x in self.ip_db):                                                                                                                                   
+                return True
+            return False
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise e
+
+    def _ip4_2_db(self, ip):
         '''
         adds an IP address to the IP database and returns the obfuscated entry, or returns the
         existing obfuscated IP entry
-        FORMAT:
-        {$obfuscated_ip: $original_ip,}
         '''
+        try:
+            orig_ip = IPv4Address(ip)
+            if self._ip4_check(orig_ip):    # the IP exists already in the database
+                data = dict(self.ip_db)     # http://stackoverflow.com/a/18114565/263834
+                obf_ip = data[orig_ip]
 
-        ip_num = self._ip2int(ip)
-        ip_found = False
-        db = self.ip_db
-        for k,v in db.iteritems():
-            if v == ip_num:
-                ret_ip = self._int2ip(k)
-                ip_found = True
-        if ip_found:                #the entry already existed
-            return ret_ip
-        else:                       #the entry did not already exist
-            if len(self.ip_db) > 0:
-                new_ip = max(db.keys()) + 1
-            else:
-                new_ip = self._ip2int(self.start_ip)
-            db[new_ip] = ip_num
+                return obf_ip
 
-            return self._int2ip(new_ip)
+            else:   # it's a new database, so we have to create a new obfuscated IP for the proper network and a new ip_db entry
+                net = self._ip4_find_network(orig_ip)   # get the network information
+                last_octet = self.net_metadata[net.network.compressed]['host_count'] + 1
+            
+
+               
+        except Exception, e:    # pragma: no cover
+            self.logger.excpetion(e)
+            raise e
 
     def _hn2db(self, hn):
         '''
@@ -661,6 +804,10 @@ class SOSCleaner:
         self._start_logging(self.logfile)
         self._check_uid() #make sure it's soscleaner is running as root
         self._get_disclaimer()
+        if options.networks:    # we have defined networks
+            self.networks = options.networks
+            for network in options.networks:
+                self._ip4_add_network(network) 
         if options.domains:
             self.domains = options.domains
         if options.keywords:
@@ -671,6 +818,8 @@ class SOSCleaner:
                 raise Exception("Error: You must supply either an sosreport and/or files to process")
 
             self.logger.con_out("No sosreport supplied. Only processing specific files")
+            if not options.networks:
+                self.logger.con_out("No sosreport supplied and no networks specified. All IP addresses will be obfuscated into the same default subnet")
             self._clean_files_only(options.files)
 
         else:   # we DO have an sosreport to analyze
@@ -680,7 +829,7 @@ class SOSCleaner:
                 self.hostname, self.domainname = self._get_hostname(options.hostname_path)
             else:
                 self.hostname, self.domainname = self._get_hostname()
-
+            self._process_route_file()
             if options.files:
                 self._add_extra_files(options.files)
 
