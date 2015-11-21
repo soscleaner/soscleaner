@@ -107,6 +107,9 @@ class SOSCleaner:
         self.net_count = 0  # we'll have to keep track of how many networks we have so we don't have to count them each time we need to create a new one.
         self.net_metadata = dict()
 
+        self.net_metadata[self.default_net.network.compressed] = dict()
+        self.net_metadata[self.default_net.network.compressed]['host_count'] = 0
+
         # Hostname obfuscation information
         self.hn_db = dict() #hostname database
         self.hostname_count = 0
@@ -326,8 +329,7 @@ class SOSCleaner:
                 # regex = re.compile(r'\w*\.%s' % d)
                 regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
                 hostnames = [each for each in regex.findall(line)]
-                if len(hostnames) > 0:
-                    for hn in hostnames:
+                if len(hostnames) > 0self.default_net.network.compressed:
                         new_hn = self._hn2db(hn)
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
@@ -516,14 +518,19 @@ class SOSCleaner:
         '''
         try:
             route_path = os.path.join(self.dir_path, 'route')
-            fh = open(route_path, 'r')
-            data = fh.readlines()[2:]   # skip the first 2 header lines and get down to the data
-            for line in data:
-                x = line.split()
+            if os.path.exists(route_path):
+                fh = open(route_path, 'r')
+                os.logger.info("Found route file. Auto-adding routed networks.")
+                data = fh.readlines()[2:]   # skip the first 2 header lines and get down to the data
+                for line in data:
+                    x = line.split()
                     if not x[0] == '0.0.0.0':   # skip the default gateway
                         net_string = "%s/%s" % (x[0],x[2])
                         self._ip4_add_network(net_string)
-            fh.close()
+                        self.logger.debug("Network Added by Auto-Route Processing.")
+                fh.close()
+            else:
+                self.logger.info("No route file found. Unable to auto-add routed networks for this system.")
         except Exception, e:
             self.logger.exception(e)
             raise e
@@ -593,9 +600,10 @@ class SOSCleaner:
                 new_entry = (net, new_net)
 
                 self.net_db.append(new_entry)
-                self.logger.con_out("Created New Obfuscated Network - %s" % new_net.with_prefixlen) 
+                self.logger.con_out("Created New Obfuscated Network - %s" % new_net.with_prefixlen)
+                 
                 self.net_metadata[new_net.network.compressed] = dict()
-                self.logger.info("Adding Entry to Network Metadata Database - %s" % new_net.with_prefixlen)
+                self.logger.info("Adding host_count Entry to Network Metadata Database - %s" % new_net.with_prefixlen)
                 self.net_metadata[new_net.network.compressed]['host_count'] = 0
             else:
                 self.logger.info("Network already exists in database. Not obfuscating. - %s" % network)
@@ -609,6 +617,8 @@ class SOSCleaner:
         This will take an IP address and return back the obfuscated network that it belongs to
         The ip parameter must by an IPv4Address object.
         This is called by the _ip4_2_db function
+        The value returned is a string that is the network address for the given network - IPv4Network.network.compressed
+        This can be used to create a new obfuscated IP address for this value
         '''
         try:
             for net in self.net_db:
@@ -617,13 +627,13 @@ class SOSCleaner:
                 else:
                     ret_net = self.default_net
 
-                return ret_net
+                return ret_net.network.compressed
 
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('ip4_find_network error: cannot find a network for this IP address: %s') % ip
 
-    def _ip4_check_db(self, ip):
+    def _ip4_in_db(self, ip):
         '''
         Returns True if an IP is found the the obfuscation database
         Returns False otherwise 
@@ -646,20 +656,27 @@ class SOSCleaner:
         '''
         try:
             orig_ip = IPv4Address(ip)
-            if self._ip4_check(orig_ip):    # the IP exists already in the database
+            if self._ip4_in_db(orig_ip):    # the IP exists already in the database
                 data = dict(self.ip_db)     # http://stackoverflow.com/a/18114565/263834
-                obf_ip = data[orig_ip]
+                obf_ip = data[orig_ip]      # we'll pull the existing obfuscated IP from the database
 
                 return obf_ip
 
             else:   # it's a new database, so we have to create a new obfuscated IP for the proper network and a new ip_db entry
                 net = self._ip4_find_network(orig_ip)   # get the network information
-                last_octet = self.net_metadata[net.network.compressed]['host_count'] + 1
-            
+                last_octet = self.net_metadata[net]['host_count'] + 1
+                self.net_metadata[net]['host_count'] = last_octet     # increment the host count
 
-               
+                obf_host = net.split('.')[:3]
+                obf_host.append(str(last_octet))
+
+                obf_ip = IPv4Address('.'.join(obf_host))
+
+                self.ip_db.append((orig_ip, obf_ip))
+
+                               
         except Exception, e:    # pragma: no cover
-            self.logger.excpetion(e)
+            self.logger.exception(e)
             raise e
 
     def _hn2db(self, hn):
