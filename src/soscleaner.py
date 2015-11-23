@@ -329,7 +329,7 @@ class SOSCleaner:
                 # regex = re.compile(r'\w*\.%s' % d)
                 regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
                 hostnames = [each for each in regex.findall(line)]
-                if len(hostnames) > 0self.default_net.network.compressed:
+                if len(hostnames) > self.default_net.network.compressed:
                         new_hn = self._hn2db(hn)
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
@@ -621,13 +621,12 @@ class SOSCleaner:
         This can be used to create a new obfuscated IP address for this value
         '''
         try:
+            network = self.default_net.network.compressed
             for net in self.net_db:
                 if ip in net[0]:
-                    ret_net = net[1]   # we have a match! We'll return the proper obfuscated network
-                else:
-                    ret_net = self.default_net
-
-                return ret_net.network.compressed
+                    network = net[1].network.compressed   # we have a match! We'll return the proper obfuscated network
+        
+            return network
 
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
@@ -674,6 +673,7 @@ class SOSCleaner:
 
                 self.ip_db.append((orig_ip, obf_ip))
 
+                return obf_ip.compressed
                                
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
