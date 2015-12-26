@@ -333,6 +333,10 @@ class SOSCleaner:
                         new_hn = self._hn2db(hn)
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
+                        # replace any non-fqdn occurrences of the hostname
+                        for entry in line.split():
+                            if hn.startswith(entry):
+                                line = line.replace(entry, new_hn.split('.')[0])
             if self.hostname:
                 line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
 
