@@ -31,6 +31,7 @@ import struct, socket
 import tempfile
 import logging
 import tarfile
+import socket
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 class SOSCleaner:
@@ -82,13 +83,13 @@ class SOSCleaner:
 
         Assumptions made:
         - if you use larger subnets than a /8, you will break the math for creating obfuscating networks.
-          
+
           Why?
-          To calculate the next obfuscation subnet, I have no idea what the next subnet mask will be, and I don't want to get into crazy CIDR calculations. 
+          To calculate the next obfuscation subnet, I have no idea what the next subnet mask will be, and I don't want to get into crazy CIDR calculations.
           SO
           I take the default_net's first octet, increment it by the current existing obfuscated networks, and create a subnet with the corresponding subnet mask.
           So the obfuscated network map could end up like:
-          
+
           128.0.0.0/8  - default_net
           129.0.0.0/24 - an obfuscated network
           130.0.0.0/16 - network 2
@@ -260,13 +261,14 @@ class SOSCleaner:
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
-                    new_ip = self._ip4_2_db(ip)
-                    self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
-                    line = line.replace(ip, new_ip)
+                        new_ip = self._ip4_2_db(ip)
+                        self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+                        line = line.replace(ip, new_ip)
             return line
+
         except Exception,e: # pragma: no cover
             self.logger.exception(e)
-            raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
+            raise e
 
     def _get_disclaimer(self):  # pragma: no cover
         #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
@@ -312,6 +314,23 @@ class SOSCleaner:
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating Domainname Report')
+
+    def _create_ip_report(self):
+        try:
+            ip_report_name = os.path.join(self.report_dir, "%s-ip.csv" % self.session)
+            self.logger.con_out('Creating IP Report - %s', ip_report_name)
+            ip_report = open(ip_report_name, 'w')
+            ip_report.write('Original IP,Obfuscated IP\n')
+            for i in self.ip_db:
+                ip_report.write('%s,%s\n' % (i[0],i[1]))
+            ip_report.close()
+            self.logger.info('Completed IP Report')
+
+            self.ip_report = ip_report_name
+
+        except Exception, e: # pragma: no cover
+            self.logger.exception(e)
+            raise e
 
     def _create_reports(self): # pragma: no cover
 
@@ -509,7 +528,7 @@ class SOSCleaner:
 
             hostname = None
             domainname = None
-    
+
             return hostname, domainname
 
         except Exception, e: # pragma: no cover
@@ -524,7 +543,7 @@ class SOSCleaner:
             route_path = os.path.join(self.dir_path, 'route')
             if os.path.exists(route_path):
                 fh = open(route_path, 'r')
-                os.logger.info("Found route file. Auto-adding routed networks.")
+                self.logger.info("Found route file. Auto-adding routed networks.")
                 data = fh.readlines()[2:]   # skip the first 2 header lines and get down to the data
                 for line in data:
                     x = line.split()
@@ -568,8 +587,8 @@ class SOSCleaner:
         '''
         try:
             net = IPv4Network(network)
-            subnet = str(net.prefixlen)            
-             
+            subnet = str(net.prefixlen)
+
             return net, subnet
 
         except Exception, e:    # pragma: no cover
@@ -593,7 +612,7 @@ class SOSCleaner:
     def _ip4_add_network(self, network):
         '''
         This will take any networks specified via the command-line parameters as well as the routes file (if present)
-        and create obfuscated networks for each of them. 
+        and create obfuscated networks for each of them.
         This is called within self._process_route_file as well as in self.clean_report
         '''
         try:
@@ -605,9 +624,9 @@ class SOSCleaner:
 
                 self.net_db.append(new_entry)
                 self.logger.con_out("Created New Obfuscated Network - %s" % new_net.with_prefixlen)
-                 
+
                 self.net_metadata[new_net.network.compressed] = dict()
-                self.logger.info("Adding host_count Entry to Network Metadata Database - %s" % new_net.with_prefixlen)
+                self.logger.info("Adding Entry to Network Metadata Database - %s" % new_net.with_prefixlen)
                 self.net_metadata[new_net.network.compressed]['host_count'] = 0
             else:
                 self.logger.info("Network already exists in database. Not obfuscating. - %s" % network)
@@ -619,32 +638,32 @@ class SOSCleaner:
     def _ip4_find_network(self, ip):
         '''
         This will take an IP address and return back the obfuscated network that it belongs to
-        The ip parameter must by an IPv4Address object.
         This is called by the _ip4_2_db function
         The value returned is a string that is the network address for the given network - IPv4Network.network.compressed
         This can be used to create a new obfuscated IP address for this value
         '''
         try:
-            network = self.default_net.network.compressed
+            ip = IPv4Address(ip)    # re-cast as an IPv4 object
+            network = self.default_net.network
             for net in self.net_db:
                 if ip in net[0]:
-                    network = net[1].network.compressed   # we have a match! We'll return the proper obfuscated network
-        
+                    network = net[1].network   # we have a match! We'll return the proper obfuscated network
+
             return network
 
         except Exception, e: # pragma: no cover
             self.logger.exception(e)
-            raise Exception('ip4_find_network error: cannot find a network for this IP address: %s') % ip
+            raise e
 
     def _ip4_in_db(self, ip):
         '''
         Returns True if an IP is found the the obfuscation database
-        Returns False otherwise 
+        Returns False otherwise
         The ip parameter is an IPv4Address object
         This function is called from within _ip4_2_db
         '''
         try:
-            if any(ip in x for x in self.ip_db):                                                                                                                                   
+            if any(ip in x for x in self.ip_db):
                 return True
             return False
 
@@ -652,36 +671,31 @@ class SOSCleaner:
             self.logger.exception(e)
             raise e
 
-    def _ip4_2_db(self, ip):
+    def _ip4_2_db(self, orig_ip):
         '''
         adds an IP address to the IP database and returns the obfuscated entry, or returns the
         existing obfuscated IP entry
         '''
         try:
-            orig_ip = IPv4Address(ip)
             if self._ip4_in_db(orig_ip):    # the IP exists already in the database
                 data = dict(self.ip_db)     # http://stackoverflow.com/a/18114565/263834
                 obf_ip = data[orig_ip]      # we'll pull the existing obfuscated IP from the database
 
-                return obf_ip
+                return obf_ip.compressed
 
             else:   # it's a new database, so we have to create a new obfuscated IP for the proper network and a new ip_db entry
                 net = self._ip4_find_network(orig_ip)   # get the network information
-                last_octet = self.net_metadata[net]['host_count'] + 1
-                self.net_metadata[net]['host_count'] = last_octet     # increment the host count
+                self.net_metadata[net.compressed]['host_count'] += 1
 
-                obf_host = net.split('.')[:3]
-                obf_host.append(str(last_octet))
-
-                obf_ip = IPv4Address('.'.join(obf_host))
+                obf_ip = IPv4Address(net) + self.net_metadata[net.compressed]['host_count']
 
                 self.ip_db.append((orig_ip, obf_ip))
 
                 return obf_ip.compressed
-                               
-        except Exception, e:    # pragma: no cover
+
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise
 
     def _hn2db(self, hn):
         '''
@@ -828,7 +842,7 @@ class SOSCleaner:
         if options.networks:    # we have defined networks
             self.networks = options.networks
             for network in options.networks:
-                self._ip4_add_network(network) 
+                self._ip4_add_network(network)
         if options.domains:
             self.domains = options.domains
         if options.keywords:
@@ -861,7 +875,7 @@ class SOSCleaner:
 
         self._domains2db()
         files = self._file_list(self.dir_path)
-        self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
+        self.logger.con_out("IP Obfuscation Network Created - %s", self.default_net.compressed)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
