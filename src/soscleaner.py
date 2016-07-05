@@ -261,9 +261,9 @@ class SOSCleaner:
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
-                        new_ip = self._ip4_2_db(ip)
-                        self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
-                        line = line.replace(ip, new_ip)
+                    new_ip = self._ip4_2_db(ip)
+                    self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+                    line = line.replace(ip, new_ip)
             return line
 
         except Exception,e: # pragma: no cover
@@ -609,6 +609,25 @@ class SOSCleaner:
             self.logger.exception(e)
             raise e
 
+    def _add_loopback_network(self):
+        '''
+        This will add an entry into the needed databases to keep loopback addresses somewhat sane. They will be obfuscated, but within the loopback numberspace.
+        So more of a shuffler than anything else.
+        '''
+        try:
+            self.logger.info("Adding Entry to Network Metadata Database - 127.0.0.0")
+            self.net_metadata['127.0.0.0'] = dict()
+            self.net_metadata['127.0.0.0']['host_count'] = 0
+
+            lb_net = IPv4Network('127.0.0.0/8')
+            loopback_entry = (lb_net, lb_net)
+            self.net_db.append(loopback_entry)
+            self.logger.con_out("Creating Loopback Network Entry")
+
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception(e)
+
     def _ip4_add_network(self, network):
         '''
         This will take any networks specified via the command-line parameters as well as the routes file (if present)
@@ -686,9 +705,8 @@ class SOSCleaner:
             else:   # it's a new database, so we have to create a new obfuscated IP for the proper network and a new ip_db entry
                 net = self._ip4_find_network(orig_ip)   # get the network information
                 self.net_metadata[net.compressed]['host_count'] += 1
-
+                # take the network and increment the number of hosts to get to the next available IP
                 obf_ip = IPv4Address(net) + self.net_metadata[net.compressed]['host_count']
-
                 self.ip_db.append((orig_ip, obf_ip))
 
                 return obf_ip.compressed
@@ -839,6 +857,7 @@ class SOSCleaner:
         self._start_logging(self.logfile)
         self._check_uid() #make sure it's soscleaner is running as root
         self._get_disclaimer()
+        self._add_loopback_network()
         if options.networks:    # we have defined networks
             self.networks = options.networks
             for network in options.networks:
