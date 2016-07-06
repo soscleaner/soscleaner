@@ -27,46 +27,39 @@ import unittest
 from soscleaner import SOSCleaner
 import os
 import shutil
+from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 class SOSCleanerTests(unittest.TestCase):
-
     def _setUpHostname(self, t='fqdn', remove=False):
-
         hostname_f = os.path.join(self.testdir, 'hostname')
         if remove:
             os.remove(hostname_f)
             return True
-
         fh = open(hostname_f, 'w')
         if t == 'non-fqdn':
             fh.write('myhost\n')
         else:
             fh.write('myhost.myserver.com\n')
-
         fh.close()
 
     def _setUpHostnamePath(self, t='fqdn', remove=False):
-
         hostname_f = os.path.join(self.testdir, 'hostname2')
         if remove:
             os.remove(hostname_f)
             return True
-
         fh = open(hostname_f, 'w')
         if t == 'non-fqdn':
             fh.write('myhost2\n')
         else:
             fh.write('myhost2.myserver2.com\n')
-
         fh.close()
 
     def setUp(self):
-        print "\nSOSCleanerTest:setUp_:begin"
         self.testdir = 'testdata/sosreport_dir'
         self.cleaner = SOSCleaner(quiet=True)
         self.cleaner.origin_path, self.cleaner.dir_path, self.cleaner.session, self.cleaner.logfile, self.cleaner.uuid = self.cleaner._prep_environment()
         self.cleaner._start_logging(self.cleaner.logfile)
-        print "SOSCleanerTest:setUp_:end"
+        self._setUpHostname()
 
     def _artifact_cleanup(self,directory):
         #clean up the /tmp directory between tests, when artifacts are created
@@ -74,135 +67,106 @@ class SOSCleanerTests(unittest.TestCase):
             a = os.path.join(directory,f)
             if 'soscleaner' in f:
                 if os.path.isdir(a):
-                    print "Removing Directory: %s" % a
                     shutil.rmtree(a)
                 else:
-                    print "Removing File: %s" % a
                     os.remove(a)
 
     def tearDown(self):
-        print "SOSCleanerTest:tearDown_:begin"
-        #self._artifact_cleanup('/tmp')
-        print "SOSCleanerTest:tearDown_:end"
+        self._artifact_cleanup('/tmp')
 
-    def test_prep_environment(self):
+    def test0_prep_environment(self):
         # _prep_environment() should create 4 values
         # * self.origin_path - path the sosreport is extracted to
         # * self.dir_path - path cleaned report is written to
         # * self.session - soscleaner-$timestamp - used for naming files/reports/etc.
         # * self.logfile - location of logfile
 
-        print "SOSCleanerTest:test_prep_environment:begin"
         self.assertTrue('soscleaner-origin' in self.cleaner.origin_path)
         self.assertTrue('soscleaner' in self.cleaner.dir_path)
         self.assertTrue('soscleaner' in self.cleaner.session)
         self.assertTrue('log' in self.cleaner.logfile)
-        print "SOSCleanerTest:test_prep_environment:end"
 
-    def test_get_hostname_fqdn(self):
+    def test1_get_hostname_fqdn(self):
         # _get_hostname should return the hostname and domainname from the sosreport. testing with an fqdn
-        print "SOSCleanerTest:test_get_hostname_fqdn:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(t='fqdn')
         host, domain = self.cleaner._get_hostname()
         self.assertTrue(host == 'myhost')
         self.assertTrue(domain == 'myserver.com')
-        print "SOSCleanerTest:test_get_hostname_fqdn:end"
 
-    def test_get_hostname_nonfqdn(self):
+    def test2_get_hostname_nonfqdn(self):
         # testing with a non-fqdn
-        print "SOSCleanerTest:test_get_hostname_nonfqdn:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(t='non-fqdn')
         host, domain = self.cleaner._get_hostname()
         self.assertTrue(host == 'myhost')
         self.assertTrue(domain == None)
-        print "SOSCleanerTest:test_get_hostname_nonfqdn:end"
 
-    def test_get_hostname_nohostnamefile(self):
+    def test3_get_hostname_nohostnamefile(self):
         # testing with no hostname file
-        print "SOSCleanerTest:test_get_hostname_nohostnamefile:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(remove=True)
         host,domain = self.cleaner._get_hostname()
         self.assertTrue(host == None)
         self.assertTrue(domain == None)
 
-    def test_get_hostname_path_fqdn(self):
+    def test4_get_hostname_path_fqdn(self):
         # _get_hostname should return the hostname and domainname from the sosreport. testing with an fqdn
-        print "SOSCleanerTest:test_get_hostname_fqdn:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostnamePath(t='fqdn')
         host, domain = self.cleaner._get_hostname('hostname2')
         self.assertTrue(host == 'myhost2')
         self.assertTrue(domain == 'myserver2.com')
-        print "SOSCleanerTest:test_get_hostname_fqdn:end"
 
-    def test_get_hostname_path_nonfqdn(self):
+    def test5_get_hostname_path_nonfqdn(self):
         # testing with a non-fqdn
-        print "SOSCleanerTest:test_get_hostname_nonfqdn:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostnamePath(t='non-fqdn')
         host, domain = self.cleaner._get_hostname('hostname2')
         self.assertTrue(host == 'myhost2')
         self.assertTrue(domain == None)
-        print "SOSCleanerTest:test_get_hostname_nonfqdn:end"
 
-    def test_get_hostname_path_nohostnamefile(self):
+    def test6_get_hostname_path_nohostnamefile(self):
         # testing with no hostname file
-        print "SOSCleanerTest:test_get_hostname_nohostnamefile:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostnamePath(remove=True)
         host,domain = self.cleaner._get_hostname('hostname2')
         self.assertTrue(host == None)
         self.assertTrue(domain == None)
 
-    def test_obfuscate_hosts_file(self):
+    def test7_obfuscate_hosts_file(self):
         # testing hosts file extra processing
-        print "SOSCleanerTest:test_obfuscate_hosts_file:begin"
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self.cleaner._process_hosts_file()
         self.assertTrue('myhost' in self.cleaner.hn_db.values())
-        print "SOSCleanerTest:test_obfuscate_hosts_file:end"
 
-    def test_skip_files(self):
-        print "SOSCleanerTest:test_skip_files:begin"
+    def test8_skip_files(self):
         d = 'testdata/sosreport_dir'
         files = ['test.bin','test.txt']
         skip_list = self.cleaner._skip_file(d,files)
         self.assertTrue('test.bin' in skip_list)
         self.assertTrue('test.txt' not in skip_list)
-        print "SOSCleanerTest:test_skip_files:end"
 
-    def test_extract_sosreport_dir(self):
-        print "SOSCleaner:test_extract_sosreport_dir:begin"
+    def test9_extract_sosreport_dir(self):
         d = self.cleaner._extract_sosreport(self.testdir)
         self.assertTrue(d == self.testdir)
-        print "SOSCleaner:test_extract_sosreport_dir:end"
 
-    def test_extract_sosreport_gz(self):
-        print "SOSCleaner:test_extract_sosreport_gz:begin"
+    def test10_extract_sosreport_gz(self):
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.gz')
         check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
         self.assertTrue(d == check_d)
-        print "SOSCleaner:test_extract_sosreport_gz:end"
 
-    def test_extract_sosreport_bz(self):
-        print "SOSCleaner:test_extract_sosreport_bz:begin"
+    def test11_extract_sosreport_bz(self):
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.gz')
         check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
         self.assertTrue(d == check_d)
-        print "SOSCleaner:test_extract_sosreport_bz:end"
 
-    def test_extract_sosreport_xz(self):
-        print "SOSCleaner:test_extract_sosreport_xz:begin"
+    def test12_extract_sosreport_xz(self):
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.xz')
         check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
         self.assertTrue(d == check_d)
-        print "SOSCleaner:test_extract_sosreport_xz:end"
 
-    def test_clean_line(self):
-        print "SOSCleanerTest:test_clean_line:begin"
+    def test13_clean_line(self):
         hostname = 'myhost.myservers.com'
         ip = '192.168.1.10'
         line = "foo bar %s some words %s more words" % (hostname, ip)
@@ -210,19 +174,15 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.process_hostnames = True
         self.cleaner.domainname = 'example.com'
         self.cleaner.dn_db['example.com'] = 'myservers.com'
-        new_line = 'foo bar %s some words %s more words' % (self.cleaner._hn2db(hostname), self.cleaner._ip2db(ip))
+        new_line = 'foo bar %s some words %s more words' % (self.cleaner._hn2db(hostname), self.cleaner._ip4_2_db(ip))
         self.assertTrue(self.cleaner._clean_line(line) == new_line)
-        print "SOSCleanerTest:test_clean_line:end"
 
-    def test_make_dest_env(self):
-        print "SOSCleanerTest:test_make_dest_env:begin"
+    def test14_make_dest_env(self):
         self.cleaner.report = self.testdir
         self.cleaner._make_dest_env()
         self.assertTrue(os.path.isdir(self.cleaner.dir_path))
-        print "SOSCleanerTest:test_make_dest_env:begin"
 
-    def test_create_archive(self):
-        print "SOSCleanerTest:test_create_archive:begin"
+    def test15_create_archive(self):
         origin_test = '/tmp/origin-testdir'
         dir_test = '/tmp/path-testdir'
         for d in origin_test, dir_test:
@@ -230,33 +190,25 @@ class SOSCleanerTests(unittest.TestCase):
                 shutil.copytree(self.testdir, d)
         self.cleaner.origin_path = origin_test
         self.cleaner.dir_path = dir_test
-        print self.cleaner.logfile
-        print os.path.isfile(self.cleaner.logfile)
         self.cleaner._create_archive()
         self.assertTrue(os.path.isfile(self.cleaner.archive_path))
         self.assertFalse(os.path.exists(origin_test))
         self.assertFalse(os.path.exists(dir_test))
-        print "SOSCleanerTest:test_create_archive:end"
 
-    def test_domains2db_fqdn(self):
-        print "SOSCleanerTest:test_domains2db_fqdn:begin"
+    def test16_domains2db_fqdn(self):
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.domains = ['foo.com','bar.com']
         self.cleaner._domains2db()
         self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.values())
         self.assertTrue('foo.com' in self.cleaner.dn_db.values())
         self.assertTrue('bar.com' in self.cleaner.dn_db.values())
-        print "SOSCleanerTest:test_domains2db_fqdn:end"
 
-    def test_file_list(self):
-        print "SOSCleanerTest:test_file_list:begin"
+    def test17_file_list(self):
         x = self.cleaner._file_list('testdata/sosreport_dir')
         self.assertTrue('testdata/sosreport_dir/var/log/messages' in x)
         self.assertTrue('testdata/sosreport_dir/hostname' in x)
-        print "SOSCleanerTest:test_file_list:end"
 
-    def test_create_hn_report(self):
-        print "SOSCleanerTest:test_create_hn_report:begin"
+    def test18_create_hn_report(self):
         test_hn = 'myhost.myserver.com'
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.process_hostnames = True
@@ -266,19 +218,15 @@ class SOSCleanerTests(unittest.TestCase):
         x = fh.readlines()
         self.assertTrue(test_hn in x[1])
         self.assertTrue(test_o_hn in x[1])
-        print "SOSCleanerTest:test_create_hn_report:end"
 
-    def test_create_hn_report_nohn(self):
-        print "SOSCleanerTest:test_create_hn_report_nohn:begin"
+    def test19_create_hn_report_nohn(self):
         self.cleaner.process_hostnames = False
         self.cleaner._create_hn_report()
         fh = open(self.cleaner.hn_report, 'r')
         lines = fh.readlines()
         self.assertTrue(lines[1] == 'None,None\n')
-        print "SOSCleanerTest:test_create_hn_report_nohn:end"
 
-    def test_create_dn_report(self):
-        print "SOSCleanerTest:test_create_dn_report:begin"
+    def test20_create_dn_report(self):
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.domains = ['myserver.com']
         self.cleaner._domains2db()
@@ -286,18 +234,14 @@ class SOSCleanerTests(unittest.TestCase):
         fh = open(self.cleaner.dn_report,'r')
         x = fh.readlines()
         self.assertTrue( self.cleaner.domainname in x[1])
-        print "SOSCleanerTest:test_create_dn_report:end"
 
-    def test_create_dn_report_none(self):
-        print "SOSCleanerTest:test_create_dn_report_none:begin"
+    def test21_create_dn_report_none(self):
         self.cleaner._create_dn_report()
         fh = open(self.cleaner.dn_report,'r')
         x = fh.readlines()
         self.assertTrue( x[1] == 'None,None\n')
-        print "SOSCleanerTest:test_create_dn_report_none:end"
 
-    def test_clean_file(self):
-        print "SOSCleanerTest:test_clean_file:begin"
+    def test22_clean_file(self):
         test_file = '/tmp/clean_file_test'
         shutil.copyfile('testdata/sosreport_dir/var/log/messages', test_file)
         self.cleaner.process_hostnames = True
@@ -312,10 +256,8 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner._hn2db(self.cleaner.hostname) in data)
         self.assertTrue(self.cleaner._hn2db('foohost.foo.com') in data)
         os.remove(test_file)    #clean up
-        print "SOSCleanerTest:test_clean_file:end"
 
-    def test_sub_hostname_hyphens(self):
-        print "SOSCleanerTest:test_sub_hostname_hyphens:begin"
+    def test23_sub_hostname_hyphens(self):
         self.cleaner.domains=['myserver.com']
         self.cleaner.domainname='myserver.com'
         self.cleaner.hostname='myhost'
@@ -323,62 +265,89 @@ class SOSCleanerTests(unittest.TestCase):
         line = 'this is myhost.myserver.com and this is my-host.myserver.com'
         new_line = self.cleaner._sub_hostname(line)
         self.assertTrue('my' not in new_line)
-        print "SOSCleanerTest:test_sub_hostname_hyphens:end"
 
-    def test_extra_files(self):
-        print "SOSCleanerTest:test_extra_files:begin"
+    def test24_extra_files(self):
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.isdir(self.cleaner.dir_path))
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
-        print "SOSCleanerTest:test_extra_files:end"
 
-    def test_create_archive_nososreport(self):
-        print "SOSCleanerTest:test_create_archive_nososreport:begin"
+    def test25_create_archive_nososreport(self):
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
-        print "SOSCleanerTest:test_create_archive_nososreport:end"
 
-    def test_extra_files_nonexistent(self):
-        print "SOSCleanerTest:test_extra_files_nonexistent:begin"
+    def test26_extra_files_nonexistent(self):
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
         self.assertFalse(os.path.exists(os.path.join(self.cleaner.dir_path, 'bogusfile')))
-        print "SOSCleanerTest:test_extra_files_nonexistent:end"
 
-    def test_clean_files_only_originexists(self):
-        print "SOSCleanerTest:test_clean_files_only_originexists:begin"
+    def test27_clean_files_only_originexists(self):
         os.makedirs(self.cleaner.origin_path)
         files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(self.cleaner.origin_path))
-        print "SOSCleanerTest:test_clean_files_only_originexists:end"
 
-    def test_add_keywords_badfile(self):
-        print "SOSCleanerTest:test_add_keywords_badfile:begin"
+    def test28_add_keywords_badfile(self):
         self.cleaner.keywords = ['testdata/keyword_bad.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 0)
-        print "SOSCleanerTest:test_add_keywords_badfile:end"
 
-    def test_add_keywords(self):
-        print "SOSCleanerTest:test_add_keywords:begin"
+    def test29_add_keywords(self):
         self.cleaner.keywords = ['testdata/keyword1.txt','testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
         self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(),'some' in self.cleaner.kw_db.keys()]))
-        print "SOSCleanerTest:test_add_keywords:end"
 
-    def test_sub_keywords(self):
-        print "SOSCleanerTest:test_sub_keywords:begin"
+    def test30_sub_keywords(self):
         self.cleaner.keywords = ['testdata/keyword1.txt']
         self.cleaner._keywords2db()
         test_line = 'this is a sample foo bar. this should be different bar foo.'
         new_line = self.cleaner._sub_keywords(test_line)
         self.assertTrue(all(['keyword0' in new_line, 'keyword1' in new_line]))
-        print "SOSCleanerTest:test_sub_keywords:end"
 
-if __name__ == '__main__':
-    unittest.main()
+    def test31_create_ip_report(self):
+        self.cleaner._ip4_2_db('192.168.122.100')
+        self.cleaner._create_ip_report()
+        fh = open(self.cleaner.ip_report,'r')
+        x = fh.readlines()
+        self.assertTrue( '192.168.122.100' in x[1])
+
+    def test32_sub_hostname_front_of_line(self):
+        self.cleaner.domains=['myserver.com']
+        self.cleaner.domainname='myserver.com'
+        self.cleaner.hostname='myhost'
+        self.cleaner._domains2db()
+        line = 'myhost.myserver.com and this is my-host.myserver.com'
+        new_line = self.cleaner._sub_hostname(line)
+        self.assertTrue('my' not in new_line)
+
+    def test33_routes_file(self):
+        self.cleaner.dir_path = 'testdata/sosreport_dir'
+        self.cleaner._process_route_file()
+        self.assertTrue(self.cleaner.net_db[0][0].compressed == '10.0.0.0/8')
+
+    def test34_routes_file_absent(self):
+        self.cleaner.dir_path = 'testdata/'
+        self.cleaner._process_route_file()
+
+    def test35_existing_network(self):
+        self.cleaner.dir_path = 'testdata/sosreport_dir'
+        data = self.cleaner._ip4_add_network('10.0.0.0/8')
+        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) == True)
+
+    def test36_add_loopback(self):
+        self.cleaner._add_loopback_network()
+        self.assertTrue(self.cleaner.net_metadata['127.0.0.0']['host_count'] == 0)
+        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('127.0.0.0/8')) == True)
+
+    def test37_dup_networks(self):
+        self.cleaner._ip4_add_network('10.0.0.0/8')
+        self.cleaner._ip4_add_network('10.0.0.0/8')
+        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) == True)
+
+    def test38_find_existing_network(self):
+        self.cleaner._ip4_add_network('10.0.0.0/8')
+        data = self.cleaner._ip4_find_network('10.0.0.1')
+        self.assertTrue(data == IPv4Address('129.0.0.0'))

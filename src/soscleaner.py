@@ -46,7 +46,7 @@ class SOSCleaner:
         self.name = 'soscleaner'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
         self.quiet = quiet
-        self.domain_count = 1
+        self.domain_count = 0
         self.domains = list()
         self.keywords = list()
         self.domainname = None
@@ -354,7 +354,8 @@ class SOSCleaner:
                         line = line.replace(hn, new_hn)
                         # replace any non-fqdn occurrences of the hostname
                         for entry in line.split():
-                            if hn.startswith(entry):
+                            # i don't remember what this does... but i'm going to leave it here for now...
+                            if hn.startswith(entry): # pragma: no cover
                                 line = line.replace(entry, new_hn.split('.')[0])
             if self.hostname:
                 line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
@@ -523,7 +524,7 @@ class SOSCleaner:
             self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
             self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
             self.logger.warning("and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
-            if not self.quiet:
+            if not self.quiet: # pragma: no cover
                 self.logger.exception(e)
 
             hostname = None
@@ -554,7 +555,7 @@ class SOSCleaner:
                 fh.close()
             else:
                 self.logger.info("No route file found. Unable to auto-add routed networks for this system.")
-        except Exception, e:
+        except Exception, e: # pragma: no cover
             self.logger.exception(e)
             raise e
 
@@ -686,7 +687,7 @@ class SOSCleaner:
                 return True
             return False
 
-        except Exception, e:
+        except Exception, e: # pragma: no cover
             self.logger.exception(e)
             raise e
 
