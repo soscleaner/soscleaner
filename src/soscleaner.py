@@ -118,7 +118,7 @@ class SOSCleaner:
 
         # Domainname obfuscation information
         self.dn_db = dict() #domainname database
-        self.root_domain = 'example.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
+        self.root_domain = 'obfuscateddomain.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
 
         # Keyword obfuscation information
         self.keywords = None
@@ -348,7 +348,8 @@ class SOSCleaner:
                 # regex = re.compile(r'\w*\.%s' % d)
                 regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
                 hostnames = [each for each in regex.findall(line)]
-                if len(hostnames) > self.default_net.network.compressed:
+                if len(hostnames) > 0:
+                    for hn in hostnames:
                         new_hn = self._hn2db(hn)
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
@@ -356,13 +357,16 @@ class SOSCleaner:
                         for entry in line.split():
                             if hn.startswith(entry):
                                 line = line.replace(entry, new_hn.split('.')[0])
+                # after we replace all of the hostnames, we will run back through the line and replace any root domain matches as well
+                # should take care of issue #50
+                line = line.replace(d, od)
             if self.hostname:
                 line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
 
             return line
         except Exception,e: # pragma: no cover
             self.logger.exception(e)
-            raise Exception('SubHostnameError: Unable to Substitute Hostname/Domainname')
+            raise e
 
     def _make_dest_env(self):
         '''
