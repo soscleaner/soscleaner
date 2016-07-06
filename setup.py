@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from setuptools import setup
+from distutils.core import setup
 
 fh = open('src/VERSION', 'r')
 app_version = fh.read().rstrip()
@@ -32,6 +32,7 @@ setup(
     author='Jamie Duncan',
     author_email='jduncan@redhat.com',
     url='https://github.com/RedHatGov/SOSCleaner',
+    download_url="https://github.com/RedHatGov/soscleaner/releases/tags/%s" % app_version
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
@@ -41,7 +42,7 @@ setup(
     test_suite = 'tests',
     scripts = ['scripts/soscleaner'],
     data_files=[
-            ('/usr/share/doc/%s-%s' % (name,version), ['doc/LICENSE']),
+            ('/usr/share/doc/%s-%s' % (name,version), ['LICENSE']),
             ('/usr/share/man/man8', ['doc/soscleaner.8.gz']),
         ],
     )
