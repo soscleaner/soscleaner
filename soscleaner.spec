@@ -1,11 +1,8 @@
-%{!?__python2: %global __python2 /usr/bin/python2}
-%global python2_sitelib %(%{__python2} -c "from distutils.sysconfig import get_python_lib; print (get_python_lib())")
-
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
-Version: APP_VERSION
-Release: APP_RELEASE%{dist}
-Source0: http://people.redhat.com/jduncan/%{name}/%{name}-%{version}.tar.gz
+Version: 0.3.0
+Release: 1%{dist}
+Source0: https://github.com/RedHatGov/soscleaner/archive/%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
 Requires: python-magic
@@ -21,13 +18,16 @@ Url: https://github.com/RedHatGov/SOSCleaner
 SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 
 %prep
-%setup -q -n %{name}-%{version}
+%autosetup -n %{srcname}-%{version}
+
+%check
+%{__python2} setup.py test
 
 %build
 %{__python2} setup.py build
 
 %install
-%{__python2} setup.py install -O1 --root=$RPM_BUILD_ROOT
+%py2_install
 
 %files
 %dir %{_docdir}/%{name}-%{version}
@@ -37,6 +37,10 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{_bindir}/soscleaner
 
 %changelog
+* Wed Jul 6 2016 Jamie Duncan <jduncan@redhat.com> 0.3.0-1
+- network refactoring for network awareness - #46
+- multiple hostname optimizations and bugfixes - #51 #50 #48
+
 * Sat Sep 13 2014 Jamie Duncan <jduncan@redhat.com> 0.2.2-1
 - ability to scrub arbitrary keywords from lists - #41
 - updated move to RedHatGov - #40

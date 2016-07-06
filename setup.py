@@ -17,7 +17,7 @@
 
 from distutils.core import setup
 
-fh = open('src/VERSION', 'r')
+fh = open('soscleaner/VERSION', 'r')
 app_version = fh.read().rstrip()
 fh.close()
 
@@ -32,14 +32,13 @@ setup(
     author='Jamie Duncan',
     author_email='jduncan@redhat.com',
     url='https://github.com/RedHatGov/SOSCleaner',
-    download_url="https://github.com/RedHatGov/soscleaner/releases/tags/%s" % app_version
+    download_url="https://github.com/RedHatGov/soscleaner/releases/tags/%s" % app_version,
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     package_dir={'': 'soscleaner'},
     # packages=['python_magic'],
     py_modules=['soscleaner'],
-    test_suite = 'tests',
     scripts = ['scripts/soscleaner'],
     data_files=[
             ('/usr/share/doc/%s-%s' % (name,version), ['LICENSE']),
