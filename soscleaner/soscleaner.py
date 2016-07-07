@@ -48,7 +48,6 @@ class SOSCleaner:
         self.quiet = quiet
         self.domain_count = 0
         self.domains = list()
-        self.keywords = list()
         self.domainname = None
         self.report_dir = '/tmp'
 
@@ -474,10 +473,14 @@ class SOSCleaner:
                     if os.path.isfile(f):
                         with open(f, 'r') as klist:
                             for keyword in klist.readlines():
-                                o_kw = "keyword%s" % k_count
-                                self.kw_db[keyword.rstrip()] = o_kw
-                                self.logger.con_out("Added Obfuscated Keyword - %s", o_kw)
-                                k_count += 1
+                                keyword = keyword.rstrip()
+                                if len(keyword) > 1:
+                                    o_kw = "keyword%s" % k_count
+                                    self.kw_db[keyword] = o_kw
+                                    self.logger.con_out("Added %s character Obfuscated Keyword - %s" % (len(keyword), o_kw))
+                                    k_count += 1
+                                else:
+                                    self.logger.con_out("Unable to add Obfuscated Keyword.")
                         self.logger.con_out("Added Keyword Contents from file - %s", f)
 
                     else:

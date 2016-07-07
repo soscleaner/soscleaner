@@ -22,7 +22,7 @@
 # Last Modified : Sat 13 Sep 2014 10:55:29 PM EDT
 # Purpose : SOSCleaner unittests
 import sys
-sys.path.append('src/')
+sys.path.append('soscleaner/')
 import unittest
 from soscleaner import SOSCleaner
 import os
