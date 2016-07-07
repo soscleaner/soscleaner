@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from distutils.core import setup
+from setuptools import setup
 
 fh = open('soscleaner/VERSION', 'r')
 app_version = fh.read().rstrip()
@@ -37,6 +37,7 @@ setup(
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     package_dir={'': 'soscleaner'},
+    test_suite='tests',
     # packages=['python_magic'],
     py_modules=['soscleaner'],
     scripts = ['scripts/soscleaner'],
