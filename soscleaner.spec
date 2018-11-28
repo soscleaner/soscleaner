@@ -12,6 +12,7 @@ Url: https://github.com/RedHatGov/SOSCleaner
 
 %global srcname soscleaner
 
+
 %if 0%{?srpm_build}
 %undefine dist
 %endif
