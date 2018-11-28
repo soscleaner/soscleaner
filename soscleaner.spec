@@ -10,6 +10,7 @@ BuildArch: noarch
 Requires: python-magic
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
+BuildRequires: python-magic
 Url: https://github.com/RedHatGov/SOSCleaner
 
 
