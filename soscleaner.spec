@@ -10,6 +10,9 @@ BuildRequires: python2-devel
 BuildRequires: python-setuptools
 Url: https://github.com/RedHatGov/SOSCleaner
 
+%global srcname soscleaner
+%{?python_provide:%python_provide python%{python3_pkgversion}-%{srcname}}
+
 %if 0%{?srpm_build}
 %undefine dist
 %endif
