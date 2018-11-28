@@ -1,7 +1,7 @@
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
 Version: 0.3.0
-Release: 1%{dist}
+Release: 2%{dist}
 Source0: https://github.com/RedHatGov/soscleaner/archive/%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
@@ -37,6 +37,10 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %{_bindir}/soscleaner
 
 %changelog
+* Tue Nov 27 2018 Jamie Duncan <jduncan@redhat.com> 0.3.0-2
+- minor tweaks to spec file and setup.py in prep for 0.3.1
+- working to get copr builds working again
+
 * Wed Jul 6 2016 Jamie Duncan <jduncan@redhat.com> 0.3.0-1
 - network refactoring for network awareness - #46
 - multiple hostname optimizations and bugfixes - #51 #50 #48

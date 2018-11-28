@@ -26,9 +26,9 @@ name = 'soscleaner'
 
 setup(
     name=name,
-    license = 'GPLv2',
+    license = 'GPLv2+',
     version=version,
-    description='To clean and filter sensitive data from a standard sosreport',
+    description='To clean and filter sensitive data from a standard sosreport or any data files',
     author='Jamie Duncan',
     author_email='jduncan@redhat.com',
     url='https://github.com/RedHatGov/SOSCleaner',
@@ -38,7 +38,6 @@ setup(
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     package_dir={'': 'soscleaner'},
     test_suite='tests',
-    # packages=['python_magic'],
     py_modules=['soscleaner'],
     scripts = ['scripts/soscleaner'],
     data_files=[
