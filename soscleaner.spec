@@ -1,8 +1,10 @@
+%global srcname soscleaner
+
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
 Version: 0.3.1
 Release: 1%{dist}
-Source0: https://github.com/RedHatGov/soscleaner/archive/%{version}.tar.gz
+Source0: https://github.com/RedHatGov/%{srcname}/releases/download/%{srcname}-%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
 Requires: python-magic
@@ -10,7 +12,6 @@ BuildRequires: python2-devel
 BuildRequires: python-setuptools
 Url: https://github.com/RedHatGov/SOSCleaner
 
-%global srcname soscleaner
 
 %if 0%{?srpm_build}
 %undefine dist

@@ -36,6 +36,9 @@ setup(
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
+    install_requires=[
+        'magic',
+    ],
     package_dir={'': 'soscleaner'},
     test_suite='tests',
     py_modules=['soscleaner'],
