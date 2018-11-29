@@ -1,0 +1,14 @@
+branches:
+  only:
+    - master
+
+language: python
+
+script: setup.py
+
+install:
+  - pip install python_magic ipaddr
+
+matrix:
+  include:
+    - python: 2.7
