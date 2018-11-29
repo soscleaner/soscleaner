@@ -38,7 +38,7 @@ setup(
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     requires=[
         'python-magic',
-        'ipaddr',
+        'ipaddr'
     ],
     package_dir={'': 'soscleaner'},
     test_suite='tests',
