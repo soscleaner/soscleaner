@@ -1,5 +1,8 @@
 SOSCleaner
 ==========
+
+[![Build Status](https://travis-ci.org/RedHatGov/soscleaner.svg?branch=master)](https://travis-ci.org/RedHatGov/soscleaner)
+
 Purpose
 -------
 SOSCleaner helps users in environments that have data export restrictions clean up an sosreport so it can be safely uploaded to a support group for analysis. IT IS NOT ALL that should be done for this process, but it does help with the most common and repetitive items.
@@ -32,7 +35,7 @@ x = SOSCleaner('path/to/sosreport/directory')
 x.clean_report()
 ```
 
-* If intalling the RPM and/or using the executable 
+* If intalling the RPM and/or using the executable
 
 ```
 $ /usr/bin/soscleaner --help
@@ -63,7 +66,7 @@ How Do I See The Obfuscated Data?
 ---------------------------------
 The data is available from within the Python class, and as an option passed into the executable script.
 
-* If accessing the Python class directly 
+* If accessing the Python class directly
 
 ```
 from soscleaner import SOSCleaner
@@ -100,4 +103,3 @@ What Artifacts are Created?
 * soscleaner-$session-hostname.csv is a csv of hostnames that have been obfuscated
 * soscleaner-$session-ip.csv is a csv of ip addresses that have been obfuscated
 * soscleaner-$session-dn.csv is a csv of domainnames that have been obfuscated
-
