@@ -7,7 +7,7 @@ language: python
 script: python setup.py test
 
 install:
-  - pip install python-magic ipaddr
+  - pip install python-magic==0.4.15 ipaddr==2.1.11
   - python setup.py build
 
 matrix:
