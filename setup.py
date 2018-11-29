@@ -36,6 +36,10 @@ setup(
     maintainer='Jamie Duncan',
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
+    install_requires=[
+        'python-magic',
+        'ipaddr'
+    ]
     requires=[
         'python-magic',
         'ipaddr'
