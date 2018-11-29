@@ -39,7 +39,7 @@ setup(
     install_requires=[
         'python-magic',
         'ipaddr'
-    ]
+    ],
     requires=[
         'python-magic',
         'ipaddr'
