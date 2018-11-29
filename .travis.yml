@@ -4,7 +4,7 @@ branches:
 
 language: python
 
-script: setup.py
+script: python setup.py
 
 install:
   - pip install python_magic ipaddr
