@@ -8,6 +8,7 @@ script: python setup.py tests
 
 install:
   - pip install python_magic ipaddr
+  - python setup.py build
 
 matrix:
   include:
