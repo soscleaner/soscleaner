@@ -8,9 +8,11 @@ Source0: https://github.com/RedHatGov/%{srcname}/archive/%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
 Requires: python-magic
+Requires: python-ipaddr
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
 BuildRequires: python-magic
+BuildRequires: python-ipaddr
 Url: https://github.com/RedHatGov/SOSCleaner
 
 
