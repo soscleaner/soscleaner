@@ -213,36 +213,35 @@ class SOSCleaner:
         else:
             compression_sig = magic.from_file(path)
             if 'compressed data' in compression_sig:
-                if compression_sig == 'xz compressed data':
-                    #This is a hack to account for the fact that the tarfile library doesn't
-                    #handle lzma (XZ) compression until version 3.3 beta
-                    try:
-                        self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
-                        self.logger.info('LZMA Hack - Creating %s', self.origin_path)
-                        os.system('mkdir %s' % self.origin_path)
-                        os.system('tar -xJf %s -C %s' % (path, self.origin_path))
-                        return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
+                # if compression_sig == 'xz compressed data':
+                #     #This is a hack to account for the fact that the tarfile library doesn't
+                #     #handle lzma (XZ) compression until version 3.3 beta
+                #     try:
+                #         self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
+                #         self.logger.info('LZMA Hack - Creating %s', self.origin_path)
+                #         os.system('mkdir %s' % self.origin_path)
+                #         os.system('tar -xJf %s -C %s' % (path, self.origin_path))
+                #         return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
+                #
+                #         return return_path
+                #
+                #     except Exception,e: # pragma: no cover
+                #         self.logger.exception(e)
+                #         raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
+                #
+                # else:
+                p = tarfile.open(path, 'r')
 
-                        return return_path
+                self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
+                try:
+                    p.extractall(self.origin_path)
+                    return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
 
-                    except Exception,e: # pragma: no cover
-                        self.logger.exception(e)
-                        raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
+                    return return_path
 
-                else:
-                    p = tarfile.open(path, 'r')
-
-                    self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
-                    try:
-                        p.extractall(self.origin_path)
-                        return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
-
-                        return return_path
-
-                    except Exception, e:    # pragma: no cover
-                        self.logger.exception(e)
-                        raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
-
+                except Exception, e:    # pragma: no cover
+                    self.logger.exception(e)
+                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
             else:   # pragma: no cover
                 raise Exception('CompressionError: Unable To Determine Compression Type')
 
