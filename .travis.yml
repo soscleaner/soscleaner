@@ -4,8 +4,6 @@ branches:
 
 language: python
 
-script: python setup.py test
-
 install:
   - python -m pip install python-magic==0.4.15 ipaddr==2.1.11
   - python -m pip show python-magic

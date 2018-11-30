@@ -124,9 +124,6 @@ class SOSCleaner:
         self.kw_db = dict() #keyword database
         self.kw_count = 0
 
-        self.magic = magic.open(magic.MAGIC_NONE)
-        self.magic.load()
-
     def _check_uid(self): # pragma no cover
 
         try:
@@ -158,7 +155,7 @@ class SOSCleaner:
                     # i thought i'd already removed it. - jduncan
                     #if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
-                    if 'text' not in self.magic.file(f_full):
+                    if 'text' not in magic.from_file(f_full):
                         skip_list.append(f)
 
         return skip_list
@@ -208,45 +205,46 @@ class SOSCleaner:
     def _extract_sosreport(self, path):
 
         self.logger.con_out("Beginning SOSReport Extraction")
-        compression_sig = self.magic.file(path).lower()
-        if 'directory' in compression_sig:
-            self.logger.info('%s appears to be a %s - continuing', path, compression_sig)
+        if os.path.isdir(path):
+            self.logger.info('%s appears to be a directory, no extraction required - continuing', path)
             # Clear out origin_path as we don't have one
             self.origin_path = None
             return path
+        else:
+            compression_sig = magic.from_file(path)
+            if 'compressed data' in compression_sig:
+                if compression_sig == 'xz compressed data':
+                    #This is a hack to account for the fact that the tarfile library doesn't
+                    #handle lzma (XZ) compression until version 3.3 beta
+                    try:
+                        self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
+                        self.logger.info('LZMA Hack - Creating %s', self.origin_path)
+                        os.system('mkdir %s' % self.origin_path)
+                        os.system('tar -xJf %s -C %s' % (path, self.origin_path))
+                        return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
-        elif 'compressed data' in compression_sig:
-            if compression_sig == 'xz compressed data':
-                #This is a hack to account for the fact that the tarfile library doesn't
-                #handle lzma (XZ) compression until version 3.3 beta
-                try:
-                    self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
-                    self.logger.info('LZMA Hack - Creating %s', self.origin_path)
-                    os.system('mkdir %s' % self.origin_path)
-                    os.system('tar -xJf %s -C %s' % (path, self.origin_path))
-                    return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
+                        return return_path
 
-                    return return_path
+                    except Exception,e: # pragma: no cover
+                        self.logger.exception(e)
+                        raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
 
-                except Exception,e: # pragma: no cover
-                    self.logger.exception(e)
-                    raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
+                else:
+                    p = tarfile.open(path, 'r')
 
-            else:
-                p = tarfile.open(path, 'r')
+                    self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
+                    try:
+                        p.extractall(self.origin_path)
+                        return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
 
-                self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
-                try:
-                    p.extractall(self.origin_path)
-                    return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
+                        return return_path
 
-                    return return_path
+                    except Exception, e:    # pragma: no cover
+                        self.logger.exception(e)
+                        raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
 
-                except Exception, e:    # pragma: no cover
-                    self.logger.exception(e)
-                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
-        else:   # pragma: no cover
-            raise Exception('CompressionError: Unable To Determine Compression Type')
+            else:   # pragma: no cover
+                raise Exception('CompressionError: Unable To Determine Compression Type')
 
     def _sub_ip(self, line):
         '''
