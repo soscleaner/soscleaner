@@ -233,9 +233,9 @@ class SOSCleaner:
                     else:
                         p = tarfile.open(path, 'r')
                         self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
-                        try:
-                            p.extractall(self.origin_path)
-                            return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
+
+                        p.extractall(self.origin_path)
+                        return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
 
                         return return_path
 
