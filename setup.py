@@ -39,7 +39,7 @@ setup(
     install_requires=[
         'python_magic',
         'ipaddr',
-        'python-backports-lzma'
+        'python_backports_lzma'
     ],
     requires=[
         'python_magic',
