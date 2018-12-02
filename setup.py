@@ -16,9 +16,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from setuptools import setup
-import time
 
-version = 0.3.3
+fh = open('soscleaner/VERSION', 'r')
+app_version = fh.read().rstrip()
+fh.close()
+
+version = app_version
 name = 'soscleaner'
 
 setup(

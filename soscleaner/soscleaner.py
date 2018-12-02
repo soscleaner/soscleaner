@@ -50,6 +50,7 @@ class SOSCleaner:
         self.domains = list()
         self.domainname = None
         self.report_dir = '/tmp'
+        self.__version__ = self._get_version()
 
         """
         Network Obfuscation Information
@@ -135,6 +136,21 @@ class SOSCleaner:
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
+            raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
+
+    def _get_version(self, v_file='VERSION'):
+        '''
+        Used to set the __version__ string for SOSCleaner
+        '''
+        try:
+            app_version = open(v_file,'r').rstrip()
+            app_version.close()
+
+            return app_version
+
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("VERSION_ERROR - unable to determine the SOSCleaner release version")
 
     def _skip_file(self, d, files):
         '''
