@@ -14,7 +14,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-# File Name : sos-gov.py
+# File Name : soscleaner.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
 # Last Modified : Sat 13 Sep 2014 10:51:54 PM EDT
@@ -33,6 +33,7 @@ import logging
 import tarfile
 import socket
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+from backports import lzma
 
 class SOSCleaner:
     '''
@@ -203,47 +204,48 @@ class SOSCleaner:
         return origin_path, dir_path, session, logfile, ran_uuid
 
     def _extract_sosreport(self, path):
-
-        self.logger.con_out("Beginning SOSReport Extraction")
-        if os.path.isdir(path):
-            self.logger.info('%s appears to be a directory, no extraction required - continuing', path)
-            # Clear out origin_path as we don't have one
-            self.origin_path = None
-            return path
-        else:
-            compression_sig = magic.from_file(path)
-            if 'compressed data' in compression_sig:
-                # if compression_sig == 'xz compressed data':
-                #     #This is a hack to account for the fact that the tarfile library doesn't
-                #     #handle lzma (XZ) compression until version 3.3 beta
-                #     try:
-                #         self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
-                #         self.logger.info('LZMA Hack - Creating %s', self.origin_path)
-                #         os.system('mkdir %s' % self.origin_path)
-                #         os.system('tar -xJf %s -C %s' % (path, self.origin_path))
-                #         return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
-                #
-                #         return return_path
-                #
-                #     except Exception,e: # pragma: no cover
-                #         self.logger.exception(e)
-                #         raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
-                #
-                # else:
-                p = tarfile.open(path, 'r')
-
-                self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
+        try:
+            self.logger.con_out("Beginning SOSReport Extraction")
+            if os.path.isdir(path):
+                self.logger.info('%s appears to be a directory, no extraction required - continuing', path)
+                # Clear out origin_path as we don't have one
+                self.origin_path = None
+                return path
+            else:
                 try:
-                    p.extractall(self.origin_path)
-                    return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
+                    compression_sig = magic.from_file(path)
+                    if compression_sig == 'xz compressed data':
+                        try:
+                            self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
+                            self.logger.info('LZMA Hack - Creating %s', self.origin_path)
+                            os.system('mkdir %s' % self.origin_path)
+                            os.system('tar -xJf %s -C %s' % (path, self.origin_path))
+                            return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
-                    return return_path
+                            return return_path
+
+                        except Exception,e: # pragma: no cover
+                            self.logger.exception(e)
+                            raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
+
+                    # the tarfile module handles other compression types.
+                    # so we can just use that
+                    else:
+                        p = tarfile.open(path, 'r')
+                        self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
+                        try:
+                            p.extractall(self.origin_path)
+                            return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
+
+                        return return_path
 
                 except Exception, e:    # pragma: no cover
                     self.logger.exception(e)
                     raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
-            else:   # pragma: no cover
-                raise Exception('CompressionError: Unable To Determine Compression Type')
+
+        except Exception, e:
+            self.logger.exception(e)   # pragma: no cover
+            raise Exception('CompressionError: Unable To Determine Compression Type')
 
     def _sub_ip(self, line):
         '''
