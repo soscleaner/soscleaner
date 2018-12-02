@@ -39,12 +39,10 @@ setup(
     install_requires=[
         'python_magic',
         'ipaddr',
-        'backports.lzma'
     ],
     requires=[
         'python_magic',
         'ipaddr',
-        'backports.lzma'
     ],
     package_dir={'': 'soscleaner'},
     test_suite='tests',

@@ -33,7 +33,6 @@ import logging
 import tarfile
 import socket
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
-from backports import lzma
 
 class SOSCleaner:
     '''
