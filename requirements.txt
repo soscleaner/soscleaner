@@ -1,4 +1,0 @@
-python_magic==0.4.15
-ipaddr==2.1.11
-backports.lzma
-twine
