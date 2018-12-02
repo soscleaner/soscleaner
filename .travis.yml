@@ -7,7 +7,7 @@ language: python
 script: python setup.py test
 
 install:
-  - python install -r requirements.txt
+  - python -m pip install -r requirements.txt
   - python setup.py build
 
 matrix:
