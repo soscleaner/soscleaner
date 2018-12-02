@@ -16,14 +16,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from setuptools import setup
-import subprocess
+import time
 
-fh = open('soscleaner/VERSION', 'r')
-app_version = fh.read().rstrip()
-fh.close()
-git_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd='.').decode('ascii').strip()[:8]
-
-version = "%sb%s" % (app_version, git_sha)
+version = 0.3.3
 name = 'soscleaner'
 
 setup(
