@@ -12,6 +12,7 @@ install:
 deploy:
   - provider: pypi
     user: jduncan
+    verbose: true
     password:
       secure: gDKmV0qwRpFiDAwQD9YKbZ5SMnbgRK2qOwcqrRlWHxEtnzpazjk9XB/PPk2LBmpEgwPccqR5yEETtnavdl0o/oXc9bas6XEP4sIAc/V0nkzpIizdt6QRPHn+EWtVjuWJaD/ROGB9K/n3JSj5C39ypRcc6A0+6KXHx8KkgNtyjzYoUuH0o3GVjreJ9TEZ2i8oSy0JKQK1MAAVPUy5lST2fjLbDq/VhO5b5AepAveM2/0XJHfunSt7D+51AO58nfE1wArOp1Std8jo8An/Fe9+HJ2MLCyM94Lp6R1eRj2Dq6COwM9u5089/xXxaKh12Yv6zKlvPmcbeGGaMcnxMNVMf3brNMwLsdfRtKNTL8/Rn3v+ujn70XC7jQII874BOYv5/ohJnID4THkl1e4YhIPSGq8Z/PP4vtTfKxu+3Kx69bBECUPaXim8a+hgAxa/gkh+boMq4lNQxoDz2VO+HYiFUajfvXpfCwmR55ZpfAihieuv0a6q89gjeD5aSg5oVKXwHswPOUbxMaH8BSn1mGp67f3TtPYTPUe/dTiqC6x2pRuFyNHnR6SCTKqVZY2X5CIt9FNqForiOMb5yv8ZSC7QjED4wvguI9ln/1DLuqYhnu/xoPDM3ByYbs5iHg7Ool1bZzT500eyvj1rTGFkTNfLojULvXVe0ZPe00/0tWIRaRo=
     server: https://test.pypi.org/legacy/
