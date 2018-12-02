@@ -204,7 +204,7 @@ class SOSCleaner:
         return origin_path, dir_path, session, logfile, ran_uuid
 
     def _extract_sosreport(self, path):
-        # try:
+        try:
             self.logger.con_out("Beginning SOSReport Extraction")
             if os.path.isdir(path):
                 self.logger.info('%s appears to be a directory, no extraction required - continuing', path)
@@ -212,40 +212,40 @@ class SOSCleaner:
                 self.origin_path = None
                 return path
             else:
-                # try:
-                compression_sig = magic.from_file(path)
-                if compression_sig == 'xz compressed data':
-                        # try:
-                        self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
-                        self.logger.info('LZMA Hack - Creating %s', self.origin_path)
-                        os.system('mkdir %s' % self.origin_path)
-                        os.system('tar -xJf %s -C %s' % (path, self.origin_path))
-                        return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
+                try:
+                    compression_sig = magic.from_file(path)
+                    if compression_sig.lower() == 'xz compressed data':
+                        try:
+                            self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
+                            self.logger.info('LZMA Hack - Creating %s', self.origin_path)
+                            os.system('mkdir %s' % self.origin_path)
+                            os.system('tar -xJf %s -C %s' % (path, self.origin_path))
+                            return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
-                        return return_path
+                            return return_path
 
-                        # except Exception,e: # pragma: no cover
-                            # self.logger.exception(e)
-                            # raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
+                        except Exception,e: # pragma: no cover
+                            self.logger.exception(e)
+                            raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
 
                     # the tarfile module handles other compression types.
                     # so we can just use that
-                else:
-                    p = tarfile.open(path, 'r')
-                    self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
+                    else:
+                        p = tarfile.open(path, 'r')
+                        self.logger.info('Data Source Appears To Be %s - decompressing into %s', compression_sig, self.origin_path)
 
-                    p.extractall(self.origin_path)
-                    return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
+                        p.extractall(self.origin_path)
+                        return_path = os.path.join(self.origin_path, os.path.commonprefix(p.getnames()))
 
-                    return return_path
+                        return return_path
 
-                # except Exception, e:    # pragma: no cover
-                    # self.logger.exception(e)
-                    # raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
+                except Exception, e:    # pragma: no cover
+                    self.logger.exception(e)
+                    raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
 
-        # except Exception, e:
-            # self.logger.exception(e)   # pragma: no cover
-            # raise Exception('CompressionError: Unable To Determine Compression Type')
+        except Exception, e:
+            self.logger.exception(e)   # pragma: no cover
+            raise Exception('CompressionError: Unable To Determine Compression Type')
 
     def _sub_ip(self, line):
         '''
