@@ -50,7 +50,6 @@ class SOSCleaner:
         self.domains = list()
         self.domainname = None
         self.report_dir = '/tmp'
-        self.__version__ = self._get_version()
 
         """
         Network Obfuscation Information
@@ -149,7 +148,7 @@ class SOSCleaner:
             return app_version
 
         except Exception, e:    # pragma: no cover
-            self.logger.exception(e)
+            # logging hasn't started yet, so all we can do is raise the error
             raise Exception("VERSION_ERROR - unable to determine the SOSCleaner release version")
 
     def _skip_file(self, d, files):
