@@ -1,27 +1,23 @@
 branches:
   only:
-    - master
-
+  - master
 language: python
-
 script: python setup.py test
-
 install:
-  - python setup.py build sdist bdist_wheel
-
+- python setup.py build sdist bdist_wheel
 deploy:
+  matrix:
   - provider: pypi
     user: jduncan
     password:
-      secure: gDKmV0qwRpFiDAwQD9YKbZ5SMnbgRK2qOwcqrRlWHxEtnzpazjk9XB/PPk2LBmpEgwPccqR5yEETtnavdl0o/oXc9bas6XEP4sIAc/V0nkzpIizdt6QRPHn+EWtVjuWJaD/ROGB9K/n3JSj5C39ypRcc6A0+6KXHx8KkgNtyjzYoUuH0o3GVjreJ9TEZ2i8oSy0JKQK1MAAVPUy5lST2fjLbDq/VhO5b5AepAveM2/0XJHfunSt7D+51AO58nfE1wArOp1Std8jo8An/Fe9+HJ2MLCyM94Lp6R1eRj2Dq6COwM9u5089/xXxaKh12Yv6zKlvPmcbeGGaMcnxMNVMf3brNMwLsdfRtKNTL8/Rn3v+ujn70XC7jQII874BOYv5/ohJnID4THkl1e4YhIPSGq8Z/PP4vtTfKxu+3Kx69bBECUPaXim8a+hgAxa/gkh+boMq4lNQxoDz2VO+HYiFUajfvXpfCwmR55ZpfAihieuv0a6q89gjeD5aSg5oVKXwHswPOUbxMaH8BSn1mGp67f3TtPYTPUe/dTiqC6x2pRuFyNHnR6SCTKqVZY2X5CIt9FNqForiOMb5yv8ZSC7QjED4wvguI9ln/1DLuqYhnu/xoPDM3ByYbs5iHg7Ool1bZzT500eyvj1rTGFkTNfLojULvXVe0ZPe00/0tWIRaRo=
+      secure: KD5TenOwsh07lAqdVv2YFuRm8wLErVRyUSo42JHH+K+xlLk3v/c2vfA+9sbwz7wP2sP8MsV9PCageB4WsXDlR7O/2gOBra+G/q5uZtYy62/i0vkqplXdIXg8SC77+h/BgDY+Kw5xwXkzYGGSJXGDLzgBilKexFQ0x9AYAm8UDSmG9EOvecqrd72gwC3zN9tfbpGyPQ/QfMfoKS6CAR1At2A1iZpuGAvHSfx+w1cqKaqJ8KowJ6PSGKKrySnX1vFqqZMGdcyzD64P3aQE7fW8Y/mN9d48tSLmLyPe/a3PqXZ+/rfzoRGpq4bGPQz20FEIT7h/On2fI0ZZuzyMayY1hS3nZCj0+WxvMOj8WPAiGwxEfLne4/M2lVCqUUwsPJilYA43x+0Hsk2vRt/WmXH5rQbIay+DFlLyxrW/rYh6D55QDSxyr2MGjowtLdU0mm54csaB6/8BEvw1mPtStln0JT4+dNKcJpPP/nZaZ5CdighXu7hpccIO+1kmcjZkUi2G+qsUcZ4b9twUve3F5TLCiMQWJfpAHoGvjxz3hUUZ0b4JdpOp6nyUzIo0kbNpOAx14f1IM7k4naQWBy8Zb4fFCBli5BkrWrVol6fD1ohPUI0gry+Don2srfyFUP0F6z/8czXngg2ILGhUe0IagNYySZu+I05XQ8OKnvpv2/Mqz9I=
     server: https://test.pypi.org/legacy/
   - provider: pypi
     user: jduncan
     password:
-      secure: sCiOXJGAGU6a/0E7zuhR/Iw1nrc2kIy7K5PhcI+dFE+Rd0KvDJKhqU7Ec7mTxoATu6vnk3k2bBN7B1+bEt867LNGSa6u7dJioI04Pbo/zG35RLl8h4AZBR8/luXChCKYV6Vuzkh3OSTlg1vHtvz8YItrGWqNMqlu0k+LXo+GUrhN3XaDtYvNlZumL9VAupBsqT+NLxykAx70lBaf+iLrMOuTBhMWVt4btj/kqFJHFFnxL6h+vJn3szi/kVofO2omsPX+5188fBoewAMsP13dX30sENMDAt2Mh1PRarZaz95/LmcLuLby8kaa8W1j6h9RBZef90PYpXtEsSvMUn79Z3ZuCpDDWK59oyB5S6szUtqVXkSt2LPm8a7xT3MllDHBWUWd6sauGjSsvLaBQCWD3T7+Lp+IA5E1Eulfa0zXteVbAuLlNJqP/W6KVME7ik1WVxSO1kqRfaA6Rk3+XT3TMc2Zfkl9Qw397KpuftnlNb52AWTvrJ39SHAWz4xYhYl5RJ5+BdlOBsziWDQN+kmWVBOXe21jnQV7zGGcQibv9Wo3NGjUYBcj5WhcZJ0s0KVqPp9oP2LAteaamqnBhdkMUwYvlU4Lg0xCHnRRJS8uatkMEKZ22D4UBi1stjCUMyq3ZclbsjoILHGMxNDygW39LBSNCbCYcM716b7G2LNS+74=
+      secure: "FUC4b3hcoOvVAe5BXwRLsweHsxznXlVb8R2rxOc8XANDb7TM7X6oOElzl3VO7dYw61WEILIdd7m4shKqRB0WTFACMCegAOUEostDiiEalNufddoypPplsmytsaZ/VzKzNI+gjMemfEvAiQAGQiwF4dYHm9PPfSgIfP/plZi1hrENMSc9kUnmhlZt66230TCsfaJC4wN27hrgL8dXfGF4Q8PvD1+K3dDGwT6vbHCORrfhfQ0Yqj8n7HJXwxhRAPBdKMUv72yxTeDed/JjQdfePBUZHwTJTzCOaXo30B5VMU87uk0SUz+netjFRyxM1bYBuM57CupgPIJIIcItewu6xfkmDIVLoyFJLeFbV5OaSMdsrFYKwGlZfvdiH5cutxSwoRo3xkfh8l2m5GgID/IEV9BKInmhu+SpWGclS4Eh+rdALX2+WuKCNJMsL09A988K155ymNbGv6oVkdxnWfU1pPuXUo4ZXj2Ummz7Fw6Fg19EuIqf9D3Wgv/3YugVr5R4IA4KhM2EH+DqEd81K52C0ODSPk4OQoK6pq3xs9KFMkiuLgrrSJODoR3tWQvxTJt2XfVYM/59kh9V6pzQCfXu/lGfV2kdrCK7KhnrHO2lXw6ddsGf+g+HcG2VqOJgCnj8Qvyjm8sA1uZ/IpGW5Hy+S5s4wajJVkoR/Zvgx/LLaA0="
     on:
       tags: true
-
 matrix:
   include:
-    - python: 2.7
+  - python: 2.7
