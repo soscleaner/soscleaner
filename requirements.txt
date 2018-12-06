@@ -1,0 +1,5 @@
+ipaddr
+python_magic
+python_coveralls
+coverage
+nose
