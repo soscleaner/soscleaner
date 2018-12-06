@@ -1,5 +1,7 @@
 ipaddr
 python_magic
 python_coveralls
+coveralls
+coveralls[yaml]
 coverage
 nose
