@@ -17,11 +17,7 @@
 
 from setuptools import setup
 
-fh = open('soscleaner/VERSION', 'r')
-app_version = fh.read().rstrip()
-fh.close()
-
-version = app_version
+version = '0.3.4'
 name = 'soscleaner'
 
 setup(
@@ -37,10 +33,6 @@ setup(
     maintainer_email = 'jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     install_requires=[
-        'python_magic',
-        'ipaddr',
-    ],
-    requires=[
         'python_magic',
         'ipaddr',
     ],
