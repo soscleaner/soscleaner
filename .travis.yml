@@ -3,7 +3,7 @@ python:
   - "2.7"
 
 script:
-  - python setup.py install
+  - python setup.py build s_dist bdist_wheel
   - nosetests --with-coverage
 
 install:
