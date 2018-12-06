@@ -27,19 +27,16 @@ import sys
 import magic
 import uuid
 import shutil
-import struct, socket
 import tempfile
 import logging
 import tarfile
-import socket
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+
 
 class SOSCleaner:
     '''
-    A class to parse through an sosreport and begin the cleaning process required in many industries
-    Parameters:
-    debug - will generate add'l output to STDOUT. defaults to no
-    reporting - will post progress and overall statistics to STDOUT. defaults to yes
+    A class to parse through an sosreport and generic datasets to begin the
+    cleaning and obfuscation process required in many industries.
     '''
     def __init__(self, quiet=False):
 

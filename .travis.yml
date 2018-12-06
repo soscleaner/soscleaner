@@ -1,10 +1,16 @@
-branches:
-  only:
-  - master
 language: python
-script: python setup.py test
+python:
+  - "2.7"
+
+script:
+  - python setup.py install
+  - nosetests --with-coverage
+
 install:
-- python setup.py build sdist bdist_wheel
+  - pip install python-coveralls
+  - pip install coverage
+  - pip install nose
+
 deploy:
   - provider: pypi
     user: jduncan
@@ -18,6 +24,9 @@ deploy:
       secure: "FUC4b3hcoOvVAe5BXwRLsweHsxznXlVb8R2rxOc8XANDb7TM7X6oOElzl3VO7dYw61WEILIdd7m4shKqRB0WTFACMCegAOUEostDiiEalNufddoypPplsmytsaZ/VzKzNI+gjMemfEvAiQAGQiwF4dYHm9PPfSgIfP/plZi1hrENMSc9kUnmhlZt66230TCsfaJC4wN27hrgL8dXfGF4Q8PvD1+K3dDGwT6vbHCORrfhfQ0Yqj8n7HJXwxhRAPBdKMUv72yxTeDed/JjQdfePBUZHwTJTzCOaXo30B5VMU87uk0SUz+netjFRyxM1bYBuM57CupgPIJIIcItewu6xfkmDIVLoyFJLeFbV5OaSMdsrFYKwGlZfvdiH5cutxSwoRo3xkfh8l2m5GgID/IEV9BKInmhu+SpWGclS4Eh+rdALX2+WuKCNJMsL09A988K155ymNbGv6oVkdxnWfU1pPuXUo4ZXj2Ummz7Fw6Fg19EuIqf9D3Wgv/3YugVr5R4IA4KhM2EH+DqEd81K52C0ODSPk4OQoK6pq3xs9KFMkiuLgrrSJODoR3tWQvxTJt2XfVYM/59kh9V6pzQCfXu/lGfV2kdrCK7KhnrHO2lXw6ddsGf+g+HcG2VqOJgCnj8Qvyjm8sA1uZ/IpGW5Hy+S5s4wajJVkoR/Zvgx/LLaA0="
     on:
       tags: true
+
+after_success:
+  - coveralls
 
 matrix:
   include:

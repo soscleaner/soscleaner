@@ -22,7 +22,7 @@ name = 'soscleaner'
 
 setup(
     name=name,
-    license = 'GPLv2+',
+    license='GPLv2+',
     version=version,
     description='To clean and filter sensitive data from a standard sosreport or any data files',
     author='Jamie Duncan',
@@ -30,18 +30,21 @@ setup(
     url='https://github.com/jduncan-rva/SOSCleaner',
     download_url="https://github.com/jduncan-rva/soscleaner/releases/tags/%s" % version,
     maintainer='Jamie Duncan',
-    maintainer_email = 'jduncan@redhat.com',
+    maintainer_email='jduncan@redhat.com',
     long_description='%s is an application to help obfuscate sensitive data from a standard sosreport' % name,
     install_requires=[
         'python_magic',
         'ipaddr',
+        'python-coveralls',
+        'coverage',
+        'nose',
     ],
     package_dir={'': 'soscleaner'},
     test_suite='tests',
     py_modules=['soscleaner'],
-    scripts = ['scripts/soscleaner'],
+    scripts=['scripts/soscleaner'],
     data_files=[
-            ('/usr/share/doc/%s-%s' % (name,version), ['LICENSE']),
+            ('/usr/share/doc/%s-%s' % (name, version), ['LICENSE']),
             ('/usr/share/man/man8', ['doc/soscleaner.8.gz']),
         ],
     )
