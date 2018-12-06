@@ -37,7 +37,7 @@ setup(
         'ipaddr',
     ],
     package_dir={'': 'soscleaner'},
-    test_suite='tests',
+    test_suite='test_soscleaner',
     py_modules=['soscleaner'],
     scripts=['scripts/soscleaner'],
     data_files=[
