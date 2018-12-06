@@ -2,6 +2,7 @@ SOSCleaner
 ==========
 
 [![Build Status](https://travis-ci.org/RedHatGov/soscleaner.svg?branch=master)](https://travis-ci.org/RedHatGov/soscleaner)
+[![Coverage Status](https://coveralls.io/repos/github/jduncan-rva/soscleaner/badge.svg?branch=master)](https://coveralls.io/github/jduncan-rva/soscleaner?branch=master)
 
 Purpose
 -------
