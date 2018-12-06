@@ -35,9 +35,6 @@ setup(
     install_requires=[
         'python_magic',
         'ipaddr',
-        'python-coveralls',
-        'coverage',
-        'nose',
     ],
     package_dir={'': 'soscleaner'},
     test_suite='tests',
