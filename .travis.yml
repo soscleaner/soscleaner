@@ -39,4 +39,4 @@ deploy:
 after_success:
   - coveralls
   - python setup.py build bdist_rpm
-  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} dist/${COPR_REPOSITORY}-${VERSION}-1.src.rpm
+  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} dist/${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.src.rpm
