@@ -9,8 +9,6 @@ License: GPLv2
 BuildArch: noarch
 Requires: python-magic
 Requires: python-ipaddr
-BuildRequires: python2
-BuildRequires: python2-devel
 BuildRequires: python-setuptools
 BuildRequires: python-magic
 BuildRequires: python-ipaddr
