@@ -40,4 +40,4 @@ deploy:
 
 after_success:
   - coveralls
-  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.src.rpm
+  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.el7.src.rpm
