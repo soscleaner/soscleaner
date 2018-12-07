@@ -5,8 +5,20 @@ python:
 script:
   - nosetests --with-coverage
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_447a8e6ecb5b_key -iv $encrypted_447a8e6ecb5b_iv -in .copr.enc -out .copr -d
+
 install:
   - pip install -r requirements.txt
+
+env:
+  global:
+    - COPR_REPOSITORY=soscleaner
+    - OS_ARCH=x86_64
+  matrix:
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=29
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=28
+    - OS_TYPE=centos OS_DIST=epel OS_VERSION=7
 
 deploy:
   - provider: pypi
@@ -24,3 +36,5 @@ deploy:
 
 after_success:
   - coveralls
+  - python setup.py build bdist_rpm
+  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} dist/*.src.rpm
