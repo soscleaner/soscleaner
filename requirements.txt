@@ -5,3 +5,5 @@ coveralls
 coveralls[yaml]
 coverage
 nose
+copr-cli
+simplejson
