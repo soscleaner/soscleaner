@@ -6,7 +6,7 @@ script:
   - nosetests --with-coverage
 
 before_install:
-  - sudo apt-get install rpmbuild rpm
+  - sudo apt-get install rpm
   - openssl aes-256-cbc -K $encrypted_447a8e6ecb5b_key -iv $encrypted_447a8e6ecb5b_iv -in .copr.enc -out .copr -d
 
 install:
