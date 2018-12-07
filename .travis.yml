@@ -10,6 +10,9 @@ env:
     - DOCKER_IMAGE=alectolytic/rpmbuilder
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=28
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=29
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=rawhide
 
 services:
   - docker
