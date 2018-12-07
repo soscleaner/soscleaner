@@ -24,7 +24,3 @@ deploy:
 
 after_success:
   - coveralls
-
-matrix:
-  include:
-  - python: 2.7
