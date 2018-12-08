@@ -109,20 +109,22 @@ class SOSCleaner:
         self.net_metadata[self.default_net.network.compressed]['host_count'] = 0
 
         # Hostname obfuscation information
-        self.hn_db = dict() #hostname database
+        self.hn_db = dict()  # hostname database
         self.hostname_count = 0
         self.hostname = None
 
         # Domainname obfuscation information
-        self.dn_db = dict() #domainname database
-        self.root_domain = 'obfuscateddomain.com' #right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
+        self.dn_db = dict()  # domainname database
+        # right now this needs to be a 2nd level domain
+        # examples: foo.com, example.com, domain.org
+        self.root_domain = 'obfuscateddomain.com'
 
         # Keyword obfuscation information
         self.keywords = None
-        self.kw_db = dict() #keyword database
+        self.kw_db = dict()  # keyword database
         self.kw_count = 0
 
-    def _check_uid(self): # pragma no cover
+    def _check_uid(self):  # pragma no cover
 
         try:
             if os.getuid() != 0:
@@ -149,10 +151,10 @@ class SOSCleaner:
             f_full = os.path.join(d, f)
             if not os.path.isdir(f_full):
                 if not os.path.islink(f_full):
-                    #mode = oct(os.stat(f_full).st_mode)[-3:]
+                    # mode = oct(os.stat(f_full).st_mode)[-3:]
                     # executing as root makes this first if clause useless.
                     # i thought i'd already removed it. - jduncan
-                    #if mode == '200' or mode == '444' or mode == '400':
+                    # if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
                     if 'text' not in magic.from_file(f_full):
                         skip_list.append(f)
@@ -160,11 +162,11 @@ class SOSCleaner:
         return skip_list
 
     def _start_logging(self, filename):
-        #will get the logging instance going
+        # will get the logging instance going
         loglevel_config = 'logging.%s' % self.loglevel
 
-        #i'd like the stdout to be under another logging name than 'con_out'
-        console_log_level = 25  #between INFO and WARNING
+        # i'd like the stdout to be under another logging name than 'con_out'
+        console_log_level = 25  # between INFO and WARNING
         quiet = self.quiet
         logging.addLevelName(console_log_level, "CONSOLE")
 
@@ -175,18 +177,18 @@ class SOSCleaner:
         logging.Logger.con_out = con_out
 
         logging.basicConfig(filename=filename,
-            level=eval(loglevel_config),
+            level=eval( loglevel_config ),
             format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-            datefmt = '%m-%d %H:%M:%S'
-            )
-        if not self.quiet: # pragma: no cover
+            datefmt='%m-%d %H:%M:%S'
+        )
+        if not self.quiet:  # pragma: no cover
             console = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m-%d %H:%M:%S')
             console.setFormatter(formatter)
             console.setLevel(console_log_level)
 	self.logger = logging.getLogger(__name__)
         if not self.quiet:
-            self.logger.addHandler(console) # pragma: no cover
+            self.logger.addHandler(console)  # pragma: no cover
 
         self.logger.con_out("Log File Created at %s" % filename)
 
