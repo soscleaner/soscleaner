@@ -243,8 +243,8 @@ class SOSCleaner:
                     self.logger.exception(e)
                     raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
 
-        except Exception, e:
-            self.logger.exception(e)   # pragma: no cover
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
     def _sub_ip(self, line):
