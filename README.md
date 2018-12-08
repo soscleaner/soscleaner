@@ -1,12 +1,7 @@
 SOSCleaner
 ==========
 
-[![Build Status](https://travis-ci.org/jduncan-rva/soscleaner.svg?branch=master)](https://travis-ci.org/RedHatGov/soscleaner)
-
-[![Coverage Status](https://coveralls.io/repos/github/jduncan-rva/soscleaner/badge.svg?branch=master)](https://coveralls.io/github/jduncan-rva/soscleaner?branch=master)
-
-
-[![PyPI version](https://badge.fury.io/py/soscleaner.svg)](https://badge.fury.io/py/soscleaner)
+[![Build Status](https://travis-ci.org/jduncan-rva/soscleaner.svg?branch=master)](https://travis-ci.org/RedHatGov/soscleaner) [![Coverage Status](https://coveralls.io/repos/github/jduncan-rva/soscleaner/badge.svg?branch=master)](https://coveralls.io/github/jduncan-rva/soscleaner?branch=master) [![PyPI version](https://badge.fury.io/py/soscleaner.svg)](https://badge.fury.io/py/soscleaner)
 
 
 Purpose
