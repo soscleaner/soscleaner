@@ -6,7 +6,7 @@ env:
   global:
     - COPR_REPOSITORY=soscleaner
     - OS_ARCH=x86_64
-    - SOSCLEANER_VERSION=0.3.19
+    - SOSCLEANER_VERSION=0.3.20
     - DOCKER_IMAGE=alectolytic/rpmbuilder
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
