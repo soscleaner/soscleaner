@@ -9,10 +9,9 @@ env:
     - SOSCLEANER_VERSION=0.3.16
     - DOCKER_IMAGE=alectolytic/rpmbuilder
   matrix:
-    - OS_TYPE=centos OS_DIST=epel OS_VERSION=7
-    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=28
-    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=29
-    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=rawhide
+    - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=28 OS_SLUG=fc28
+    - OS_TYPE=fedora OS_DIST=fedora OS_VERSION=29 OS_SLUG=fc29
 
 services:
   - docker
@@ -35,7 +34,7 @@ deploy:
     server: https://test.pypi.org/legacy/
     on:
       condition:
-        $OS_TYPE = centos
+        - $OS_TYPE = centos
 
   - provider: pypi
     user: jduncan
@@ -44,8 +43,8 @@ deploy:
     on:
       tags: true
       condition:
-        $OS_TYPE = centos
+        - $OS_TYPE = centos
 
 after_success:
   - coveralls
-  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.el7.src.rpm
+  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
