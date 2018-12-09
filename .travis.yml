@@ -8,7 +8,6 @@ env:
     - OS_ARCH=x86_64
     - SOSCLEANER_VERSION=0.3.24
     - DOCKER_IMAGE=alectolytic/rpmbuilder
-    - BUILD_RPMS=False
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 
