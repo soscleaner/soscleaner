@@ -6,7 +6,7 @@ env:
   global:
     - COPR_REPOSITORY=soscleaner
     - OS_ARCH=x86_64
-    - SOSCLEANER_VERSION=0.3.24
+    - SOSCLEANER_VERSION=0.3.25
     - DOCKER_IMAGE=alectolytic/rpmbuilder
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
@@ -23,6 +23,12 @@ install:
 script:
   - nosetests --with-coverage
   - docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
+
+before_deploy:
+  - git config --local user.name "jduncan-rva"
+  - git config --local user.email "jamie.e.duncan@gmail.com"
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - git tag $TRAVIS_TAG
 
 deploy:
   - provider: pypi
