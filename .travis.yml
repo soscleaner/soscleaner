@@ -6,8 +6,9 @@ env:
   global:
     - COPR_REPOSITORY=soscleaner
     - OS_ARCH=x86_64
-    - SOSCLEANER_VERSION=0.3.22
+    - SOSCLEANER_VERSION=0.3.21
     - DOCKER_IMAGE=alectolytic/rpmbuilder
+    - BUILD_RPMS=False
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 
@@ -28,7 +29,7 @@ deploy:
   - provider: pypi
     user: jduncan
     password:
-      secure: "nO5ln4jY6gtwnJZJS5+1G7caiipAn4SBnS9SQzStvterNB9xoBz6pnO0QwvnFwNjD5y3GCqwcVMjmLyY2/+2x01IkZoc5w65FKBuYuvgzf/oIRT/H0VvVZne0+OusBebOzKMoamaCQ3B+kev4xl6v8gr+0l6a8wlmcN5FcHjg1Ee90mYHBRYZU1sOBswwJSFnlPCLM48hq3VYX95iHyypvG22gOhs7fgkouyzoQClhib88xP6S4EHJyAYP7SWgKXiG8JXWMscVbushS/ir9LL/SgW/G/ajwK/HGboIIi8RxndRc8uncXW6mtWneZ5xO65k8whUCwY+tqqHuhsoCa7XLGmCO2JCoz+w8kEUhd87gt5/o0vbGlIHNYyzowglWoF80rMQQDKXzfIJmW2L0khlC3hJgcM8+jy54WeqRZrLS17DE6PvlA3sLqGpXQBOOWY8WaG+/pfmi09OZybgfUu0D8nGPdb506XTXM2EC7afq/+lsjRt34UvZsBDBE7zptSW0SiRTHVgBQLHQZIle7TqyD+XVcCO0Usp30Uv2F4lYmGgWnH9nYpFptOw+YnOqV07cysd5QmU76sUD5izdQ/0Nlfjkf/mcmRyui+AmCvl4Qf6ljkWCTAnpPgDcRkKMM3mUf8k1xtnaSVS24CEsw260tDF9bSO2ZgoNUO7sXuvk="
+      secure: KD5TenOwsh07lAqdVv2YFuRm8wLErVRyUSo42JHH+K+xlLk3v/c2vfA+9sbwz7wP2sP8MsV9PCageB4WsXDlR7O/2gOBra+G/q5uZtYy62/i0vkqplXdIXg8SC77+h/BgDY+Kw5xwXkzYGGSJXGDLzgBilKexFQ0x9AYAm8UDSmG9EOvecqrd72gwC3zN9tfbpGyPQ/QfMfoKS6CAR1At2A1iZpuGAvHSfx+w1cqKaqJ8KowJ6PSGKKrySnX1vFqqZMGdcyzD64P3aQE7fW8Y/mN9d48tSLmLyPe/a3PqXZ+/rfzoRGpq4bGPQz20FEIT7h/On2fI0ZZuzyMayY1hS3nZCj0+WxvMOj8WPAiGwxEfLne4/M2lVCqUUwsPJilYA43x+0Hsk2vRt/WmXH5rQbIay+DFlLyxrW/rYh6D55QDSxyr2MGjowtLdU0mm54csaB6/8BEvw1mPtStln0JT4+dNKcJpPP/nZaZ5CdighXu7hpccIO+1kmcjZkUi2G+qsUcZ4b9twUve3F5TLCiMQWJfpAHoGvjxz3hUUZ0b4JdpOp6nyUzIo0kbNpOAx14f1IM7k4naQWBy8Zb4fFCBli5BkrWrVol6fD1ohPUI0gry+Don2srfyFUP0F6z/8czXngg2ILGhUe0IagNYySZu+I05XQ8OKnvpv2/Mqz9I=
     server: https://test.pypi.org/legacy/
     on:
       condition:
@@ -37,10 +38,11 @@ deploy:
   - provider: pypi
     user: jduncan
     password:
-      secure: "FUC4b3hcoOvVAe5BXwRLsweHsxznXlVb8R2rxOc8XANDb7TM7X6oOElzl3VO7dYw61WEILIdd7m4shKqRB0WTFACMCegAOUEostDiiEalNufddoypPplsmytsaZ/VzKzNI+gjMemfEvAiQAGQiwF4dYHm9PPfSgIfP/plZi1hrENMSc9kUnmhlZt66230TCsfaJC4wN27hrgL8dXfGF4Q8PvD1+K3dDGwT6vbHCORrfhfQ0Yqj8n7HJXwxhRAPBdKMUv72yxTeDed/JjQdfePBUZHwTJTzCOaXo30B5VMU87uk0SUz+netjFRyxM1bYBuM57CupgPIJIIcItewu6xfkmDIVLoyFJLeFbV5OaSMdsrFYKwGlZfvdiH5cutxSwoRo3xkfh8l2m5GgID/IEV9BKInmhu+SpWGclS4Eh+rdALX2+WuKCNJMsL09A988K155ymNbGv6oVkdxnWfU1pPuXUo4ZXj2Ummz7Fw6Fg19EuIqf9D3Wgv/3YugVr5R4IA4KhM2EH+DqEd81K52C0ODSPk4OQoK6pq3xs9KFMkiuLgrrSJODoR3tWQvxTJt2XfVYM/59kh9V6pzQCfXu/lGfV2kdrCK7KhnrHO2lXw6ddsGf+g+HcG2VqOJgCnj8Qvyjm8sA1uZ/IpGW5Hy+S5s4wajJVkoR/Zvgx/LLaA0="
+      secure: "nO5ln4jY6gtwnJZJS5+1G7caiipAn4SBnS9SQzStvterNB9xoBz6pnO0QwvnFwNjD5y3GCqwcVMjmLyY2/+2x01IkZoc5w65FKBuYuvgzf/oIRT/H0VvVZne0+OusBebOzKMoamaCQ3B+kev4xl6v8gr+0l6a8wlmcN5FcHjg1Ee90mYHBRYZU1sOBswwJSFnlPCLM48hq3VYX95iHyypvG22gOhs7fgkouyzoQClhib88xP6S4EHJyAYP7SWgKXiG8JXWMscVbushS/ir9LL/SgW/G/ajwK/HGboIIi8RxndRc8uncXW6mtWneZ5xO65k8whUCwY+tqqHuhsoCa7XLGmCO2JCoz+w8kEUhd87gt5/o0vbGlIHNYyzowglWoF80rMQQDKXzfIJmW2L0khlC3hJgcM8+jy54WeqRZrLS17DE6PvlA3sLqGpXQBOOWY8WaG+/pfmi09OZybgfUu0D8nGPdb506XTXM2EC7afq/+lsjRt34UvZsBDBE7zptSW0SiRTHVgBQLHQZIle7TqyD+XVcCO0Usp30Uv2F4lYmGgWnH9nYpFptOw+YnOqV07cysd5QmU76sUD5izdQ/0Nlfjkf/mcmRyui+AmCvl4Qf6ljkWCTAnpPgDcRkKMM3mUf8k1xtnaSVS24CEsw260tDF9bSO2ZgoNUO7sXuvk="
     on:
       condition:
         - $OS_TYPE = centos
+        - $BUILD_RPMS = True
 
 after_success:
   - coveralls
