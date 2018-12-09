@@ -42,7 +42,6 @@ deploy:
     on:
       condition:
         - $OS_TYPE = centos
-        - $BUILD_RPMS = True
 
 after_success:
   - coveralls
