@@ -7,3 +7,4 @@ coverage
 nose
 copr-cli
 simplejson
+bumpversion 
