@@ -22,7 +22,6 @@ install:
 
 script:
   - nosetests --with-coverage
-  - docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
 
 before_deploy:
   - git config --local user.name "jduncan-rva"
@@ -51,4 +50,5 @@ deploy:
 
 after_success:
   - coveralls
-  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
+  # - docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
+  # - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
