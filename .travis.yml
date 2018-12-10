@@ -19,7 +19,7 @@ before_install:
 
 install:
   - pip install -r requirements.txt
-  - bumpversion patch --list --curent_version=${SOSCLEANER_VERSION}
+  - bumpversion patch --list --curent-version=${SOSCLEANER_VERSION}
 
 script:
   - nosetests --with-coverage
