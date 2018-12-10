@@ -18,7 +18,7 @@ before_install:
 
 install:
   - pip install -r requirements.txt
-  - export SOSCLEANER_VERSION=${bumpversion patch --list | grep new_version | awk-F '\=' '{ print $2 }'}
+  - export SOSCLEANER_VERSION=$(bumpversion patch --list | grep new_version | awk-F '\=' '{ print $2 }')
 
 script:
   - nosetests --with-coverage
