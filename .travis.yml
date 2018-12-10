@@ -3,9 +3,12 @@ python:
 - '2.7'
 env:
   global:
+    - PROJECT_NAME=soscleaner
     - COPR_REPOSITORY=soscleaner
     - OS_ARCH=x86_64
     - DOCKER_IMAGE=alectolytic/rpmbuilder
+    - GH_USER=jduncan-rva
+    - GH_ORG=jduncan-rva
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 
@@ -14,11 +17,12 @@ services:
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_447a8e6ecb5b_key -iv $encrypted_447a8e6ecb5b_iv -in .copr.enc -out .copr -d
+  - git remote rm origin
+  - git remote add origin https://${GH_USER}:${GH_TOKEN}@github.com/${GH_ORG}/${PROJECT_NAME}.git
 
 install:
   - pip install -r requirements.txt
   - export SOSCLEANER_VERSION=$(bumpversion patch --list | grep new_version | awk -F '\=' '{ print $2 }')
-  - echo ${SOSCLEANER_VERSION}
   - export TRAVIS_TAG=${SOSCLEANER_VERSION}
 
 script:
