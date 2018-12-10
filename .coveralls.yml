@@ -1,2 +1,2 @@
 service_name: travis-ci
-repo_token: ${COVERALLS_REPO_TOKEN}
+repo_token: ${COVERALLS_TOKEN}
