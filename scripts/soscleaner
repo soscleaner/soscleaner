@@ -8,7 +8,7 @@ import sys
 
 def main():
 
-    parser = OptionParser(usage="%prog [-ldfknqr] /path/to/sosreport",version="%prog 0.3.53")
+    parser = OptionParser(usage="%prog [-ldfknqr] /path/to/sosreport",version="%prog 0.3.60")
     parser.add_option("-l", "--log_level", dest="loglevel", default='INFO',
         help="The Desired Log Level (default = INFO) Options are DEBUG, INFO, WARNING, ERROR",
         metavar="LOGLEVEL")
