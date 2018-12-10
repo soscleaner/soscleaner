@@ -6,8 +6,8 @@ env:
   - COPR_REPOSITORY=soscleaner
   - OS_ARCH=x86_64
   - DOCKER_IMAGE=alectolytic/rpmbuilder
-  - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2)
-  - TRAVIS_TAG=${SOSCLEANER_VERSION}
+  - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2 | xargs)
+  - TRAVIS_TAG=v${SOSCLEANER_VERSION}
   matrix:
   - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 services:
