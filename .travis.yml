@@ -19,6 +19,7 @@ before_install:
 install:
   - pip install -r requirements.txt
   - export SOSCLEANER_VERSION=$(bumpversion patch --list | grep new_version | awk-F '\=' '{ print $2 }')
+  - echo "********************* SOSCLEANER VERSION $SOSCLEANER_VERSION *********************"
 
 script:
   - nosetests --with-coverage
@@ -26,8 +27,7 @@ script:
 before_deploy:
   - git config --local user.name "jduncan-rva"
   - git config --local user.email "jamie.e.duncan@gmail.com"
-  - export TRAVIS_TAG=${TRAVIS_TAG-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
-  - git tag $TRAVIS_TAG
+  - git tag $SOSCLEANER_VERSION
 
 deploy:
   - provider: releases
