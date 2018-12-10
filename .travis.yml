@@ -52,6 +52,7 @@ deploy:
       secure: "nO5ln4jY6gtwnJZJS5+1G7caiipAn4SBnS9SQzStvterNB9xoBz6pnO0QwvnFwNjD5y3GCqwcVMjmLyY2/+2x01IkZoc5w65FKBuYuvgzf/oIRT/H0VvVZne0+OusBebOzKMoamaCQ3B+kev4xl6v8gr+0l6a8wlmcN5FcHjg1Ee90mYHBRYZU1sOBswwJSFnlPCLM48hq3VYX95iHyypvG22gOhs7fgkouyzoQClhib88xP6S4EHJyAYP7SWgKXiG8JXWMscVbushS/ir9LL/SgW/G/ajwK/HGboIIi8RxndRc8uncXW6mtWneZ5xO65k8whUCwY+tqqHuhsoCa7XLGmCO2JCoz+w8kEUhd87gt5/o0vbGlIHNYyzowglWoF80rMQQDKXzfIJmW2L0khlC3hJgcM8+jy54WeqRZrLS17DE6PvlA3sLqGpXQBOOWY8WaG+/pfmi09OZybgfUu0D8nGPdb506XTXM2EC7afq/+lsjRt34UvZsBDBE7zptSW0SiRTHVgBQLHQZIle7TqyD+XVcCO0Usp30Uv2F4lYmGgWnH9nYpFptOw+YnOqV07cysd5QmU76sUD5izdQ/0Nlfjkf/mcmRyui+AmCvl4Qf6ljkWCTAnpPgDcRkKMM3mUf8k1xtnaSVS24CEsw260tDF9bSO2ZgoNUO7sXuvk="
 
 after_deploy:
+  - git commit -a -m 'pushing new version number to master via travis-ci'
   - git push --tags origin master
 
 after_success:
