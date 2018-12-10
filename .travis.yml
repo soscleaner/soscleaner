@@ -7,8 +7,7 @@ env:
   - OS_ARCH=x86_64
   - DOCKER_IMAGE=alectolytic/rpmbuilder
   - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2)
-  - TRAVIS_TAG=$(grep current_version setup.cfg | cut -d \= -f 2)-$(date +'%Y%m%d%H%M%S')-$(git
-    log --format=%h -1)
+  - TRAVIS_TAG=${SOSCLEANER_VERSION}
   matrix:
   - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 services:
