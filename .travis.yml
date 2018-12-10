@@ -36,8 +36,8 @@ deploy:
     api_key:
       secure: ocsQ9iVR35kLLZpPO4tcxjhv7PTIaJlE9B2Sp4dHn3MnhoMTAfrnF3BfWgNs7DCEhFGx0sXwTdA1j61xor2DdUUCrnWptK2ejGyt3q4Kzj4DDSCxTBQJcHvYS7OMUb3IQaq8CjcbOgM73SZMjdjBZJj6/ikr+e3NVxhGPdAWH4NRHsrSoOwJy8sz1UaYuBYL5tEFlYf4ufP9Ls3AEInQA7kL+aDCKHmu6hsBXBZqllg52AFgZjrWJnYxenehWlRnIVXEa5Q1QVEdzFcXBypKGiiFiCyAQKctEz+3Y3RT8YwySJ/MzqDrh0I81FMTy1sI0RIlAmlumVSLW8aRhYc9tNWlDn6PzvGjzq7z3jDNsPMF0j5d7DhKZzkGWhz7sW00KRMEgWTTy8X1kwo/tfLAyMb2qDGBcR/xTkPa65n7OMglWla+47HZnny5DM6m2EjLKbLRfBqNoCKHfcpaoCiLZ0jlCdFBtxTzADhiTwi5oK95wVbmhH7yUSI/lGw8UHWyEKARa3y7VrmndW+y+BCwkc2gIh/0nXRpgFA9ThbqcQnyo7FmQKmnjLmMh2OvqVnlYsn433w3R9Jo9Ch9KRRcaW/l6pn/h0O7RJPqzcPoKmhfUwRhy/h7ckBxBO6mb3gfQ3lw68wG0I6isf6I8joN8YZgGnUrwtthoactvpZx7fQ=
     file: soscleaner-${SOSCLEANER_VERSION}.tar.gz
-  on:
-    repo: jduncan-rva/soscleaner
+    on:
+      repo: jduncan-rva/soscleaner
 
   - provider: pypi
     user: jduncan
