@@ -8,6 +8,7 @@ env:
   - DOCKER_IMAGE=alectolytic/rpmbuilder
   - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2 | xargs)
   - TRAVIS_TAG=v${SOSCLEANER_VERSION}
+  - BUILD_COPR=False
   matrix:
   - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 services:
@@ -19,10 +20,10 @@ install:
 - pip install -r requirements.txt
 script:
 - nosetests --with-coverage
-after_success:
+after_deploy:
 - coveralls
-- docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
-- copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY}
+- test $BUILD_COPR = "True" && docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
+- test $BUILD_COPR = "True" && copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY}
   ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
 deploy:
   - provider: releases
