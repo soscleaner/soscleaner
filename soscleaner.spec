@@ -2,7 +2,7 @@
 
 Summary: To clean and filter sensitive data from a standard sosreport
 Name: soscleaner
-Version: 0.3.60
+Version: 0.3.61
 Release: 1%{dist}
 Source0: https://github.com/jduncan-rva/%{srcname}/archive/v%{version}.tar.gz
 License: GPLv2
