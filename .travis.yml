@@ -6,7 +6,6 @@ env:
     - COPR_REPOSITORY=soscleaner
     - OS_ARCH=x86_64
     - DOCKER_IMAGE=alectolytic/rpmbuilder
-    - TRAVIS_TAG=${SOSCLEANER_VERSION}
   matrix:
     - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 
@@ -19,6 +18,8 @@ before_install:
 install:
   - pip install -r requirements.txt
   - export SOSCLEANER_VERSION=$(bumpversion patch --list | grep new_version | awk -F '\=' '{ print $2 }')
+  - echo ${SOSCLEANER_VERSION}
+  - export TRAVIS_TAG=${SOSCLEANER_VERSION}
 
 script:
   - nosetests --with-coverage
