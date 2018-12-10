@@ -3,46 +3,41 @@ python:
 - '2.7'
 env:
   global:
-    - COPR_REPOSITORY=soscleaner
-    - OS_ARCH=x86_64
-    - DOCKER_IMAGE=alectolytic/rpmbuilder
-    - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2)
-    - TRAVIS_TAG=$(grep current_version setup.cfg | cut -d \= -f 2)-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)
+  - COPR_REPOSITORY=soscleaner
+  - OS_ARCH=x86_64
+  - DOCKER_IMAGE=alectolytic/rpmbuilder
+  - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2)
+  - TRAVIS_TAG=$(grep current_version setup.cfg | cut -d \= -f 2)-$(date +'%Y%m%d%H%M%S')-$(git
+    log --format=%h -1)
   matrix:
-    - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
-
+  - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
 services:
-  - docker
-
+- docker
 before_install:
-  - openssl aes-256-cbc -K $encrypted_447a8e6ecb5b_key -iv $encrypted_447a8e6ecb5b_iv -in .copr.enc -out .copr -d
-
+- openssl aes-256-cbc -K $encrypted_447a8e6ecb5b_key -iv $encrypted_447a8e6ecb5b_iv
+  -in .copr.enc -out .copr -d
 install:
-  - pip install -r requirements.txt
-
+- pip install -r requirements.txt
 script:
-  - nosetests --with-coverage
-
+- nosetests --with-coverage
 after_success:
-  - coveralls
-  - docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
-  - copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY} ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
-
+- coveralls
+- docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
+- copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY}
+  ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
 deploy:
-  - provider: releases
-    api_key:
-      secure: "HLnvQL8RymurodHi/qd6C8aZ/pFC7UuvDCUjaWvI+vK4UIU6hBjsqP8oP2d/wyiiGgZuKITh/sbt1NBi5wMylfcbLa2mtiLVowiFmTw+ncaiIvcmHrJKeVYZeCM22pMYbUaIImfuLA0REp/HQcz+C5RzMMB+yRkpiFVj5RoBLGokRI1dL1dYvFfF1dhyFKtTjkagXTUgWCx7ZzgVz8n8CfEp1ix91/QL9iOaLEj11XIcixPa8AB1ciRpUZBcrBG+IsyVb05tjIsw7sQiyZTpey6I3poqXO8l/GF5qLkALff3S0xBhHxGVQi0dd3pRaPqsnj4HLaHOSWzsgYLziNuqEB7WOvxVc2DSbdK+oWocXNTAOntsdlYxHj2a8NpSQo8nulTrsDSC2gBIJ0gbuQx29yeUoTjsD7HtkVgumPVeyPa2fQitynp5kqmWVqTUNp0qXWjPUMFHjD78RYJ3VYEXeFInk6kG3etoJJ2ac8hZD2RPP/EsCajgX45G9o2HMViQDU8R/ln4pcjS3yIdE8Y2sUlUB9AWgDJpAhSKGuOaV5LC2uFUrqnAEH9obmjGYXNYQXFKesre8CvGWYqDBwHMmqoJ9btDPBvmsivwxFfvCoF+Np7IL73QLdxGjnqWrBUhQZHXnA6p/kwEx7kMO7AlD1IS2Yk7/nIXCsv5lITN5I="
-    skip_cleanup: true
-    file: soscleaner-${SOSCLEANER_VERSION}.tar.gz
-    on:
-      repo: jduncan-rva/soscleaner
-
+  provider: releases
+  api_key:
+    secure: t0qsVHf0YIYg5Ar4vXVIS0VF1pFrriDmnoZWba0dviEu/kIR4U9nXw25j471/LWYN6k8sFM5o1E8LGYEGYxN289YykGwaB740DpJIZRudvTKIwI9BKuv9QXqLt16JR/n8lN/XZLDBGpMNFrTpXBC8zNf6UODy14pdE9b/YiswbtA6685c8ivjHxPbMqfNCXHzCQWvK+CEM6E1m1RDnBq6pTxx2kCuiQayqqybqF0H/ISD0WU6IlDf79Vd5qQXejiLI5VfXfIz4glETfc7hLXkYsKl8TJ6cMEfEYi8ZsQur+kmkgPnwcyb8AV7OPZqbcZqOlbbIXb4xjmCQZDMZcUWj5q3oXyyCOx1ARojkl7JQ02spmT4Pc5q6BDHt0/XJa3AlxcBLq5TyEKD4LpoPnrp5ZlElO/7xOsGOudJbGN/bggN/SjRnSu95WjRhaPsWTWLJ5tAZvSPR3yhLZLtfHiCYDv9vUZ1wk0V1Rdup3yyGB40sJ0mN61GPID81I5Z2qMYyphJrCG8OpbOMrRY5NcW4Cl/g3KZVpGiFPqkixUsBDbMKL4XVyJudOvCMM0q410q7fuSc9e00LSannpgtD5h+twdrqDYGJQZo06ug0v1Uj5wdulhjTzDbalKaQ3Ea33CO5SsoexBla1zMpIFe4ZcyMDXS6hU1KmF7EnvNrTYhA=
+  file: soscleaner-${SOSCLEANER_VERSION}.tar.gz
+  skip_cleanup: true
+  on:
+    repo: jduncan-rva/soscleaner
   - provider: pypi
     user: jduncan
     password:
       secure: KD5TenOwsh07lAqdVv2YFuRm8wLErVRyUSo42JHH+K+xlLk3v/c2vfA+9sbwz7wP2sP8MsV9PCageB4WsXDlR7O/2gOBra+G/q5uZtYy62/i0vkqplXdIXg8SC77+h/BgDY+Kw5xwXkzYGGSJXGDLzgBilKexFQ0x9AYAm8UDSmG9EOvecqrd72gwC3zN9tfbpGyPQ/QfMfoKS6CAR1At2A1iZpuGAvHSfx+w1cqKaqJ8KowJ6PSGKKrySnX1vFqqZMGdcyzD64P3aQE7fW8Y/mN9d48tSLmLyPe/a3PqXZ+/rfzoRGpq4bGPQz20FEIT7h/On2fI0ZZuzyMayY1hS3nZCj0+WxvMOj8WPAiGwxEfLne4/M2lVCqUUwsPJilYA43x+0Hsk2vRt/WmXH5rQbIay+DFlLyxrW/rYh6D55QDSxyr2MGjowtLdU0mm54csaB6/8BEvw1mPtStln0JT4+dNKcJpPP/nZaZ5CdighXu7hpccIO+1kmcjZkUi2G+qsUcZ4b9twUve3F5TLCiMQWJfpAHoGvjxz3hUUZ0b4JdpOp6nyUzIo0kbNpOAx14f1IM7k4naQWBy8Zb4fFCBli5BkrWrVol6fD1ohPUI0gry+Don2srfyFUP0F6z/8czXngg2ILGhUe0IagNYySZu+I05XQ8OKnvpv2/Mqz9I=
     server: https://test.pypi.org/legacy/
-
   - provider: pypi
     user: jduncan
     password:
