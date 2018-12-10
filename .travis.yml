@@ -5,7 +5,6 @@ env:
   global:
     - COPR_REPOSITORY=soscleaner
     - OS_ARCH=x86_64
-    - SOSCLEANER_VERSION=${bumpversion patch --dry-run --list | grep new_version | awk-F '\=' '{ print $2 }'}
     - DOCKER_IMAGE=alectolytic/rpmbuilder
     - TRAVIS_TAG=${SOSCLEANER_VERSION}
   matrix:
@@ -19,7 +18,7 @@ before_install:
 
 install:
   - pip install -r requirements.txt
-  - bumpversion patch --new-version ${SOSCLEANER_VERSION}
+  - export SOSCLEANER_VERSION=${bumpversion patch --list | grep new_version | awk-F '\=' '{ print $2 }'}
 
 script:
   - nosetests --with-coverage
