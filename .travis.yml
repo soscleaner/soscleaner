@@ -23,26 +23,25 @@ script:
 - nosetests --with-coverage
 after_success:
 - coveralls
-before_deploy:
-- docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
 after_deploy:
+- docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
 - test $BUILD_COPR = "True" && copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY}
   ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
 deploy:
-  - provider: releases
-    api_key:
-      secure: t0qsVHf0YIYg5Ar4vXVIS0VF1pFrriDmnoZWba0dviEu/kIR4U9nXw25j471/LWYN6k8sFM5o1E8LGYEGYxN289YykGwaB740DpJIZRudvTKIwI9BKuv9QXqLt16JR/n8lN/XZLDBGpMNFrTpXBC8zNf6UODy14pdE9b/YiswbtA6685c8ivjHxPbMqfNCXHzCQWvK+CEM6E1m1RDnBq6pTxx2kCuiQayqqybqF0H/ISD0WU6IlDf79Vd5qQXejiLI5VfXfIz4glETfc7hLXkYsKl8TJ6cMEfEYi8ZsQur+kmkgPnwcyb8AV7OPZqbcZqOlbbIXb4xjmCQZDMZcUWj5q3oXyyCOx1ARojkl7JQ02spmT4Pc5q6BDHt0/XJa3AlxcBLq5TyEKD4LpoPnrp5ZlElO/7xOsGOudJbGN/bggN/SjRnSu95WjRhaPsWTWLJ5tAZvSPR3yhLZLtfHiCYDv9vUZ1wk0V1Rdup3yyGB40sJ0mN61GPID81I5Z2qMYyphJrCG8OpbOMrRY5NcW4Cl/g3KZVpGiFPqkixUsBDbMKL4XVyJudOvCMM0q410q7fuSc9e00LSannpgtD5h+twdrqDYGJQZo06ug0v1Uj5wdulhjTzDbalKaQ3Ea33CO5SsoexBla1zMpIFe4ZcyMDXS6hU1KmF7EnvNrTYhA=
-    file:
-      - soscleaner-${SOSCLEANER_VERSION}.tar.gz
-    skip_cleanup: true
-    on:
-      repo: jduncan-rva/soscleaner
-  - provider: pypi
-    user: jduncan
-    password:
-      secure: "WCDocl+RkQq9B3UM4xpcW2OBsBAVVIcP01WUzY3wFGypfrZBtHufN75utNExiWp+c5eFLv1TcSlVY7EH/KoPvTrorcVc4TiGR+F2ra0CQA+W2XimfFEvPf1twuEiidUuukFXqeiH/HrIz81CY/Qjn5xIGPgXIwgj9KWNg7sjlqfNIs1pC2vFLUdOLV+QT20HxmoQWBIJyVoPoKmz3BVP4bdfhE866VKrZtaN2cOlTz9H4GK1YNNl851F3ZUxezfO9ot0HPVUraxKdSlS8lqUCdSJQOxHQZMKWii1AmYZi5VOUZ9CE90o9VqtJkLgszx/uyesiV2vCX+wLgBHe0LALPMWxbn3T5+XUERnVtBOeYAagm/IdZw/OkfJThLFsaPnR/iHr7QuMlLtfWGxDf70i5ObnYimMZGTS9DSW19fsrfHm5GB5IkZ6B89pZAms8f1Pg+yDaoqqIYYkiTsKft0r39e1EZb5EqW5vqss880djrP/n4z/vKYgwazr5RLDAXmvG6mJ/L1yuiLNNEbE9A09ybgUq++p6aB6HRhfFUqRlonl9Org97Ibdh2QU/FBQxxhMhVi9INz0EMbBsz6Mmn27TYuPuNchI4KaL2RrNbIamPRj75HZQHxyfeulE7OlLhnl9x9Vrbhvqej8nRf42lB7I6+V04TIDy9Erl1mrInCs="
-    server: https://test.pypi.org/legacy/
-  - provider: pypi
-    user: jduncan
-    password:
-      secure: "eVG/TMsMmk1a0zAF78K36h8o309Ikrr6HawlQWWxbEgPL0JH32pHCQmGcZLhfbYYDtlW9RDnhVlvqd/0fnxtsuDv+qCPo2hG7MayUjJBPikPgVqyDaE5oivKUw4grnhkJWYeynLl6apjL20fAvYHlZs1w1TDvv1fyJYGkboG/KHItmyulWSKhv878hFreSM9fBCN9cBEJ3vDuCpZCgwPSXqtahe+O7d5IMSU4sYjJK/op2pFudu6DTcJJbvEyR/2KeBJxb/uuzmMUnqSgHyx3ovxNIJrjhtS+VTR/xykNHZSQYmK6Rsce31NhL1dc/WntEH6hOFWs8CiVAZ/jKqKRQ8lqoMx0vr4UNkdYXUukZtF0Egs5H4lfhGqbZDwNkW1Uzsy9LhADwlQkdo1S9qwp0okevq7eE+26NJHJeEsNOYWNfoHypLSmbZlB9BF6xG7obfrkZ2Y4CLm8bt+rj0o+wD3AOrXqZbo+2X+nPExNcUCrWKNdhIPn1Iut3xL/2lhObFIDSe4rA9do2z0Fo9JJiyVG9AihpHocBFqvvDIc7kCE0GORr/0/pek/+QAORJfAseOt/PPMWPPBMuSZ+SrHtJ1Z1+RPvWTyJ7NYlF3KKYTEXHSQYNsZDrzaXgNtxMf+1fm63vqBU39HVQS7CTAJbEFX3VXEmuuIb+KagPXUTI="
+- provider: releases
+  api_key:
+    secure: t0qsVHf0YIYg5Ar4vXVIS0VF1pFrriDmnoZWba0dviEu/kIR4U9nXw25j471/LWYN6k8sFM5o1E8LGYEGYxN289YykGwaB740DpJIZRudvTKIwI9BKuv9QXqLt16JR/n8lN/XZLDBGpMNFrTpXBC8zNf6UODy14pdE9b/YiswbtA6685c8ivjHxPbMqfNCXHzCQWvK+CEM6E1m1RDnBq6pTxx2kCuiQayqqybqF0H/ISD0WU6IlDf79Vd5qQXejiLI5VfXfIz4glETfc7hLXkYsKl8TJ6cMEfEYi8ZsQur+kmkgPnwcyb8AV7OPZqbcZqOlbbIXb4xjmCQZDMZcUWj5q3oXyyCOx1ARojkl7JQ02spmT4Pc5q6BDHt0/XJa3AlxcBLq5TyEKD4LpoPnrp5ZlElO/7xOsGOudJbGN/bggN/SjRnSu95WjRhaPsWTWLJ5tAZvSPR3yhLZLtfHiCYDv9vUZ1wk0V1Rdup3yyGB40sJ0mN61GPID81I5Z2qMYyphJrCG8OpbOMrRY5NcW4Cl/g3KZVpGiFPqkixUsBDbMKL4XVyJudOvCMM0q410q7fuSc9e00LSannpgtD5h+twdrqDYGJQZo06ug0v1Uj5wdulhjTzDbalKaQ3Ea33CO5SsoexBla1zMpIFe4ZcyMDXS6hU1KmF7EnvNrTYhA=
+  skip_cleanup: true
+  files:
+    - soscleaner-${SOSCLEANER_VERSION}.tar.gz
+  on:
+    repo: jduncan-rva/soscleaner
+- provider: pypi
+  user: jduncan
+  password:
+    secure: "WCDocl+RkQq9B3UM4xpcW2OBsBAVVIcP01WUzY3wFGypfrZBtHufN75utNExiWp+c5eFLv1TcSlVY7EH/KoPvTrorcVc4TiGR+F2ra0CQA+W2XimfFEvPf1twuEiidUuukFXqeiH/HrIz81CY/Qjn5xIGPgXIwgj9KWNg7sjlqfNIs1pC2vFLUdOLV+QT20HxmoQWBIJyVoPoKmz3BVP4bdfhE866VKrZtaN2cOlTz9H4GK1YNNl851F3ZUxezfO9ot0HPVUraxKdSlS8lqUCdSJQOxHQZMKWii1AmYZi5VOUZ9CE90o9VqtJkLgszx/uyesiV2vCX+wLgBHe0LALPMWxbn3T5+XUERnVtBOeYAagm/IdZw/OkfJThLFsaPnR/iHr7QuMlLtfWGxDf70i5ObnYimMZGTS9DSW19fsrfHm5GB5IkZ6B89pZAms8f1Pg+yDaoqqIYYkiTsKft0r39e1EZb5EqW5vqss880djrP/n4z/vKYgwazr5RLDAXmvG6mJ/L1yuiLNNEbE9A09ybgUq++p6aB6HRhfFUqRlonl9Org97Ibdh2QU/FBQxxhMhVi9INz0EMbBsz6Mmn27TYuPuNchI4KaL2RrNbIamPRj75HZQHxyfeulE7OlLhnl9x9Vrbhvqej8nRf42lB7I6+V04TIDy9Erl1mrInCs="
+  server: https://test.pypi.org/legacy/
+- provider: pypi
+  user: jduncan
+  password:
+    secure: "eVG/TMsMmk1a0zAF78K36h8o309Ikrr6HawlQWWxbEgPL0JH32pHCQmGcZLhfbYYDtlW9RDnhVlvqd/0fnxtsuDv+qCPo2hG7MayUjJBPikPgVqyDaE5oivKUw4grnhkJWYeynLl6apjL20fAvYHlZs1w1TDvv1fyJYGkboG/KHItmyulWSKhv878hFreSM9fBCN9cBEJ3vDuCpZCgwPSXqtahe+O7d5IMSU4sYjJK/op2pFudu6DTcJJbvEyR/2KeBJxb/uuzmMUnqSgHyx3ovxNIJrjhtS+VTR/xykNHZSQYmK6Rsce31NhL1dc/WntEH6hOFWs8CiVAZ/jKqKRQ8lqoMx0vr4UNkdYXUukZtF0Egs5H4lfhGqbZDwNkW1Uzsy9LhADwlQkdo1S9qwp0okevq7eE+26NJHJeEsNOYWNfoHypLSmbZlB9BF6xG7obfrkZ2Y4CLm8bt+rj0o+wD3AOrXqZbo+2X+nPExNcUCrWKNdhIPn1Iut3xL/2lhObFIDSe4rA9do2z0Fo9JJiyVG9AihpHocBFqvvDIc7kCE0GORr/0/pek/+QAORJfAseOt/PPMWPPBMuSZ+SrHtJ1Z1+RPvWTyJ7NYlF3KKYTEXHSQYNsZDrzaXgNtxMf+1fm63vqBU39HVQS7CTAJbEFX3VXEmuuIb+KagPXUTI="
