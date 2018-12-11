@@ -20,18 +20,19 @@ install:
 - pip install -r requirements.txt
 script:
 - nosetests --with-coverage
-after_deploy:
+after_success:
 - coveralls
-- test $BUILD_COPR = "True" && docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
+- docker run -v ${PWD}:/sources -v ${PWD}:/output:Z -e "SRPM_ONLY=1" ${DOCKER_IMAGE}:${OS_TYPE}-${OS_VERSION}
 - test $BUILD_COPR = "True" && copr-cli --config .copr build -r ${OS_DIST}-${OS_VERSION}-${OS_ARCH} ${COPR_REPOSITORY}
   ${COPR_REPOSITORY}-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
 deploy:
   - provider: releases
     api_key:
       secure: t0qsVHf0YIYg5Ar4vXVIS0VF1pFrriDmnoZWba0dviEu/kIR4U9nXw25j471/LWYN6k8sFM5o1E8LGYEGYxN289YykGwaB740DpJIZRudvTKIwI9BKuv9QXqLt16JR/n8lN/XZLDBGpMNFrTpXBC8zNf6UODy14pdE9b/YiswbtA6685c8ivjHxPbMqfNCXHzCQWvK+CEM6E1m1RDnBq6pTxx2kCuiQayqqybqF0H/ISD0WU6IlDf79Vd5qQXejiLI5VfXfIz4glETfc7hLXkYsKl8TJ6cMEfEYi8ZsQur+kmkgPnwcyb8AV7OPZqbcZqOlbbIXb4xjmCQZDMZcUWj5q3oXyyCOx1ARojkl7JQ02spmT4Pc5q6BDHt0/XJa3AlxcBLq5TyEKD4LpoPnrp5ZlElO/7xOsGOudJbGN/bggN/SjRnSu95WjRhaPsWTWLJ5tAZvSPR3yhLZLtfHiCYDv9vUZ1wk0V1Rdup3yyGB40sJ0mN61GPID81I5Z2qMYyphJrCG8OpbOMrRY5NcW4Cl/g3KZVpGiFPqkixUsBDbMKL4XVyJudOvCMM0q410q7fuSc9e00LSannpgtD5h+twdrqDYGJQZo06ug0v1Uj5wdulhjTzDbalKaQ3Ea33CO5SsoexBla1zMpIFe4ZcyMDXS6hU1KmF7EnvNrTYhA=
-    file: soscleaner-${SOSCLEANER_VERSION}.tar.gz
+    file:
+      - soscleaner-${SOSCLEANER_VERSION}.tar.gz
+      - soscleaner-${SOSCLEANER_VERSION}-1.${OS_SLUG}.src.rpm
     skip_cleanup: true
-    draft: true
     on:
       repo: jduncan-rva/soscleaner
   - provider: pypi
