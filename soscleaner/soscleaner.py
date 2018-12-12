@@ -837,13 +837,13 @@ class SOSCleaner:
         try:
             if not (os.path.exists(self.origin_path)):
                 self.logger.info("Creating Origin Path - %s" % self.origin_path)
-                os.makedirs(self.origin_path) # create the origin_path directory
+                os.makedirs(self.origin_path)  # create the origin_path directory
             if not (os.path.exists(self.dir_path)):
                 self.logger.info("Creating Directory Path - %s" % self.dir_path)
                 os.makedirs(self.dir_path)    # create the dir_path directory
             self._add_extra_files(files)
 
-        except OSError, e: # pragma: no cover
+        except OSError, e:  # pragma: no cover
             if e.errno == errno.EEXIST:
                 pass
             else:   # pragma: no cover
@@ -854,15 +854,15 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("CleanFilesOnlyError: unable to process")
 
-    def clean_report(self, options, sosreport): # pragma: no cover
-        '''this is the primary function, to put everything together and analyze an sosreport'''
+    def clean_report(self, options, sosreport):  # pragma: no cover
+        ''' this is the primary function, to put everything together and analyze an sosreport '''
 
-        if options.report_dir: # override the default location for artifacts (/tmp)
+        if options.report_dir:  # override the default location for artifacts (/tmp)
             if os.path.isdir(options.report_dir):
                 self.report_dir = options.report_dir
         self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
-        self._check_uid() #make sure it's soscleaner is running as root
+        self._check_uid()  # make sure it's soscleaner is running as root
         self._get_disclaimer()
         self._add_loopback_network()
         if options.networks:    # we have defined networks
@@ -909,8 +909,8 @@ class SOSCleaner:
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
         self.logger.con_out("IP Addresses Obfuscated - %s", len(self.ip_db))
-        self.logger.con_out("Hostnames Obfuscated - %s" , len(self.hn_db))
-        self.logger.con_out("Domains Obfuscated - %s" , len(self.dn_db))
+        self.logger.con_out("Hostnames Obfuscated - %s", len(self.hn_db))
+        self.logger.con_out("Domains Obfuscated - %s", len(self.dn_db))
         self.logger.con_out("Total Files Analyzed - %s", self.file_count)
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
