@@ -17,8 +17,7 @@
 # File Name : soscleaner.py
 # Creation Date : 10-01-2013
 # Created By : Jamie Duncan
-# Last Modified : Sat 13 Sep 2014 10:51:54 PM EDT
-# Purpose : an sosreport scrubber
+# Purpose : an sosreport and data set obfuscation tool
 
 import os
 import re
