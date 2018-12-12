@@ -27,7 +27,7 @@ def main():
     parser.add_option("-k", "--keywords", action="append", default=[], dest="keywords",
                             help="optional text file to be obfuscated. format is one word per line. warning: long lists may slow down soscleaner.",
                             metavar="KEYWORDS")
-    parser.add_option("--hostname-path", action="store", default="hostname", dest="hostname_path",
+    parser.add_option("-h", "--hostname-path", action="store", default="hostname", dest="hostname_path",
                             help="optional path to hostname file.",
                             metavar="HOSTNAMEPATH")
     parser.add_option("-n", "--network", action="append", default=[], dest="networks",
