@@ -19,15 +19,17 @@
 # File Name : test.py
 # Creation Date : 07-02-2014
 # Created By : Jamie Duncan
-# Last Modified : Sat 13 Sep 2014 10:55:29 PM EDT
 # Purpose : SOSCleaner unittests
+
 import sys
-sys.path.append('soscleaner/')
 import unittest
 from soscleaner import SOSCleaner
 import os
 import shutil
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+
+sys.path.append('soscleaner/')
+
 
 class SOSCleanerTests(unittest.TestCase):
     def _setUpHostname(self, t='fqdn', remove=False):
@@ -61,10 +63,10 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._start_logging(self.cleaner.logfile)
         self._setUpHostname()
 
-    def _artifact_cleanup(self,directory):
-        #clean up the /tmp directory between tests, when artifacts are created
+    def _artifact_cleanup(self, directory):
+        # clean up the /tmp directory between tests, when artifacts are created
         for f in os.listdir(directory):
-            a = os.path.join(directory,f)
+            a = os.path.join(directory, f)
             if 'soscleaner' in f:
                 if os.path.isdir(a):
                     shutil.rmtree(a)
@@ -100,15 +102,15 @@ class SOSCleanerTests(unittest.TestCase):
         self._setUpHostname(t='non-fqdn')
         host, domain = self.cleaner._get_hostname()
         self.assertTrue(host == 'myhost')
-        self.assertTrue(domain == None)
+        self.assertTrue(domain is None)
 
     def test3_get_hostname_nohostnamefile(self):
         # testing with no hostname file
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostname(remove=True)
-        host,domain = self.cleaner._get_hostname()
-        self.assertTrue(host == None)
-        self.assertTrue(domain == None)
+        host, domain = self.cleaner._get_hostname()
+        self.assertTrue(host is None)
+        self.assertTrue(domain is None)
 
     def test4_get_hostname_path_fqdn(self):
         # _get_hostname should return the hostname and domainname from the sosreport. testing with an fqdn
@@ -124,15 +126,15 @@ class SOSCleanerTests(unittest.TestCase):
         self._setUpHostnamePath(t='non-fqdn')
         host, domain = self.cleaner._get_hostname('hostname2')
         self.assertTrue(host == 'myhost2')
-        self.assertTrue(domain == None)
+        self.assertTrue(domain is None)
 
     def test6_get_hostname_path_nohostnamefile(self):
         # testing with no hostname file
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self._setUpHostnamePath(remove=True)
-        host,domain = self.cleaner._get_hostname('hostname2')
-        self.assertTrue(host == None)
-        self.assertTrue(domain == None)
+        host, domain = self.cleaner._get_hostname('hostname2')
+        self.assertTrue(host is None)
+        self.assertTrue(domain is None)
 
     def test7_obfuscate_hosts_file(self):
         # testing hosts file extra processing
@@ -142,8 +144,8 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test8_skip_files(self):
         d = 'testdata/sosreport_dir'
-        files = ['test.bin','test.txt']
-        skip_list = self.cleaner._skip_file(d,files)
+        files = ['test.bin', 'test.txt']
+        skip_list = self.cleaner._skip_file(d, files)
         self.assertTrue('test.bin' in skip_list)
         self.assertTrue('test.txt' not in skip_list)
 
@@ -197,7 +199,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test16_domains2db_fqdn(self):
         self.cleaner.domainname = 'myserver.com'
-        self.cleaner.domains = ['foo.com','bar.com']
+        self.cleaner.domains = ['foo.com', 'bar.com']
         self.cleaner._domains2db()
         self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.values())
         self.assertTrue('foo.com' in self.cleaner.dn_db.values())
@@ -214,7 +216,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.process_hostnames = True
         test_o_hn = self.cleaner._hn2db(test_hn)
         self.cleaner._create_hn_report()
-        fh = open(self.cleaner.hn_report,'r')
+        fh = open(self.cleaner.hn_report, 'r')
         x = fh.readlines()
         self.assertTrue(test_hn in x[1])
         self.assertTrue(test_o_hn in x[1])
@@ -231,61 +233,61 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domains = ['myserver.com']
         self.cleaner._domains2db()
         self.cleaner._create_dn_report()
-        fh = open(self.cleaner.dn_report,'r')
+        fh = open(self.cleaner.dn_report, 'r')
         x = fh.readlines()
-        self.assertTrue( self.cleaner.domainname in x[1])
+        self.assertTrue(self.cleaner.domainname in x[1])
 
     def test21_create_dn_report_none(self):
         self.cleaner._create_dn_report()
-        fh = open(self.cleaner.dn_report,'r')
+        fh = open(self.cleaner.dn_report, 'r')
         x = fh.readlines()
-        self.assertTrue( x[1] == 'None,None\n')
+        self.assertTrue(x[1] == 'None,None\n')
 
     def test22_clean_file(self):
         test_file = '/tmp/clean_file_test'
         shutil.copyfile('testdata/sosreport_dir/var/log/messages', test_file)
         self.cleaner.process_hostnames = True
-        self.cleaner.domains = ['myserver.com','foo.com']
+        self.cleaner.domains = ['myserver.com', 'foo.com']
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.hostname = 'myhost'
         self.cleaner._domains2db()
         self.cleaner._clean_file(test_file)
-        fh = open(test_file,'r')
+        fh = open(test_file, 'r')
         data = ', '.join(fh.readlines())
         fh.close()
         self.assertTrue(self.cleaner._hn2db(self.cleaner.hostname) in data)
         self.assertTrue(self.cleaner._hn2db('foohost.foo.com') in data)
-        os.remove(test_file)    #clean up
+        os.remove(test_file)  # clean up
 
     def test23_sub_hostname_hyphens(self):
-        self.cleaner.domains=['myserver.com']
-        self.cleaner.domainname='myserver.com'
-        self.cleaner.hostname='myhost'
+        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domainname = 'myserver.com'
+        self.cleaner.hostname = 'myhost'
         self.cleaner._domains2db()
         line = 'this is myhost.myserver.com and this is my-host.myserver.com'
         new_line = self.cleaner._sub_hostname(line)
         self.assertTrue('my' not in new_line)
 
     def test24_extra_files(self):
-        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
+        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.isdir(self.cleaner.dir_path))
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
 
     def test25_create_archive_nososreport(self):
-        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3']
+        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
 
     def test26_extra_files_nonexistent(self):
-        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
+        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
         self.assertFalse(os.path.exists(os.path.join(self.cleaner.dir_path, 'bogusfile')))
 
     def test27_clean_files_only_originexists(self):
         os.makedirs(self.cleaner.origin_path)
-        files = ['testdata/extrafile1','testdata/extrafile2','testdata/extrafile3', 'testdata/bogusfile']
+        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(self.cleaner.origin_path))
 
@@ -295,10 +297,10 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner.kw_count == 0)
 
     def test29_add_keywords(self):
-        self.cleaner.keywords = ['testdata/keyword1.txt','testdata/keyword2.txt']
+        self.cleaner.keywords = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
-        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(),'some' in self.cleaner.kw_db.keys()]))
+        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
 
     def test30_sub_keywords(self):
         self.cleaner.keywords = ['testdata/keyword1.txt']
@@ -310,14 +312,14 @@ class SOSCleanerTests(unittest.TestCase):
     def test31_create_ip_report(self):
         self.cleaner._ip4_2_db('192.168.122.100')
         self.cleaner._create_ip_report()
-        fh = open(self.cleaner.ip_report,'r')
+        fh = open(self.cleaner.ip_report, 'r')
         x = fh.readlines()
-        self.assertTrue( '192.168.122.100' in x[1])
+        self.assertTrue('192.168.122.100' in x[1])
 
     def test32_sub_hostname_front_of_line(self):
-        self.cleaner.domains=['myserver.com']
-        self.cleaner.domainname='myserver.com'
-        self.cleaner.hostname='myhost'
+        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domainname = 'myserver.com'
+        self.cleaner.hostname = 'myhost'
         self.cleaner._domains2db()
         line = 'myhost.myserver.com and this is my-host.myserver.com'
         new_line = self.cleaner._sub_hostname(line)
@@ -334,18 +336,18 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test35_existing_network(self):
         self.cleaner.dir_path = 'testdata/sosreport_dir'
-        data = self.cleaner._ip4_add_network('10.0.0.0/8')
-        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) == True)
+        self.cleaner._ip4_add_network('10.0.0.0/8')
+        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) is True)
 
     def test36_add_loopback(self):
         self.cleaner._add_loopback_network()
         self.assertTrue(self.cleaner.net_metadata['127.0.0.0']['host_count'] == 0)
-        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('127.0.0.0/8')) == True)
+        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('127.0.0.0/8')) is True)
 
     def test37_dup_networks(self):
         self.cleaner._ip4_add_network('10.0.0.0/8')
         self.cleaner._ip4_add_network('10.0.0.0/8')
-        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) == True)
+        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) is True)
 
     def test38_find_existing_network(self):
         self.cleaner._ip4_add_network('10.0.0.0/8')
