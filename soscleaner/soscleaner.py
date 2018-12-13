@@ -341,6 +341,7 @@ class SOSCleaner:
         This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
         Example:
         '''
+        self.logger.debug("Processing Line - %s", line)
         if line is not None:
             try:
                 for od, d in self.dn_db.items():
@@ -803,8 +804,9 @@ class SOSCleaner:
                 fh.close()
                 if len(data) > 0:  # if the file isn't empty:
                     for l in data:
-                            new_l = self._clean_line(l)
-                            tmp_file.write(new_l)
+                        self.logger.debug("Obfuscating Line - %s", l)
+                        new_l = self._clean_line(l)
+                        tmp_file.write(new_l)
 
                     tmp_file.seek(0)
 
