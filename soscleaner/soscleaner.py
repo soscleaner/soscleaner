@@ -798,8 +798,9 @@ class SOSCleaner:
             fh.close()
             if len(data) > 0:  # if the file isn't empty:
                 for l in data:
-                    new_l = self._clean_line(l)
-                    tmp_file.write(new_l)
+                    if l is not None:
+                        new_l = self._clean_line(l)
+                        tmp_file.write(new_l)
 
                 tmp_file.seek(0)
 
