@@ -805,8 +805,12 @@ class SOSCleaner:
                 if len(data) > 0:  # if the file isn't empty:
                     for l in data:
                         self.logger.debug("Obfuscating Line - %s", l)
-                        new_l = self._clean_line(l)
-                        tmp_file.write(new_l)
+                        if l is not None:
+                            new_l = self._clean_line(l)
+                            tmp_file.write(new_l)
+                        else:
+                            self.logger.debug("None type line detected - %s", l)
+                            pass
 
                     tmp_file.seek(0)
 
