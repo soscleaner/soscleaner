@@ -777,15 +777,19 @@ class SOSCleaner:
     def _clean_line(self, l):
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
-        new_line = self._sub_ip(l)                  # IP substitution
-        new_line = self._sub_hostname(new_line)     # Hostname substitution
-        new_line = self._sub_keywords(new_line)     # Keyword Substitution
+        try:
+            new_line = self._sub_ip(l)                  # IP substitution
+            new_line = self._sub_hostname(new_line)     # Hostname substitution
+            new_line = self._sub_keywords(new_line)     # Keyword Substitution
 
-        return new_line
+            return new_line
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("CleanLine Error: Cannot Clean Line - %s" % l)
 
     def _clean_file(self, f):
-        '''this will take a given file path, scrub it accordingly, and save a new copy of the file
-        in the same location'''
+        '''this will take a given file path, scrub it accordingly, and save a new copy of the file tmpin the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
             # try:
