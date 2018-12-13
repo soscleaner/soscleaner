@@ -363,6 +363,11 @@ class SOSCleaner:
                 line = line.replace(self.hostname, self._hn2db(self.hostname))  # catch any non-fqdn instances of the system hostname
 
             return line
+
+        except TypeError, e:  # pragma: no cover
+            self.logger.exception(e)
+            pass
+
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise e
