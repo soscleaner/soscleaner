@@ -341,36 +341,35 @@ class SOSCleaner:
         This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
         Example:
         '''
-        try:
-            for od, d in self.dn_db.items():
-                # regex = re.compile(r'\w*\.%s' % d)
-                regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
-                hostnames = [each for each in regex.findall(line)]
-                if len(hostnames) > 0:
-                    for hn in hostnames:
-                        new_hn = self._hn2db(hn)
-                        self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
-                        line = line.replace(hn, new_hn)
-                        # replace any non-fqdn occurrences of the hostname
-                        for entry in line.split():
-                            # i don't remember what this does... but i'm going to leave it here for now...
-                            if hn.startswith(entry):  # pragma: no cover
-                                line = line.replace(entry, new_hn.split('.')[0])
-                # after we replace all of the hostnames, we will run back through the line and replace any root domain matches as well
-                # should take care of issue #50
-                line = line.replace(d, od)
-            if self.hostname:
-                line = line.replace(self.hostname, self._hn2db(self.hostname))  # catch any non-fqdn instances of the system hostname
+        if line is not None:
+            try:
+                for od, d in self.dn_db.items():
+                    # regex = re.compile(r'\w*\.%s' % d)
+                    regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
+                    hostnames = [each for each in regex.findall(line)]
+                    if len(hostnames) > 0:
+                        for hn in hostnames:
+                            new_hn = self._hn2db(hn)
+                            self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
+                            line = line.replace(hn, new_hn)
+                            # replace any non-fqdn occurrences of the hostname
+                            for entry in line.split():
+                                # i don't remember what this does... but i'm going to leave it here for now...
+                                if hn.startswith(entry):  # pragma: no cover
+                                    line = line.replace(entry, new_hn.split('.')[0])
+                    # after we replace all of the hostnames, we will run back through the line and replace any root domain matches as well
+                    # should take care of issue #50
+                    line = line.replace(d, od)
+                if self.hostname:
+                    line = line.replace(self.hostname, self._hn2db(self.hostname))  # catch any non-fqdn instances of the system hostname
 
-            return line
+                return line
 
-        except TypeError, e:  # pragma: no cover
-            self.logger.exception(e)
-            pass
-
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise e
+            except Exception, e:  # pragma: no cover
+                self.logger.exception(e)
+                raise e
+        else:
+            self.logger.con_out("Unable to obfuscate hostnames in line -  %s", line)
 
     def _make_dest_env(self):
         '''
