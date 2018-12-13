@@ -371,7 +371,7 @@ class SOSCleaner:
                 raise e
         else:
             self.logger.con_out("Unable to obfuscate hostnames in line -  %s", line)
-            pass
+            return str('')
 
     def _make_dest_env(self):
         '''
