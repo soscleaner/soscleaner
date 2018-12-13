@@ -370,6 +370,7 @@ class SOSCleaner:
                 raise e
         else:
             self.logger.con_out("Unable to obfuscate hostnames in line -  %s", line)
+            pass
 
     def _make_dest_env(self):
         '''
@@ -796,21 +797,20 @@ class SOSCleaner:
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file tmpin the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
-            # try:
-            fh = open(f, 'r')
-            data = fh.readlines()
-            fh.close()
-            if len(data) > 0:  # if the file isn't empty:
-                for l in data:
-                        new_l = self._clean_line(l)
-                        if new_l is not None:
+            try:
+                fh = open(f, 'r')
+                data = fh.readlines()
+                fh.close()
+                if len(data) > 0:  # if the file isn't empty:
+                    for l in data:
+                            new_l = self._clean_line(l)
                             tmp_file.write(new_l)
 
-                tmp_file.seek(0)
+                    tmp_file.seek(0)
 
-            # except Exception, e:  # pragma: no cover
-            #     self.logger.exception(e)
-            #     raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
+            except Exception, e:  # pragma: no cover
+                self.logger.exception(e)
+                raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
             try:
                 if len(data) > 0:
