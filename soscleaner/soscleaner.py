@@ -788,20 +788,20 @@ class SOSCleaner:
         in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
-            try:
-                fh = open(f, 'r')
-                data = fh.readlines()
-                fh.close()
-                if len(data) > 0:  # if the file isn't empty:
-                    for l in data:
-                        new_l = self._clean_line(l)
-                        tmp_file.write(new_l)
+            # try:
+            fh = open(f, 'r')
+            data = fh.readlines()
+            fh.close()
+            if len(data) > 0:  # if the file isn't empty:
+                for l in data:
+                    new_l = self._clean_line(l)
+                    tmp_file.write(new_l)
 
-                    tmp_file.seek(0)
+                tmp_file.seek(0)
 
-            except Exception, e:  # pragma: no cover
-                self.logger.exception(e)
-                raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
+            # except Exception, e:  # pragma: no cover
+            #     self.logger.exception(e)
+            #     raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
             try:
                 if len(data) > 0:
