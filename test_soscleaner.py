@@ -177,6 +177,8 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domainname = 'example.com'
         self.cleaner.dn_db['example.com'] = 'myservers.com'
         new_line = 'foo bar %s some words %s more words' % (self.cleaner._hn2db(hostname), self.cleaner._ip4_2_db(ip))
+        print "Line - %s" % line
+        print "New Line - %s" % new_line
         self.assertTrue(self.cleaner._clean_line(line) == new_line)
 
     def test14_make_dest_env(self):
