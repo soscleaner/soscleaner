@@ -25,10 +25,9 @@ import sys
 import unittest
 from soscleaner import SOSCleaner
 import os
+sys.path.append('soscleaner/')
 import shutil
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
-
-sys.path.append('soscleaner/')
 
 
 class SOSCleanerTests(unittest.TestCase):
