@@ -342,36 +342,32 @@ class SOSCleaner:
         Example:
         '''
         self.logger.debug("Processing Line - %s", line)
-        if line is not None:
-            try:
-                for od, d in self.dn_db.items():
-                    # regex = re.compile(r'\w*\.%s' % d)
-                    regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
-                    hostnames = [each for each in regex.findall(line)]
-                    if len(hostnames) > 0:
-                        for hn in hostnames:
-                            new_hn = self._hn2db(hn)
-                            self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
-                            line = line.replace(hn, new_hn)
-                            # replace any non-fqdn occurrences of the hostname
-                            for entry in line.split():
-                                # i don't remember what this does... but i'm going to leave it here for now...
-                                if hn.startswith(entry):  # pragma: no cover
-                                    line = line.replace(entry, new_hn.split('.')[0])
-                    # after we replace all of the hostnames, we will run back through the line and replace any root domain matches as well
-                    # should take care of issue #50
-                    line = line.replace(d, od)
-                if self.hostname:
-                    line = line.replace(self.hostname, self._hn2db(self.hostname))  # catch any non-fqdn instances of the system hostname
+        try:
+            for od, d in self.dn_db.items():
+                # regex = re.compile(r'\w*\.%s' % d)
+                regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
+                hostnames = [each for each in regex.findall(line)]
+                if len(hostnames) > 0:
+                    for hn in hostnames:
+                        new_hn = self._hn2db(hn)
+                        self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
+                        line = line.replace(hn, new_hn)
+                        # replace any non-fqdn occurrences of the hostname
+                        for entry in line.split():
+                            # i don't remember what this does... but i'm going to leave it here for now...
+                            if hn.startswith(entry):  # pragma: no cover
+                                line = line.replace(entry, new_hn.split('.')[0])
+                # after we replace all of the hostnames, we will run back through the line and replace any root domain matches as well
+                # should take care of issue #50
+                line = line.replace(d, od)
+            if self.hostname:
+                line = line.replace(self.hostname, self._hn2db(self.hostname))  # catch any non-fqdn instances of the system hostname
 
-                return line
+            return line
 
-            except Exception, e:  # pragma: no cover
-                self.logger.exception(e)
-                raise e
-        else:
-            self.logger.con_out("Unable to obfuscate hostnames in line -  %s", line)
-            return str('')
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise e
 
     def _make_dest_env(self):
         '''
@@ -510,7 +506,7 @@ class SOSCleaner:
                         line = line.replace(k, self._kw2db(k))
                         self.logger.debug("Obfuscating Keyword - %s > %s", k, self._kw2db(k))
 
-                return line
+            return line
             # TODO - handle the 0 keywords more gracefully
 
         except Exception, e:  # pragma: no cover
@@ -805,12 +801,8 @@ class SOSCleaner:
                 if len(data) > 0:  # if the file isn't empty:
                     for l in data:
                         self.logger.debug("Obfuscating Line - %s", l)
-                        if l is not None:
-                            new_l = self._clean_line(l)
-                            tmp_file.write(new_l)
-                        else:
-                            self.logger.debug("None type line detected - %s", l)
-                            pass
+                        new_l = self._clean_line(l)
+                        tmp_file.write(new_l)
 
                     tmp_file.seek(0)
 
