@@ -507,7 +507,6 @@ class SOSCleaner:
                         self.logger.debug("Obfuscating Keyword - %s > %s", k, self._kw2db(k))
 
             return line
-            # TODO - handle the 0 keywords more gracefully
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
