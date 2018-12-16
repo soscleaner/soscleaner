@@ -330,27 +330,27 @@ class SOSCleaner:
         ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
         user_file = os.path.join(self.report_dir, user_file)
 
-        try:
-            self.logger.con_out("Processing last output for user names to obfuscate")
-            data = self._extract_file_data(user_file)
-            sorted_users = list()
+        # try:
+        self.logger.con_out("Processing last output for user names to obfuscate")
+        data = self._extract_file_data(user_file)
+        sorted_users = list()
 
-            # first, we get out the unique user entries
-            for line in data:
-                if len(line) > 1:  # there are some blank lines at the end of the last ouput
-                    sorted_users.append(line.split()[0])
+        # first, we get out the unique user entries
+        for line in data:
+            if len(line) > 1:  # there are some blank lines at the end of the last ouput
+                sorted_users.append(line.split()[0])
 
-            # then we add them to the obfuscation database
-            for user in sorted_users:
-                if user not in ignored_users:
-                    self._user2db(user)
-                    self.logger.debug("Obfuscating user %s", user)
+        # then we add them to the obfuscation database
+        for user in sorted_users:
+            if user not in ignored_users:
+                self._user2db(user)
+                self.logger.debug("Obfuscating user %s", user)
 
-            return True
+        return True
 
-        except Exception, e:
-            self.logger.exception(e)
-            raise Exception("ADD_USERS_ERROR: unable to add users from last file")
+        # except Exception, e:
+        #     self.logger.exception(e)
+        #     raise Exception("ADD_USERS_ERROR: unable to add users from last file")
 
     def _sub_ip(self, line):
         '''
