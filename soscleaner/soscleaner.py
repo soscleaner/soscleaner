@@ -126,7 +126,7 @@ class SOSCleaner:
 
         # obfuscating users from the last command, per rfe #67
         self.user_db = dict()
-        self.user_count = int()
+        self.user_count = 1
 
     def _check_uid(self):  # pragma no cover
 
@@ -302,14 +302,15 @@ class SOSCleaner:
         user_found = False
         try:
             for k, v in db.iteritems():
+                self.logger.info("Processing last output")
                 if v == username:  # the username is in the database
                     ret_user = k
                     user_found = True
-                    self.logger.debug("User found - %s", username)
+                    self.logger.info("User found - %s", username)
                 if user_found:
                     return ret_user
                 else:
-                    self.logger.debug("User not found. Adding to the database - %s")
+                    self.logger.info("User not found. Adding to the database - %s")
                     self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
                     ret_user = "obfuscateduser%s" % self.user_count
                     self.user_db[ret_user] = username
