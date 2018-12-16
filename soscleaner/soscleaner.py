@@ -127,6 +127,7 @@ class SOSCleaner:
         # obfuscating users from the last command, per rfe #67
         self.user_db = dict()
         self.user_count = 1
+        self._prime_userdb()
 
     def _check_uid(self):  # pragma no cover
 
@@ -266,6 +267,22 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
+    def _prime_userdb(self):
+        '''
+        Creates an initial entry in the user_db for the root user. This is needed so we
+        have something to iterate through for later functions.
+        '''
+
+        try:
+            new_user = "obfuscateduser%s" % self.user_count
+            self.user_db[new_user] = 'root'
+
+            return True
+
+        except Excpetion, e:
+            self.logger.exception(e)
+            raise Exception('PRIME_USERDB_ERROR: unable to prime user database')
+
     def _sub_username(self, line):
         '''
         Accepts a line from a file as input and replaces all occurrences of the users in the
@@ -301,21 +318,23 @@ class SOSCleaner:
         db = self.user_db
         user_found = False
         try:
+            self.logger.con_out("Processing user - %s", username)
             for k, v in db.iteritems():
-                self.logger.con_out("Processing user - %s", username)
                 if v == username:  # the username is in the database
                     ret_user = k
                     user_found = True
                     self.logger.con_out("User found - %s", username)
-                if user_found:
-                    return ret_user
-                else:
-                    self.logger.con_out("User not found. Adding to the database - %s")
-                    self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
-                    ret_user = "obfuscateduser%s" % self.user_count
-                    self.user_db[ret_user] = username
 
-                    return ret_user
+            if user_found:
+                return ret_user
+
+            else:
+                self.logger.con_out("User not found. Adding to the database - %s")
+                self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
+                ret_user = "obfuscateduser%s" % self.user_count
+                self.user_db[ret_user] = username
+
+                return ret_user
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
