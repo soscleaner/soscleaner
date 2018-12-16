@@ -302,15 +302,15 @@ class SOSCleaner:
         user_found = False
         try:
             for k, v in db.iteritems():
-                self.logger.info("Processing last output")
+                self.logger.con_out("Processing user - %s", username)
                 if v == username:  # the username is in the database
                     ret_user = k
                     user_found = True
-                    self.logger.info("User found - %s", username)
+                    self.logger.con_out("User found - %s", username)
                 if user_found:
                     return ret_user
                 else:
-                    self.logger.info("User not found. Adding to the database - %s")
+                    self.logger.con_out("User not found. Adding to the database - %s")
                     self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
                     ret_user = "obfuscateduser%s" % self.user_count
                     self.user_db[ret_user] = username
