@@ -124,6 +124,10 @@ class SOSCleaner:
         self.kw_db = dict()  # keyword database
         self.kw_count = 0
 
+        # obfuscating users from the last command, per rfe #67
+        self.user_db = dict()
+        self.user_count = int()
+
     def _check_uid(self):  # pragma no cover
 
         try:
@@ -136,6 +140,21 @@ class SOSCleaner:
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
+
+    def _extract_file_data(self, filename):
+        '''
+        simple internal function to extract data from a file and return the data
+        '''
+        try:
+            fh = open(filename, 'r')
+            data = fh.readlines()
+            fh.close()
+
+            return data
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("FILE_OPEN_ERROR - unable to open %s", filename)
 
     def _skip_file(self, d, files):
         '''
@@ -246,6 +265,92 @@ class SOSCleaner:
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CompressionError: Unable To Determine Compression Type')
+
+    def _sub_username(self, line):
+        '''
+        Accepts a line from a file as input and replaces all occurrences of the users in the
+        user_db with the obfuscated values.
+        Returns the obfuscated line.
+        '''
+
+        self.logger.debug("Processing Line - %s", line)
+        try:
+            for od, d in self.user_db.items():
+                regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
+                users = [each for each in regex.findall(line)]
+                if len(users) > 0:
+                    for user in users:
+                        new_user = self._user2db(user)
+                        self.logger.debug("Obfuscating User -  %s > %s", user, new_user)
+                        line = line.replace(user, new_user)
+
+            return line
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("SUB_HOSTNAME_ERROR: Unable to obfuscate line - %s", line)
+
+    def _user2db(self, username):
+        '''
+        Takes a username and adds it to the user_db with an obfuscated partner
+        If the user hasn't been encountered before, it will add it to the database
+        and return the obfuscated partner entry.
+        If the user is already in the database it will return the obfuscated username
+        '''
+
+        db = self.user_db
+        user_found = False
+        try:
+            for k, v in db.iteritems():
+                if v == username:  # the username is in the database
+                    ret_user = k
+                    user_found = True
+                    self.logger.debug("User found - %s", username)
+                if user_found:
+                    return ret_user
+                else:
+                    self.logger.debug("User not found. Adding to the database - %s")
+                    self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
+                    ret_user = "obfuscateduser%s" % self.user_count
+                    self.user_db[ret_user] = username
+
+                    return ret_user
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("USER_TO_DB_ERROR: unable to add user %s to database", username)
+
+    def _process_users_file(self, user_file='sos_commands/last/last'):
+        '''
+        This will use the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
+        By default it looks for the last file from an sosreport. But it can process any line-delimited list of users
+        From RFE #67
+        '''
+
+        ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
+        user_file = os.path.join(self.report_dir, user_file)
+
+        try:
+            self.logger.con_out("Processing last output for user names to obfuscate")
+            data = self._extract_file_data(user_file)
+            sorted_users = list()
+
+            # first, we get out the unique user entries
+            for line in data:
+                if len(line) > 1:  # there are some blank lines at the end of the last ouput
+                    sorted_users.append(line.split()[0])
+
+            # then we add them to the obfuscation database
+            for user in sorted_users:
+                if user not in ignored_users:
+                    self._user2db(user)
+                    self.logger.debug("Obfuscating user %s", user)
+
+            return True
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("ADD_USERS_ERROR: unable to add users from last file")
 
     def _sub_ip(self, line):
         '''
@@ -794,9 +899,7 @@ class SOSCleaner:
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
             try:
-                fh = open(f, 'r')
-                data = fh.readlines()
-                fh.close()
+                data = self._extract_file_data(f)
                 if len(data) > 0:  # if the file isn't empty:
                     for l in data:
                         self.logger.debug("Obfuscating Line - %s", l)

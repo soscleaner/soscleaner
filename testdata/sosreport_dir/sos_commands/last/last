@@ -1,0 +1,16 @@
+root     pts/0        172.16.238.1     Fri Dec 14 14:52   still logged in
+root     tty1                          Fri Dec 14 14:52   still logged in
+reboot   system boot  3.10.0-862.el7.x Fri Dec 14 14:51 - 14:52  (00:01)
+root     pts/1        172.16.238.1     Wed Dec  5 14:55 - 19:21  (04:26)
+root     tty1                          Wed Dec  5 14:47 - crash (9+00:03)
+root     tty1                          Wed Dec  5 14:47 - 14:47  (00:00)
+root     pts/0        172.16.238.1     Tue Nov 27 16:58 - 18:55 (8+01:57)
+root     pts/0        172.16.238.1     Tue Nov 27 16:57 - 16:57  (00:00)
+root     tty1                          Tue Nov 27 16:57 - 17:04  (00:07)
+reboot   system boot  3.10.0-862.el7.x Tue Oct 30 17:08 - 14:52 (44+22:44)
+root     tty1                          Tue Oct 30 17:07 - 17:07  (00:00)
+reboot   system boot  3.10.0-862.el7.x Tue Oct 30 17:07 - 14:52 (44+22:45)
+root     tty1                          Tue Oct 30 16:41 - 16:41  (00:00)
+reboot   system boot  3.10.0-862.el7.x Tue Oct 30 16:41 - 14:52 (44+23:11)
+
+wtmp begins Tue Oct 30 16:41:34 2018
