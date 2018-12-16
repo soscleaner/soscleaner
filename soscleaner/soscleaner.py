@@ -267,6 +267,10 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
+    ################################
+    #  User Obfuscation Functions  #
+    ################################
+
     def _prime_userdb(self):
         '''
         Creates an initial entry in the user_db for the root user. This is needed so we
@@ -279,9 +283,22 @@ class SOSCleaner:
 
             return True
 
-        except Excpetion, e:
+        except Exception, e:
             self.logger.exception(e)
             raise Exception('PRIME_USERDB_ERROR: unable to prime user database')
+
+    def _process_user_option(self, username):
+        '''
+        A convenience function to add users specified from the command line to the user_db object
+        '''
+
+        try:
+            new_user = self._user2db(username)
+            self.logger.con_out("Adding user from the command line - %s > %s", username, new_user)
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("PROCESS_USER_OPTION_ERROR: unable to add user to user database")
 
     def _sub_username(self, line):
         '''
@@ -340,7 +357,7 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("USER_TO_DB_ERROR: unable to add user %s to database", username)
 
-    def _process_users_file(self, user_file='sos_commands/last/last'):
+    def _process_users_file(self, user_file='sos_commands/last/last', cli=False):
         '''
         This will use the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
         By default it looks for the last file from an sosreport. But it can process any line-delimited list of users
@@ -348,29 +365,40 @@ class SOSCleaner:
         '''
 
         ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
-        user_file = os.path.join(self.report_dir, user_file)
+        # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
-        # try:
-        self.logger.con_out("Processing last output for user names to obfuscate")
-        data = self._extract_file_data(user_file)
-        sorted_users = list()
+        if user_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
+            user_file = os.path.join(self.report_dir, 'sos_commands/last/last')
 
-        # first, we get out the unique user entries
-        for line in data:
-            if len(line) > 1:  # there are some blank lines at the end of the last ouput
-                sorted_users.append(line.split()[0])
+        if os.path.exists(user_file):  # check to make sure user_file is there and we can access it
+            self.logger.con_out("Processing output from user file - %s", user_file)
+        else:
+            self.logger.con_out("Unable to locate user file - %s", user_file)
 
-        # then we add them to the obfuscation database
-        for user in sorted_users:
-            if user not in ignored_users:
-                self._user2db(user)
-                self.logger.debug("Obfuscating user %s", user)
+        try:
+            data = self._extract_file_data(user_file)
+            sorted_users = list()
 
-        return True
+            # first, we get out the unique user entries
+            for line in data:
+                if len(line) > 1:  # there are some blank lines at the end of the last ouput
+                    sorted_users.append(line.split()[0])
 
-        # except Exception, e:
-        #     self.logger.exception(e)
-        #     raise Exception("ADD_USERS_ERROR: unable to add users from last file")
+            # then we add them to the obfuscation database
+            for user in sorted_users:
+                if user not in ignored_users:
+                    self._user2db(user)
+                    self.logger.debug("Obfuscating user %s", user)
+
+            return True
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", user_file)
+
+    ################################
+    #   IP Obfuscation Functions   #
+    ################################
 
     def _sub_ip(self, line):
         '''
