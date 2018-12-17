@@ -371,7 +371,7 @@ class SOSCleaner:
         if users_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
             users_file = os.path.join(self.report_dir, 'sos_commands/last/last')
 
-        if os.path.exists(users_file):  # check to make sure user_file is there and we can access it
+        if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
             self.logger.con_out("Processing output from user file - %s", users_file)
         else:
             self.logger.con_out("Unable to locate user file - %s", users_file)
@@ -395,7 +395,7 @@ class SOSCleaner:
 
         except Exception, e:
             self.logger.exception(e)
-            raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", user_file)
+            raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", users_file)
 
     ################################
     #   IP Obfuscation Functions   #
