@@ -33,6 +33,12 @@ def main():
     parser.add_option("-n", "--network", action="append", default=[], dest="networks",
                             help="networks to be obfuscatedi (optional). by default it looks through known routes to generate a list from a sosreport",
                             metavar="NETWORK")
+    parser.add_option("-u", "--user", action="append", default=[], dest="users",
+                            help="additional usernames to obfuscate in the sosreport or dataset - one user per flag",
+                            metavar="USER")
+    parser.add_option("-U", "--user-file", action="store", dest="users_file",
+                            help="line-delimited list of users to obfuscate",
+                            metavar="USERS_FILE")
 
     (options, args) = parser.parse_args()
     if not args and not options.files:  # we don't have an sosreport
