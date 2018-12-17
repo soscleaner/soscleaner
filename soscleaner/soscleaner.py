@@ -336,20 +336,20 @@ class SOSCleaner:
         db = self.user_db
         user_found = False
         try:
-            self.logger.con_out("Processing user - %s", username)
+            self.logger.debug("Processing user - %s", username)
             for k, v in db.iteritems():
                 if v == username:  # the username is in the database
                     ret_user = k
                     user_found = True
-                    self.logger.con_out("User found - %s", username)
+                    self.logger.debug("User found - %s", username)
 
             if user_found:
                 return ret_user
 
             else:
-                self.logger.con_out("User not found. Adding to the database - %s")
                 self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
                 ret_user = "obfuscateduser%s" % self.user_count
+                self.logger.con_out("Adding new obfuscated user: %s > %s", username, ret_user)
                 self.user_db[ret_user] = username
 
                 return ret_user
@@ -372,9 +372,9 @@ class SOSCleaner:
             users_file = os.path.join(self.report_dir, 'sos_commands/last/last')
 
         if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
-            self.logger.con_out("Processing output from user file - %s", users_file)
+            self.logger.debug("Processing output from user file - %s", users_file)
         else:
-            self.logger.con_out("Unable to locate user file - %s", users_file)
+            self.logger.debug("Unable to locate user file - %s", users_file)
 
         try:
             data = self._extract_file_data(users_file)
@@ -388,8 +388,8 @@ class SOSCleaner:
             # then we add them to the obfuscation database
             for user in sorted_users:
                 if user not in ignored_users:
-                    self._user2db(user)
                     self.logger.debug("Obfuscating user %s", user)
+                    self._user2db(user)
 
             return True
 
