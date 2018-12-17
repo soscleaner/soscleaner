@@ -421,11 +421,19 @@ class SOSCleaner:
             self.logger.exception(e)
             raise e
 
+    #############################
+    #   Formatting Functions    #
+    #############################
+
     def _get_disclaimer(self):  # pragma: no cover
         # prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
 
         self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
         self.logger.warning("Please review the content before passing it along to any third party.")
+
+    ###########################
+    #   Reporting Functions   #
+    ###########################
 
     def _create_hn_report(self):
         try:
@@ -444,7 +452,7 @@ class SOSCleaner:
             self.hn_report = hn_report_name
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception('CreateReport Error: Error Creating Hostname Report')
+            raise Exception('CREATE_HN_REPORT_ERROR: Unable to create report - %s', hn_report_name)
 
     def _create_dn_report(self):
         try:
@@ -464,7 +472,7 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception('CreateReport Error: Error Creating Domainname Report')
+            raise Exception('CREATE_DN_REPORT_ERROR: Unable to create report - %s', dn_report_name)
 
     def _create_ip_report(self):
         try:
@@ -481,13 +489,80 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception('CREATE_IP_REPORT_ERROR: Unable to create report - %s', ip_report_name)
 
     def _create_reports(self):  # pragma: no cover
+        '''
+        A simple convenience function to call all the reports at once
+        '''
 
         self._create_ip_report()
         self._create_hn_report()
         self._create_dn_report()
+
+    ###########################
+    #   Hostname functions    #
+    ###########################
+
+    def _hn2db(self, hn):
+        '''
+        This will add a hostname for a hostname for an included domain or return an existing entry
+        '''
+        try:
+            db = self.hn_db
+            hn_found = False
+            for k, v in db.iteritems():
+                if v == hn:  # the hostname is in the database
+                    ret_hn = k
+                    hn_found = True
+            if hn_found:
+                return ret_hn
+            else:
+                self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
+                o_domain = self.root_domain
+                for od, d in self.dn_db.items():
+                    if d in hn:
+                        o_domain = od
+                new_hn = "host%s.%s" % (self.hostname_count, o_domain)
+                self.hn_db[new_hn] = hn
+
+                return new_hn
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", hn)
+
+    def _get_hostname(self, hostname='hostname'):
+        # gets the hostname and stores hostname/domainname so they can be filtered out later
+
+        try:
+            hostfile = os.path.join(self.dir_path, hostname)
+            fh = open(hostfile, 'r')
+            name_list = fh.readline().rstrip().split('.')
+            hostname = name_list[0]
+            if len(name_list) > 1:
+                domainname = '.'.join(name_list[1:len(name_list)])
+            else:
+                domainname = None
+
+            return hostname, domainname
+
+        except IOError, e:  # the 'hostname' file doesn't exist or isn't readable for some reason
+            self.logger.warning("Unable to determine system hostname!!!")
+            self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
+            self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
+            self.logger.warning("and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
+            if not self.quiet:  # pragma: no cover
+                self.logger.exception(e)
+
+            hostname = None
+            domainname = None
+
+            return hostname, domainname
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('GET_HOSTNAME_ERROR: Cannot resolve hostname from %s') % hostfile
 
     def _sub_hostname(self, line):
         '''
@@ -520,7 +595,106 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("SUB_HOSTNAME_ERROR: Unable to obfuscate hostnames on line - %s", line)
+
+    ############################
+    #   Filesystem functions   #
+    ############################
+
+    def _clean_line(self, l):
+        '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
+
+        try:
+            new_line = self._sub_ip(l)                  # IP substitution
+            new_line = self._sub_hostname(new_line)     # Hostname substitution
+            new_line = self._sub_keywords(new_line)     # Keyword Substitution
+
+            return new_line
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % l)
+
+    def _clean_file(self, f):
+        '''this will take a given file path, scrub it accordingly, and save a new copy of the file tmpin the same location'''
+        if os.path.exists(f) and not os.path.islink(f):
+            tmp_file = tempfile.TemporaryFile()
+            try:
+                data = self._extract_file_data(f)
+                if len(data) > 0:  # if the file isn't empty:
+                    for l in data:
+                        self.logger.debug("Obfuscating Line - %s", l)
+                        new_l = self._clean_line(l)
+                        tmp_file.write(new_l)
+
+                    tmp_file.seek(0)
+
+            except Exception, e:  # pragma: no cover
+                self.logger.exception(e)
+                raise Exception("CLEAN_FILE_ERROR: Unable to obfuscate file - %s" % f)
+
+            try:
+                if len(data) > 0:
+                    new_fh = open(f, 'w')
+                    for line in tmp_file:
+                        new_fh.write(line)
+                    new_fh.close()
+            except Exception, e:  # pragma: no cover
+                self.logger.exception(e)
+                raise Exception("CLEAN_FILE_ERROR: Unable to write obfuscated file - %s" % f)
+
+            finally:
+                tmp_file.close()
+
+    def _add_extra_files(self, files):
+        '''if extra files are to be analyzed with an sosreport, this will add them to the origin path to be analyzed'''
+
+        try:
+            for f in files:
+                self.logger.con_out("adding additional file for analysis: %s" % f)
+                fname = os.path.basename(f)
+                f_new = os.path.join(self.dir_path, fname)
+                shutil.copyfile(f, f_new)
+        except IOError, e:
+            self.logger.con_out("ExtraFileError: %s is not readable or does not exist. Skipping File" % f)
+            self.logger.exception(e)
+            pass
+        except Exception, e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("ADD_EXTRA_FILES_ERROR: Unable to process extra file - %s" % f)
+
+    def _walk_report(self, folder):
+        '''returns a dictonary of dictionaries in the format {directory_name:[file1,file2,filex]}'''
+
+        dir_list = {}
+        try:
+            for dirName, subdirList, fileList in os.walk(folder):
+                x = []
+                for fname in fileList:
+                    x.append(fname)
+                dir_list[dirName] = x
+
+            return dir_list
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("WALK_REPORT_ERROR: Unable to create file list in folder - %s", folder)
+
+    def _file_list(self, folder):
+        '''returns a list of file names in an sosreport directory'''
+        try:
+            rtn = []
+            walk = self._walk_report(folder)
+            for key, val in walk.items():
+                for v in val:
+                    x = os.path.join(key, v)
+                    rtn.append(x)
+
+            self.file_count = len(rtn)  # a count of the files we'll have in the final cleaned sosreport
+            return rtn
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("FILE_LIST_ERROR: Unable to create file list from directory - %s", folder)
 
     def _make_dest_env(self):
         '''
@@ -532,7 +706,7 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
+            raise Exception("MAKE_DESTINATION_ENV_ERROR: Cannot Create Destination Environment")
 
     def _create_archive(self):
         '''This will create a tar.gz compressed archive of the scrubbed directory'''
@@ -548,7 +722,7 @@ class SOSCleaner:
                     t.add(f_full, arcname=f_archive)
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception('CreateArchiveError: Unable to create Archive')
+            raise Exception('CREATE_ARCHIVE_ERROR: Unable to create archive - %s', self.archive_path)
 
         self._clean_up()
         self.logger.info('Archiving Complete')
@@ -567,8 +741,14 @@ class SOSCleaner:
             self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
+
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
+            raise Exception("CLEAN_UP_ERROR: Unable to complete clean up process")
+
+    ########################
+    #   Domain Functions   #
+    ########################
 
     def _process_hosts_file(self):
         # this will process the hosts file more thoroughly to try and capture as many server short names/aliases as possible
@@ -590,10 +770,11 @@ class SOSCleaner:
                                     new_host = self._hn2db(item)
                                     self.logger.debug("Added to hostname database through hosts file processing - %s > %s", item, new_host)
             else:  # pragma: no cover
-                self.logger.con_out("Unable to Process Hosts File. Hosts File Processing Disabled")
+                self.logger.con_out("Unable to Process Hosts File. Continuing without host file obfuscation")
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
+            raise Exception("PROCESS_HOSTS_FILE_ERROR: Unable to complete hosts file processing - %s", os.path.join(self.dir_path, 'etc/hosts'))
 
     def _domains2db(self):
         # adds any additional domainnames to the domain database to be searched for
@@ -617,6 +798,11 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
+            raise Exception("DOMAINS2DB_ERROR: Unable to process domain - %s", d)
+
+    #########################
+    #   Keyword functions   #
+    #########################
 
     def _keywords2db(self):
         # processes optional keywords to add to be obfuscated
@@ -644,11 +830,16 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
+            raise Exception("KEYWORDS2DB_ERROR: Unable to process keywork - %s", keyword)
 
     def _kw2db(self, keyword):
         # returns the obfuscated value for a keyword
+        try:
+            return self.kw_db[keyword]
 
-        return self.kw_db[keyword]
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("KW2DB_ERROR: Unable to retrieve obfuscated keyword - %s", keyword)
 
     def _sub_keywords(self, line):
         # this will substitute out any keyword entries on a given line
@@ -663,39 +854,11 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception('SubKeywordError: Unable to Substitute Keywords')
+            raise Exception('SUB_KEYWORDS_ERROR: Unable to obfuscate keywords on line - %s', line)
 
-    def _get_hostname(self, hostname='hostname'):
-        # gets the hostname and stores hostname/domainname so they can be filtered out later
-
-        try:
-            hostfile = os.path.join(self.dir_path, hostname)
-            fh = open(hostfile, 'r')
-            name_list = fh.readline().rstrip().split('.')
-            hostname = name_list[0]
-            if len(name_list) > 1:
-                domainname = '.'.join(name_list[1:len(name_list)])
-            else:
-                domainname = None
-
-            return hostname, domainname
-
-        except IOError, e:  # the 'hostname' file doesn't exist or isn't readable for some reason
-            self.logger.warning("Unable to determine system hostname!!!")
-            self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
-            self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
-            self.logger.warning("and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
-            if not self.quiet:  # pragma: no cover
-                self.logger.exception(e)
-
-            hostname = None
-            domainname = None
-
-            return hostname, domainname
-
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
+    #########################
+    #   Network Functions   #
+    #########################
 
     def _process_route_file(self):
         '''
@@ -718,7 +881,7 @@ class SOSCleaner:
                 self.logger.info("No route file found. Unable to auto-add routed networks for this system.")
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("PROCESS_ROUTE_FILE_ERROR: Cannot process file - %s", route_path)
 
     def _ip4_new_obfuscate_net(self, netmask):
         '''
@@ -738,7 +901,7 @@ class SOSCleaner:
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("IP4_NEW_OBFUSCATE_NET_ERROR: Unable to create new network - %s", new_net_string)
 
     def _ip4_parse_network(self, network):
         '''
@@ -755,7 +918,7 @@ class SOSCleaner:
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("IP4_PARSE_NETWORK_ERROR: Unable to parse network - %s", network)
 
     def _ip4_network_in_db(self, network):
         '''
@@ -769,7 +932,7 @@ class SOSCleaner:
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("IP4_NETWORK_IN_DB_ERROR: Unable to test for network in network database - %s", network)
 
     def _add_loopback_network(self):
         '''
@@ -788,7 +951,7 @@ class SOSCleaner:
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
-            raise Exception(e)
+            raise Exception("ADD_LOOPBACK_NETWORK_ERROR: Unable to create obfuscated loopback network")
 
     def _ip4_add_network(self, network):
         '''
@@ -814,7 +977,7 @@ class SOSCleaner:
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
-            raise Exception(e)
+            raise Exception("IP4_ADD_NETWORK_ERROR: Unable to add obfuscated network - %s", network)
 
     def _ip4_find_network(self, ip):
         '''
@@ -834,7 +997,7 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("IP4_FIND_NETWORK_ERROR: Unable to determin obfuscated network for IP address - %s", ip)
 
     def _ip4_in_db(self, ip):
         '''
@@ -850,7 +1013,7 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("IP4_IN_DB_ERROR: Unable to verify if IP is in database - %s", ip)
 
     def _ip4_2_db(self, orig_ip):
         '''
@@ -875,120 +1038,7 @@ class SOSCleaner:
 
         except Exception as e:    # pragma: no cover
             self.logger.exception(e)
-            raise
-
-    def _hn2db(self, hn):
-        '''
-        This will add a hostname for a hostname for an included domain or return an existing entry
-        '''
-        db = self.hn_db
-        hn_found = False
-        for k, v in db.iteritems():
-            if v == hn:  # the hostname is in the database
-                ret_hn = k
-                hn_found = True
-        if hn_found:
-            return ret_hn
-        else:
-            self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
-            o_domain = self.root_domain
-            for od, d in self.dn_db.items():
-                if d in hn:
-                    o_domain = od
-            new_hn = "host%s.%s" % (self.hostname_count, o_domain)
-            self.hn_db[new_hn] = hn
-
-            return new_hn
-
-    def _walk_report(self, folder):
-        '''returns a dictonary of dictionaries in the format {directory_name:[file1,file2,filex]}'''
-
-        dir_list = {}
-        try:
-            for dirName, subdirList, fileList in os.walk(folder):
-                x = []
-                for fname in fileList:
-                    x.append(fname)
-                dir_list[dirName] = x
-
-            return dir_list
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("WalkReport Error: Unable to Walk Report")
-
-    def _file_list(self, folder):
-        '''returns a list of file names in an sosreport directory'''
-        rtn = []
-        walk = self._walk_report(folder)
-        for key, val in walk.items():
-            for v in val:
-                x = os.path.join(key, v)
-                rtn.append(x)
-
-        self.file_count = len(rtn)  # a count of the files we'll have in the final cleaned sosreport, for reporting
-        return rtn
-
-    def _clean_line(self, l):
-        '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
-
-        try:
-            new_line = self._sub_ip(l)                  # IP substitution
-            new_line = self._sub_hostname(new_line)     # Hostname substitution
-            new_line = self._sub_keywords(new_line)     # Keyword Substitution
-
-            return new_line
-
-        except Exception, e:
-            self.logger.exception(e)
-            raise Exception("CleanLine Error: Cannot Clean Line - %s" % l)
-
-    def _clean_file(self, f):
-        '''this will take a given file path, scrub it accordingly, and save a new copy of the file tmpin the same location'''
-        if os.path.exists(f) and not os.path.islink(f):
-            tmp_file = tempfile.TemporaryFile()
-            try:
-                data = self._extract_file_data(f)
-                if len(data) > 0:  # if the file isn't empty:
-                    for l in data:
-                        self.logger.debug("Obfuscating Line - %s", l)
-                        new_l = self._clean_line(l)
-                        tmp_file.write(new_l)
-
-                    tmp_file.seek(0)
-
-            except Exception, e:  # pragma: no cover
-                self.logger.exception(e)
-                raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
-
-            try:
-                if len(data) > 0:
-                    new_fh = open(f, 'w')
-                    for line in tmp_file:
-                        new_fh.write(line)
-                    new_fh.close()
-            except Exception, e:  # pragma: no cover
-                self.logger.exception(e)
-                raise Exception("CleanFile Error: Cannot Write to New File - %s" % f)
-
-            finally:
-                tmp_file.close()
-
-    def _add_extra_files(self, files):
-        '''if extra files are to be analyzed with an sosreport, this will add them to the origin path to be analyzed'''
-
-        try:
-            for f in files:
-                self.logger.con_out("adding additional file for analysis: %s" % f)
-                fname = os.path.basename(f)
-                f_new = os.path.join(self.dir_path, fname)
-                shutil.copyfile(f, f_new)
-        except IOError, e:
-            self.logger.con_out("ExtraFileError: %s is not readable or does not exist. Skipping File" % f)
-            self.logger.exception(e)
-            pass
-        except Exception, e:    # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("ExtraFileError: Unable to Process Extra File - %s" % f)
+            raise Exception("IP4_2_DB_ERROR: unable to add IP to database - %s", orig_ip)
 
     def _clean_files_only(self, files):
         ''' if a user only wants to process one or more specific files, instead of a full sosreport '''
@@ -1006,11 +1056,11 @@ class SOSCleaner:
                 pass
             else:   # pragma: no cover
                 self.logger.exception(e)
-                raise e
+                raise Exception("CLEAN_FILES_ONLY_ERROR: Unable to clean file from dataset - OSError")
 
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
-            raise Exception("CleanFilesOnlyError: unable to process")
+            raise Exception("CLEAN_FILES_ONLY_ERROR: Unable toclean files from dataset")
 
     def clean_report(self, options, sosreport):  # pragma: no cover
         ''' this is the primary function, to put everything together and analyze an sosreport '''
