@@ -6,16 +6,14 @@ SOSCleaner
 
 Purpose
 -------
-SOSCleaner helps users in environments that have data export restrictions clean up an sosreport so it can be safely uploaded to a support group for analysis. IT IS NOT ALL that should be done for this process, but it does help with the most common and repetitive items.
+SOSCleaner is a tool to consistently obfuscate (no, they're not mutually exclusive) sensitive information from large datasets like Red Hat sosreports. It works on any data set, from 1 file to thousands.
 
 What Does it Do?
 ----------------
 * Scrubs Binary Files - Binary Files cannot easily be visually scanned. They are left out of a 'cleaned' sosreport
 * IP Address Obfuscation - IPv4 addresses in the sosreport are obfuscated consistently throughout all files.  For example, if 192.168.100.5 is obfuscated to 10.0.0.68, it will appear as 10.0.0.68 in all files within the sosreport. This means that troubleshooting can still take place.
 * Hostname Obfuscation - Hostnames are obfuscated consistently troughout all files, much like the IP Address functionality. Based on the system's hostname, if the hostname for the system in question is an FQDN (Fully Qualified Domain Name), all hostnames on that domain are obfuscated. If the hostname is NOT an FQDN, then all examples of that hostname itself are obfuscated.
-* Multiple Domains - multiple domains can by analyzed by using the -d flag 1 or more times
-* Additional Files - additional files can be added for analysis by using the -f flag 1 or more times
-* Only Scan Files - You can also supply one or more files using the -f flag, and supply no sosreport at all. These files will be analyzed and archived together.
+* 
 
 Project Information
 --------------------

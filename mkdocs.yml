@@ -1,0 +1,13 @@
+site_name: soscleaner
+repo_url: https://github.com/jduncan-rva/soscleaner
+site_description: "SOSCleaner is a tool to consistently obfuscate (no, they're not mutually exclusive) sensitive information from large datasets like Red Hat sosreports. It works on any data set, from 1 file to thousands."
+site_author: Jamie Duncan
+use_directory_urls: true
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - IPv4 Networking: ipv4_networking.md
+  - IPv6 Networking: ipv6_networking.md
+  - Hostnames: hostnames.md
+  - Users: users.md
+  - Keywords: keywords.md
