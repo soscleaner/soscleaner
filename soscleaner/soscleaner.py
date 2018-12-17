@@ -268,7 +268,7 @@ class SOSCleaner:
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
     ################################
-    #  User Obfuscation Functions  #
+    #  User Functions  #
     ################################
 
     def _prime_userdb(self):
@@ -287,14 +287,15 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('PRIME_USERDB_ERROR: unable to prime user database')
 
-    def _process_user_option(self, username):
+    def _process_user_option(self, users):
         '''
         A convenience function to add users specified from the command line to the user_db object
         '''
 
         try:
-            new_user = self._user2db(username)
-            self.logger.con_out("Adding user from the command line - %s > %s", username, new_user)
+            for username in users:
+                new_user = self._user2db(username)
+                self.logger.con_out("Adding user from the command line - %s > %s", username, new_user)
 
         except Exception, e:
             self.logger.exception(e)
@@ -357,7 +358,7 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("USER_TO_DB_ERROR: unable to add user %s to database", username)
 
-    def _process_users_file(self, user_file='sos_commands/last/last', cli=False):
+    def _process_users_file(self, users_file='sos_commands/last/last'):
         '''
         This will use the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
         By default it looks for the last file from an sosreport. But it can process any line-delimited list of users
@@ -367,16 +368,16 @@ class SOSCleaner:
         ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
-        if user_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
-            user_file = os.path.join(self.report_dir, 'sos_commands/last/last')
+        if users_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
+            users_file = os.path.join(self.report_dir, 'sos_commands/last/last')
 
-        if os.path.exists(user_file):  # check to make sure user_file is there and we can access it
-            self.logger.con_out("Processing output from user file - %s", user_file)
+        if os.path.exists(users_file):  # check to make sure user_file is there and we can access it
+            self.logger.con_out("Processing output from user file - %s", users_file)
         else:
-            self.logger.con_out("Unable to locate user file - %s", user_file)
+            self.logger.con_out("Unable to locate user file - %s", users_file)
 
         try:
-            data = self._extract_file_data(user_file)
+            data = self._extract_file_data(users_file)
             sorted_users = list()
 
             # first, we get out the unique user entries
@@ -608,6 +609,7 @@ class SOSCleaner:
             new_line = self._sub_ip(l)                  # IP substitution
             new_line = self._sub_hostname(new_line)     # Hostname substitution
             new_line = self._sub_keywords(new_line)     # Keyword Substitution
+            new_line = self._sub_username(new_line)
 
             return new_line
 
@@ -842,7 +844,9 @@ class SOSCleaner:
             raise Exception("KW2DB_ERROR: Unable to retrieve obfuscated keyword - %s", keyword)
 
     def _sub_keywords(self, line):
-        # this will substitute out any keyword entries on a given line
+        '''
+        Accepts a line from a file in an sosreport and obfuscates any known keyword entries on the line.
+        '''
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
                 for k in self.kw_db.keys():
@@ -1082,6 +1086,10 @@ class SOSCleaner:
         if options.keywords:
             self.keywords = options.keywords
             self._keywords2db()
+        if options.users:  # users from the command line with the -u option
+            self._process_user_option(options.users)
+        if options.users_file:  # users form a line-delimited file with the -U options
+            self._process_users_file(users_file=options.users_file)
         if not sosreport:
             if not options.files:
                 raise Exception("Error: You must supply either an sosreport and/or files to process")

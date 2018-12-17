@@ -36,7 +36,7 @@ def main():
     parser.add_option("-u", "--user", action="append", default=[], dest="users",
                             help="additional usernames to obfuscate in the sosreport or dataset - one user per flag",
                             metavar="USER")
-    parser.add_option("-U", "--user-file", action="store", dest="users_file",
+    parser.add_option("-U", "--users-file", action="store", dest="users_file",
                             help="line-delimited list of users to obfuscate",
                             metavar="USERS_FILE")
 
