@@ -373,8 +373,11 @@ class SOSCleaner:
 
         if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
             self.logger.debug("Processing output from user file - %s", users_file)
-        else:
-            self.logger.debug("Unable to locate user file - %s", users_file)
+
+        else:  # pragma: no cover
+            self.logger.info("Unable to locate user file - %s", users_file)
+            self.logger.info("Continuing without default users file")
+            pass
 
         try:
             data = self._extract_file_data(users_file)
@@ -393,7 +396,7 @@ class SOSCleaner:
 
             return True
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", users_file)
 
@@ -529,7 +532,7 @@ class SOSCleaner:
 
                 return new_hn
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", hn)
 
@@ -613,7 +616,7 @@ class SOSCleaner:
 
             return new_line
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % l)
 
@@ -694,7 +697,7 @@ class SOSCleaner:
             self.file_count = len(rtn)  # a count of the files we'll have in the final cleaned sosreport
             return rtn
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("FILE_LIST_ERROR: Unable to create file list from directory - %s", folder)
 
