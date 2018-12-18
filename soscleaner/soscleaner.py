@@ -47,7 +47,7 @@ class SOSCleaner:
         self.domains = list()
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.68'
+        self.version = '0.3.69'
 
         """
         Network Obfuscation Information
@@ -364,7 +364,7 @@ class SOSCleaner:
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
         if users_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
-            users_file = os.path.join(self.report_dir, 'sos_commands/last/last')
+            users_file = os.path.join(self.report_dir, 'sos_commands/last/last')  # pragma: no cover
 
         if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
             self.logger.debug("Processing output from user file - %s", users_file)
