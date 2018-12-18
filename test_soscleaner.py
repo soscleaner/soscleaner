@@ -380,11 +380,23 @@ class SOSCleanerTests(unittest.TestCase):
     def test43_sub_username_multiple_users(self):
         self.cleaner._user2db('bob')
         self.cleaner._user2db('sam')
-        test_line =
+        test_line = "this is a test line with same and bob"
+        new_line = self.cleaner._sub_username(test_line)
+        self.assertFalse('bob' in new_line)
+        self.assertFalse('sam' in new_line)
 
     def test44_sub_username_multiple_occurrences(self):
+        self.cleaner._user2db('bob')
+        test_line = "this test line has bob and then another bob"
+        new_line = self.cleaner._sub_username(test_line)
+        self.assertFalse('bob' in new_line)
 
-    def test 45_sub_username_only_whole_word(self):
+    def test_45_sub_username_only_whole_word(self):
+        self.cleaner._user2db('sam')
+        test_line = "this line has both sam and same in it"
+        new_line = self.cleaner._sub_username(test_line)
+        self.assertFalse(' sam ' in new_line)
+        self.assertTrue(' same ' in new_line)
 
     def test45_confirm_no_user_double_adds(self):
         self.cleaner._user2db('bob')
