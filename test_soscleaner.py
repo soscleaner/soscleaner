@@ -380,7 +380,7 @@ class SOSCleanerTests(unittest.TestCase):
     def test43_sub_username_multiple_users(self):
         self.cleaner._user2db('bob')
         self.cleaner._user2db('sam')
-        test_line = "this is a test line with same and bob"
+        test_line = "this is a test line with sam and bob"
         new_line = self.cleaner._sub_username(test_line)
         self.assertFalse('bob' in new_line)
         self.assertFalse('sam' in new_line)

@@ -847,7 +847,7 @@ class SOSCleaner:
         '''
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
-                for o_keyword, keyword in self.kw_db.items():
+                for keyword, o_keyword in self.kw_db.items():
                     line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
                     self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
 
