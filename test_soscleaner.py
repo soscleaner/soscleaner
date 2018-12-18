@@ -357,9 +357,9 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._user2db('bob')
         self.assertTrue('bob' in self.cleaner.user_db.values())
 
-    def test40_process_users_option(self):
+    def test40_process_user_option(self):
         users = ('bob', 'sam', 'george')
-        self.cleaner._process_users_option(users)
+        self.cleaner._process_user_option(users)
         self.assertTrue('bob' in self.cleaner.user_db.values())
         self.assertTrue('sam' in self.cleaner.user_db.values())
         self.assertTrue('george' in self.cleaner.user_db.values())
