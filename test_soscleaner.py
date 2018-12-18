@@ -352,3 +352,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._ip4_add_network('10.0.0.0/8')
         data = self.cleaner._ip4_find_network('10.0.0.1')
         self.assertTrue(data == IPv4Address('129.0.0.0'))
+
+    def test39_add_users_from_command_line(self):
+        self.cleaner._user2db('bob')
+        self.assertTrue('bob' in self.cleaner.user_db.values())

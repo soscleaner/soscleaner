@@ -283,7 +283,7 @@ class SOSCleaner:
 
             return True
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('PRIME_USERDB_ERROR: unable to prime user database')
 
