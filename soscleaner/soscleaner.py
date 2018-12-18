@@ -310,10 +310,9 @@ class SOSCleaner:
 
         try:
             if self.user_count > 0:    # we have obfuscated keywords to work with
-                for user in self.user_db.keys():
-                    if user in line:
-                        line = line.replace(user, self._user2db(user))
-                        self.logger.debug("Obfuscating Keyword - %s > %s", user, self._kw2db(user))
+                for o_user, user in self.user_db.items():
+                        line = re.sub(r'\b%s\b' % user, o_user, line)
+                        self.logger.debug("Obfuscating User - %s > %s", user, self._kw2db(user))
 
             return line
 
@@ -848,10 +847,9 @@ class SOSCleaner:
         '''
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
-                for k in self.kw_db.keys():
-                    if k in line:
-                        line = line.replace(k, self._kw2db(k))
-                        self.logger.debug("Obfuscating Keyword - %s > %s", k, self._kw2db(k))
+                for o_keyword, keyword in self.kw_db.items():
+                    line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
+                    self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
 
             return line
 
