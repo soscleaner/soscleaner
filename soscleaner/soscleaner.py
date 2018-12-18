@@ -310,14 +310,8 @@ class SOSCleaner:
 
         self.logger.debug("Processing Line - %s", line)
         try:
-            for od, d in self.user_db.items():
-                regex = re.compile(r'(?![\W\-\:\ \.])[a-zA-Z0-9\-\_\.]*\.%s' % d)
-                users = [each for each in regex.findall(line)]
-                if len(users) > 0:
-                    for user in users:
-                        new_user = self._user2db(user)
-                        self.logger.debug("Obfuscating User -  %s > %s", user, new_user)
-                        line = line.replace(user, new_user)
+            for o_user, user in self.user_db.items():
+                line = line.replace(user, o_user)
 
             return line
 
