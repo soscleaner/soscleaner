@@ -297,7 +297,7 @@ class SOSCleaner:
                 new_user = self._user2db(username)
                 self.logger.con_out("Adding user from the command line - %s > %s", username, new_user)
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("PROCESS_USER_OPTION_ERROR: unable to add user to user database")
 
