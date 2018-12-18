@@ -308,16 +308,18 @@ class SOSCleaner:
         Returns the obfuscated line.
         '''
 
-        self.logger.debug("Processing Line - %s", line)
         try:
-            for o_user, user in self.user_db.items():
-                line = line.replace(user, o_user)
+            if self.user_count > 0:    # we have obfuscated keywords to work with
+                for user in self.user_db.keys():
+                    if user in line:
+                        line = line.replace(user, self._user2db(user))
+                        self.logger.debug("Obfuscating Keyword - %s > %s", user, self._kw2db(user))
 
             return line
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception("SUB_HOSTNAME_ERROR: Unable to obfuscate line - %s", line)
+            raise Exception('SUB_USERNAME_ERROR: Unable to obfuscate usernames on line - %s', line)
 
     def _user2db(self, username):
         '''

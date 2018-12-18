@@ -377,7 +377,16 @@ class SOSCleanerTests(unittest.TestCase):
         new_line = self.cleaner._sub_username(test_line)
         self.assertFalse('bob' in new_line)
 
-    def test43_confirm_no_user_double_adds(self):
+    def test43_sub_username_multiple_users(self):
+        self.cleaner._user2db('bob')
+        self.cleaner._user2db('sam')
+        test_line =
+
+    def test44_sub_username_multiple_occurrences(self):
+
+    def test 45_sub_username_only_whole_word(self):
+
+    def test45_confirm_no_user_double_adds(self):
         self.cleaner._user2db('bob')
         self.assertTrue('bob' in self.cleaner.user_db.values())
         for o_name, name in self.cleaner.user_db.items():
