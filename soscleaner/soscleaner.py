@@ -826,28 +826,28 @@ class SOSCleaner:
 
     def _domains2db(self):
         # adds any additional domainnames to the domain database to be searched for
-        try:
-            # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
-            # value, which defaults to "obfuscateddomain.com"
-            if self.domainname is not None:
-                self.domain_count += 1
-                self.dn_db[self.root_domain] = self.domainname
-                self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
+        # try:
+        # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
+        # value, which defaults to "obfuscateddomain.com"
+        if self.domainname is not None:
+            self.domain_count += 1
+            self.dn_db[self.root_domain] = self.domainname
+            self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
 
-            if self.domains:
-                split_root_domain = self.root_domain.split('.')
-                for dom in self.domains:
-                    if dom not in self.dn_db.values():  # no duplicates
-                        self.domain_count += 1
-                        obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
-                        self.dn_db[obfuscated_domain] = dom
-                        self.logger.con_out("Obfuscated Domain Created - %s > %s" % dom, obfuscated_domain)
+        if self.domains:
+            split_root_domain = self.root_domain.split('.')
+            for dom in self.domains:
+                if dom not in self.dn_db.values():  # no duplicates
+                    self.domain_count += 1
+                    obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
+                    self.dn_db[obfuscated_domain] = dom
+                    self.logger.con_out("Obfuscated Domain Created - %s > %s" % dom, obfuscated_domain)
 
-            return True
+        return True
 
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("DOMAINS2DB_ERROR: Unable to process domains")
+        # except Exception, e:  # pragma: no cover
+        #     self.logger.exception(e)
+        #     raise Exception("DOMAINS2DB_ERROR: Unable to process domains")
 
     #########################
     #   Keyword functions   #
