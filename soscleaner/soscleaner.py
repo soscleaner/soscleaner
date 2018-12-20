@@ -509,33 +509,33 @@ class SOSCleaner:
         It is called by _add_hostnames to verify if the domain is in an included
         domain for obfuscation, and the entry to hn_db, and return the obfuscated value
         '''
-        try:
-            db = self.hn_db
-            host_found = False
-            for o_hostname, hostname in db.items():
-                if hostname == host:  # the hostname is in the database
-                    obfuscated_hostname = o_hostname
-                    host_found = True
-            if host_found:
-                return obfuscated_hostname
-            else:
-                # this is where we have some work to do.
-                # 1) retrieve the obfuscated domain value from dn_db
-                # 2) increment the hostname_count integer
-                # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
-                # X = hostname_count
-                # Y = domain_count
-                self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
-                domain = '.'.join(host.split('.')[1:])
-                o_domain = self._get_obfuscated_domain(domain)
-                obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
-                self.hn_db[obfuscated_hostname] = host
+        # try:
+        db = self.hn_db
+        host_found = False
+        for o_hostname, hostname in db.items():
+            if hostname == host:  # the hostname is in the database
+                obfuscated_hostname = o_hostname
+                host_found = True
+        if host_found:
+            return obfuscated_hostname
+        else:
+            # this is where we have some work to do.
+            # 1) retrieve the obfuscated domain value from dn_db
+            # 2) increment the hostname_count integer
+            # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
+            # X = hostname_count
+            # Y = domain_count
+            self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
+            domain = '.'.join(host.split('.')[1:])
+            o_domain = self._get_obfuscated_domain(domain)
+            obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
+            self.hn_db[obfuscated_hostname] = host
 
-                return obfuscated_hostname
+            return obfuscated_hostname
 
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
+        # except Exception, e:  # pragma: no cover
+        #     self.logger.exception(e)
+        #     raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
 
     def _get_hostname(self, hostname='hostname'):
         # gets the hostname and stores hostname/domainname so they can be filtered out later
