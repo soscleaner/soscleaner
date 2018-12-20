@@ -865,8 +865,8 @@ class SOSCleaner:
                                 keyword = keyword.rstrip()
                                 if len(keyword) > 1:
                                     o_kw = "keyword%s" % k_count
-                                    self.kw_db[keyword] = o_kw
-                                    self.logger.con_out("Added %s character Obfuscated Keyword - %s" % (len(keyword), o_kw))
+                                    self.kw_db[o_kw] = keyword
+                                    self.logger.con_out("Added %s character Obfuscated Keyword - %s > %s", keyword, o_kw)
                                     k_count += 1
                                 else:
                                     self.logger.con_out("Unable to add Obfuscated Keyword.")
@@ -882,7 +882,27 @@ class SOSCleaner:
             raise Exception("KEYWORDS2DB_ERROR: Unable to process keywork - %s", keyword)
 
     def _kw2db(self, keyword):
-        # returns the obfuscated value for a keyword
+        '''
+        returns the obfuscated value for a keyword
+        '''
+
+        try:
+            keyword_found = False
+            for obfuscated_keyword, kw in self.kw_db.items():
+                if kw == keyword:
+                    ret_value = obfuscated_keyword
+                    keyword_found = True
+
+            # there should be no other clause here.
+            # There isn't a workflow to add a new keyword
+            # in the middle of an analysis.
+            # the 'if' clause is just to handle the parameter to set the var in the loop
+            if keyword_found:
+                return ret_value
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("GET_OBFUSCATED_DOMAIN_ERROR: Unable to retrieve obfuscated domain - %s", keyword)
         try:
             return self.kw_db[keyword]
 
