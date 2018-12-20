@@ -503,33 +503,39 @@ class SOSCleaner:
     #   Hostname functions    #
     ###########################
 
-    def _hn2db(self, hn):
+    def _hn2db(self, host):
         '''
-        This will add a hostname for a hostname for an included domain or return an existing entry
+        This will add a hostname for a hostname for an included domain or return an existing entry.
+        It is called by _add_hostnames to verify if the domain is in an included
+        domain for obfuscation, and the entry to hn_db, and return the obfuscated value
         '''
         try:
             db = self.hn_db
-            hn_found = False
-            for k, v in db.iteritems():
-                if v == hn:  # the hostname is in the database
-                    ret_hn = k
-                    hn_found = True
-            if hn_found:
-                return ret_hn
+            host_found = False
+            for o_hostname, hostname in db.items():
+                if hostname == host:  # the hostname is in the database
+                    obfuscated_hostname = o_hostname
+                    host_found = True
+            if host_found:
+                return obfuscated_hostname
             else:
+                # this is where we have some work to do.
+                # 1) retrieve the obfuscated domain value from dn_db
+                # 2) increment the hostname_count integer
+                # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
+                # X = hostname_count
+                # Y = domain_count
                 self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
-                o_domain = self.root_domain
-                for od, d in self.dn_db.items():
-                    if d in hn:
-                        o_domain = od
-                new_hn = "host%s.%s" % (self.hostname_count, o_domain)
-                self.hn_db[new_hn] = hn
+                domain = host.split('.')[1:]
+                o_domain = self._get_obfuscated_domain(domain)
+                obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
+                self.hn_db[obfuscated_hostname] = host
 
-                return new_hn
+                return obfuscated_hostname
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", hn)
+            raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
 
     def _get_hostname(self, hostname='hostname'):
         # gets the hostname and stores hostname/domainname so they can be filtered out later
@@ -566,13 +572,49 @@ class SOSCleaner:
     def _sub_hostname(self, line):
         '''
         This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
-        Example:
         '''
+        # Logic behind this definition of a valid domain:
+        # A domain can be a total of 253 characters, per RFC 1035, RFC 1123 and RFC 2181
+        # Each label can be a maximum of 63 characters
+        # With 4th, 5th, 6th level domains being more the norm today, I wanted to take as
+        # broad an interpretation of a domain as I could. SO:
+        # seperated by a word boundary
+        # the lower domains can be a max of 190 characters, not including dots
+        # any valid domain character is allowed (alpha, digit, dash)
+        # the top level domain can be up to 63 characters, and not contain numbers
+        # With a 200 character limit to the lower domains, technically an 11th level domain
+        # would not be obfuscated. As for right now, I'm OK with that. Please file an issue
+        # in Github if you are not.
+        # Summary:
+        # Valid domain is defined as
+        # <word><Up to 200 chars of alpha, digit, dash, and dot>.<Up to 63 chars of alpha></word>
+        # - jduncan
         self.logger.debug("Processing Line - %s", line)
+
+        potential_domains = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
         try:
-            for od, d in self.dn_db.items():
-                line = re.sub(r'\b%s\b' % d, od, line)
-                self.logger.debug("Obfuscating FQDN - %s > %s", d, od)
+            domain_found = False
+            for domain in potential_domains:
+                self.logger.debug("Verifying potential hostname - %s", domain)
+                split_domain = domain.split('.')
+                domain_depth = len(split_domain)
+                hostname = split_domain[:1]  # we grab the top octet as the hostname
+                domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
+                # if there are values in a domain we care about we obfuscate them
+                # helps limit false positives and useless line processing
+                # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
+                if domainname in self.domains.values():
+                    domain_found = True
+                    self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
+                    o_domain = self._hn2db(domain)
+                    o_hostname = self._hn2db(hostname)
+                    o_domainname = self._hn2db(domainname)
+            # If we found domains, we need to sub them all out cleanly
+            # If not, we'll just return the line as it was because we made no changes
+            if domain_found:
+                line = re.sub(o_domain, domain, line)
+                line = re.sub(o_hostname, hostname, line)
+                line = re.sub(o_domainname, domainname, line)
 
             return line
 
@@ -760,29 +802,52 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("PROCESS_HOSTS_FILE_ERROR: Unable to complete hosts file processing - %s", os.path.join(self.dir_path, 'etc/hosts'))
 
+    def _get_obfuscated_domain(self, dom):
+        '''
+        This function returns the obfuscated domain value for a domain that we care about
+        '''
+        try:
+            domain_found = False
+            for obfuscated_domain, domain in self.dn_db.items():
+                if domain == dom:
+                    ret_value = obfuscated_domain
+                    domain_found = True
+
+            # there should be no other clause here.
+            # There isn't a workflow to add a new domain
+            # in the middle of an analysis.
+            # the 'if' clause is just to handle the parameter to stop the loop
+            if domain_found:
+                return ret_value
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("GET_OBFUSCATED_DOMAIN_ERROR: Unable to retrieve obfuscated domain - %s", domain)
+
     def _domains2db(self):
         # adds any additional domainnames to the domain database to be searched for
         try:
-            # we will add the root domain for an FQDN as well.
+            # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
+            # value, which defaults to "obfuscateddomain.com"
             if self.domainname is not None:
+                self.domain_count += 1
                 self.dn_db[self.root_domain] = self.domainname
-                self.logger.con_out("Obfuscated Domain Created - %s" % self.root_domain)
+                self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
 
-            split_root_d = self.root_domain.split('.')
+            if self.domains:
+                split_root_domain = self.root_domain.split('.')
+                for dom in self.domains:
+                    if dom not in self.dn_db.values():  # no duplicates
+                        self.domain_count += 1
+                        obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
+                        self.dn_db[obfuscated_domain] = dom
+                        self.logger.con_out("Obfuscated Domain Created - %s > %s" % dom, obfuscated_domain)
 
-            for d in self.domains:
-                if d not in self.dn_db.values():  # no duplicates
-                    d_number = len(self.dn_db)
-                    o_domain = "%s%s.%s" % (split_root_d[0], d_number, split_root_d[1])
-                    self.dn_db[o_domain] = d
-                    self.logger.con_out("Obfuscated Domain Created - %s" % o_domain)
-
-            self.domain_count = len(self.dn_db)
             return True
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception("DOMAINS2DB_ERROR: Unable to process domain - %s", d)
+            raise Exception("DOMAINS2DB_ERROR: Unable to process domains")
 
     #########################
     #   Keyword functions   #
