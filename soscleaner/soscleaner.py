@@ -526,7 +526,7 @@ class SOSCleaner:
                 # X = hostname_count
                 # Y = domain_count
                 self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
-                domain = host.split('.')[1:]
+                domain = '.'.join(host.split('.')[1:])
                 o_domain = self._get_obfuscated_domain(domain)
                 obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
                 self.hn_db[obfuscated_hostname] = host
