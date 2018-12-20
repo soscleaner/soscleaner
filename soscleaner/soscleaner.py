@@ -598,7 +598,7 @@ class SOSCleaner:
             self.logger.debug("Verifying potential hostname - %s", domain)
             split_domain = domain.split('.')
             domain_depth = len(split_domain)
-            hostname = split_domain[:1]  # we grab the top octet as the hostname
+            hostname = '.'.join(split_domain[:1])  # we grab the top octet as the hostname
             domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
             # if there are values in a domain we care about we obfuscate them
             # helps limit false positives and useless line processing
