@@ -830,7 +830,6 @@ class SOSCleaner:
         # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
         # value, which defaults to "obfuscateddomain.com"
         if self.domainname is not None:
-            self.domain_count += 1
             self.dn_db[self.root_domain] = self.domainname
             self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
 
