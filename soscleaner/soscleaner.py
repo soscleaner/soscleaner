@@ -841,7 +841,7 @@ class SOSCleaner:
                     self.domain_count += 1
                     obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
                     self.dn_db[obfuscated_domain] = dom
-                    self.logger.con_out("Obfuscated Domain Created - %s > %s" % dom, obfuscated_domain)
+                    self.logger.con_out("Obfuscated Domain Created - %s > %s", dom, obfuscated_domain)
 
         return True
 
