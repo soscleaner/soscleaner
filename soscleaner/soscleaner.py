@@ -625,7 +625,7 @@ class SOSCleaner:
                     o_domainname = self._hn2db(domainname)
                     line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
 
-        if self.hostname:
+        if self.hostname is not None:
             o_host = self._hn2db(self.hostname)
             re.sub(r'\b%s\b' % self.hostname, o_host, line)
 
