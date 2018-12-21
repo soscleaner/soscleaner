@@ -618,9 +618,9 @@ class SOSCleaner:
         # If we found domains, we need to sub them all out cleanly
         # If not, we'll just return the line as it was because we made no changes
         if domain_found:
-            line = re.sub(domain, o_domain, line)
-            line = re.sub(hostname, o_hostname, line)
-            line = re.sub(domainname, o_domainname, line)
+            line = re.sub(r'\b%s\b' % domain, o_domain, line)
+            line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
+            line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
 
         return line
 
