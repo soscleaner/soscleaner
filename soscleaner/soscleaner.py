@@ -615,12 +615,12 @@ class SOSCleaner:
                 o_domain = self._hn2db(domain)
                 o_hostname = self._hn2db(hostname)
                 o_domainname = self._hn2db(domainname)
-        # If we found domains, we need to sub them all out cleanly
-        # If not, we'll just return the line as it was because we made no changes
-        if domain_found:
-            line = re.sub(r'\b%s\b' % domain, o_domain, line)
-            line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
-            line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
+            # If we found domains, we need to sub them all out cleanly
+            # If not, we'll just return the line as it was because we made no changes
+            if domain_found:
+                line = re.sub(r'\b%s\b' % domain, o_domain, line)
+                line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
+                line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
 
         return line
 
