@@ -529,8 +529,10 @@ class SOSCleaner:
             self.hostname_count += 1  # increment the counter to get the host ID number
             if len(split_host) == 1:  # we have a non-fqdn - typically the host short name
                 obfuscated_hostname = "obfuscatedhost%s" % self.hostname_count
+                self.hn_db[obfuscated_hostname] = host
             elif len(split_host) == 2:  # we have a root domain, a la example.com
                 obfuscated_hostname = self._get_obfuscated_domain(host)
+                self.hn_db[obfuscated_hostname] = host
             else:  # a 3rd level domain or higher
                 domain = '.'.join(split_host[1:])
                 o_domain = self._get_obfuscated_domain(domain)
