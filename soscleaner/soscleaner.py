@@ -627,7 +627,7 @@ class SOSCleaner:
 
         if self.hostname is not None:
             o_host = self._hn2db(self.hostname)
-            re.sub(r'\b%s\b' % self.hostname, o_host, line)
+            line = re.sub(r'\b%s\b' % self.hostname, o_host, line)
 
         return line
 
