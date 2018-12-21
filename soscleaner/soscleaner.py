@@ -606,18 +606,13 @@ class SOSCleaner:
             split_domain = domain.split('.')
             domain_depth = len(split_domain)
             if domain_depth > 2:  # 3rd level domain or higher
-                hostname = '.'.join(split_domain[:1])  # we grab the top octet as the hostname
                 domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
             elif domain_depth == 2:  # 2nd level
-                hostname = False
                 domainname = domain
-            else:  # short name
-                hostname = domain
-                domainname = False
             # if there are values in a domain we care about we obfuscate them
             # helps limit false positives and useless line processing
             # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
-            if domain in self.domains:
+            if domainname in self.domains:
                 domain_found = True
                 self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
             # If we found domains, we need to sub them all out cleanly
@@ -629,10 +624,10 @@ class SOSCleaner:
                 if domainname:
                     o_domainname = self._hn2db(domainname)
                     line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
-                if hostname:
-                    o_hostname = self._hn2db(hostname)
-                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
 
+        if self.hostname:
+            o_host = self._hn2db(self.hostname)
+            re.sub(r'\b%s\b' % self.hostname, o_host, line)
 
         return line
 
