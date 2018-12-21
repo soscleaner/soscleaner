@@ -525,11 +525,17 @@ class SOSCleaner:
             # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
             # X = hostname_count
             # Y = domain_count
-            self.hostname_count += 1  # we have a new hostname, so we increment the counter to get the host ID number
-            domain = '.'.join(host.split('.')[1:])
-            o_domain = self._get_obfuscated_domain(domain)
-            obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
-            self.hn_db[obfuscated_hostname] = host
+            split_host = host.split('.')
+            self.hostname_count += 1  # increment the counter to get the host ID number
+            if len(split_host) == 1:  # we have a non-fqdn - typically the host short name
+                obfuscated_hostname = "obfuscatedhost%s" % self.hostname_count
+            elif len(split_host) == 2:  # we have a root domain, a la example.com
+                obfuscated_hostname = self._get_obfuscated_domain(host)
+            else:  # a 3rd level domain or higher
+                domain = '.'.join(split_host[1:])
+                o_domain = self._get_obfuscated_domain(domain)
+                obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
+                self.hn_db[obfuscated_hostname] = host
 
             return obfuscated_hostname
 
@@ -787,9 +793,12 @@ class SOSCleaner:
                     self.logger.con_out("Processing hosts file for better obfuscation coverage")
                     data = f.readlines()
                     for line in data:
-                        x = re.split('\ |\t', line.rstrip())  # chunk up the line, delimiting with spaces and tabs (both used in hosts files)
-                        # we run through the rest of the items in a given line, ignoring the IP to be picked up by the normal methods
-                        # skipping over the 'localhost' and 'localdomain' entries
+                        x = re.split('\ |\t', line.rstrip())
+                        # chunk up the line, delimiting with spaces and tabs
+                        # (both used in hosts files) we run through the rest of
+                        # the items in a given line, ignoring the IP to be
+                        # picked up by the normal methods skipping over the
+                        # 'localhost' and 'localdomain' entries
                         for item in x[1:len(x)]:
                             if len(item) > 0:
                                 if all(['localhost' not in item, 'localdomain' not in item]):
