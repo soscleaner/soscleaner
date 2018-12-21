@@ -620,20 +620,19 @@ class SOSCleaner:
             if domain in self.domains:
                 domain_found = True
                 self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
-                # o_domain = self._hn2db(domain)
             # If we found domains, we need to sub them all out cleanly
             # If not, we'll just return the line as it was because we made no changes
             if domain_found:
-                # line = re.sub(r'\b%s\b' % domain, o_domain, line)
+                if domain_depth > 2:
+                    o_domain = self._hn2db(domain)
+                    line = re.sub(r'\b%s\b' % domain, o_domain, line)
                 if domainname:
                     o_domainname = self._hn2db(domainname)
                     line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
                 if hostname:
                     o_hostname = self._hn2db(hostname)
                     line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
-                if domain_depth > 2:
-                    o_domain = self._hn2db(domain)
-                    line = re.sub(r'\b%s\b' % domain, o_domain, line)
+
 
         return line
 
