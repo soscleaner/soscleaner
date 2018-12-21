@@ -617,7 +617,7 @@ class SOSCleaner:
             # if there are values in a domain we care about we obfuscate them
             # helps limit false positives and useless line processing
             # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
-            if domainname in self.domains:
+            if domain in self.domains:
                 domain_found = True
                 self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
                 # o_domain = self._hn2db(domain)
