@@ -510,9 +510,8 @@ class SOSCleaner:
         domain for obfuscation, and the entry to hn_db, and return the obfuscated value
         '''
         # try:
-        db = self.hn_db
         host_found = False
-        for o_hostname, hostname in db.items():
+        for o_hostname, hostname in self.hn_db.items():
             if hostname == host:  # the hostname is in the database
                 obfuscated_hostname = o_hostname
                 host_found = True
@@ -606,23 +605,32 @@ class SOSCleaner:
             self.logger.debug("Verifying potential hostname - %s", domain)
             split_domain = domain.split('.')
             domain_depth = len(split_domain)
-            hostname = '.'.join(split_domain[:1])  # we grab the top octet as the hostname
-            domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
+            if domain_depth > 2:  # 3rd level domain or higher
+                hostname = '.'.join(split_domain[:1])  # we grab the top octet as the hostname
+                domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
+            elif domain_depth == 2:  # 2nd level
+                hostname = False
+                domainname = domain
+            else:  # short name
+                hostname = domain
+                domainname = False
             # if there are values in a domain we care about we obfuscate them
             # helps limit false positives and useless line processing
             # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
             if domainname in self.domains:
                 domain_found = True
                 self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
-                o_domain = self._hn2db(domain)
+                # o_domain = self._hn2db(domain)
                 o_hostname = self._hn2db(hostname)
                 o_domainname = self._hn2db(domainname)
             # If we found domains, we need to sub them all out cleanly
             # If not, we'll just return the line as it was because we made no changes
             if domain_found:
-                line = re.sub(r'\b%s\b' % domain, o_domain, line)
-                line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
-                line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
+                # line = re.sub(r'\b%s\b' % domain, o_domain, line)
+                if domainname:
+                    line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
+                if hostname:
+                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
 
         return line
 
