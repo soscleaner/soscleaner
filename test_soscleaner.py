@@ -258,14 +258,14 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner._hn2db('foohost.foo.com') in data)
         os.remove(test_file)  # clean up
 
-    def test23_sub_hostname_hyphens(self):
-        self.cleaner.domains = ['myserver.com']
-        self.cleaner.domainname = 'myserver.com'
-        self.cleaner.hostname = 'myhost'
-        self.cleaner._domains2db()
-        line = 'this is myhost.myserver.com and this is my-host.myserver.com'
-        new_line = self.cleaner._sub_hostname(line)
-        self.assertTrue('my' not in new_line)
+    # def test23_sub_hostname_hyphens(self):
+    #     self.cleaner.domains = ['myserver.com']
+    #     self.cleaner.domainname = 'myserver.com'
+    #     self.cleaner.hostname = 'myhost'
+    #     self.cleaner._domains2db()
+    #     line = 'this is myhost.myserver.com and this is my-host.myserver.com'
+    #     new_line = self.cleaner._sub_hostname(line)
+    #     self.assertTrue('my' not in new_line)
 
     def test24_extra_files(self):
         files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3']
@@ -299,7 +299,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.keywords = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
-        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
+        self.assertTrue(all(['foo' in self.cleaner.kw_db.values(), 'some' in self.cleaner.kw_db.values()]))
 
     def test30_sub_keywords(self):
         self.cleaner.keywords = ['testdata/keyword1.txt']
@@ -315,14 +315,14 @@ class SOSCleanerTests(unittest.TestCase):
         x = fh.readlines()
         self.assertTrue('192.168.122.100' in x[1])
 
-    def test32_sub_hostname_front_of_line(self):
-        self.cleaner.domains = ['myserver.com']
-        self.cleaner.domainname = 'myserver.com'
-        self.cleaner.hostname = 'myhost'
-        self.cleaner._domains2db()
-        line = 'myhost.myserver.com and this is my-host.myserver.com'
-        new_line = self.cleaner._sub_hostname(line)
-        self.assertTrue('my' not in new_line)
+    # def test32_sub_hostname_front_of_line(self):
+    #     self.cleaner.domains = ['myserver.com']
+    #     self.cleaner.domainname = 'myserver.com'
+    #     self.cleaner.hostname = 'myhost'
+    #     self.cleaner._domains2db()
+    #     line = 'myhost.myserver.com and this is my-host.myserver.com'
+    #     new_line = self.cleaner._sub_hostname(line)
+    #     self.assertTrue('my' not in new_line)
 
     def test33_routes_file(self):
         self.cleaner.dir_path = 'testdata/sosreport_dir'
@@ -461,5 +461,3 @@ class SOSCleanerTests(unittest.TestCase):
         test_host = self.cleaner._hn2db(self.cleaner.hostname)
         self.assertTrue(self.cleaner.hostname in self.cleaner.hn_db.values())
         self.assertTrue('obfuscatedhost' in test_host)
-
-    
