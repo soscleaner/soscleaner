@@ -412,7 +412,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test46_domains2db_confirm_addition(self):
         self.cleaner.domains = ['example.com']
-        self._domains2db()
+        self.cleaner._domains2db()
 
         self.assertTrue('example.com' in self.cleaner.dn_db.values())
 
@@ -421,7 +421,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.hostname = 'foo.example.com'
         self.cleaner.domainname = 'example.com'
 
-        self._domains2db()
+        self.cleaner._domains2db()
         test_line = 'A sample line with somehost.example.com in it.'
         new_line = self.cleaner._sub_hostname(test_line)
         self.assertFalse('somehost.example.com' in new_line)
@@ -431,7 +431,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.hostname = 'foo.example.com'
         self.cleaner.domainname = 'example.com'
 
-        self._domains2db()
+        self.cleaner._domains2db()
         test_hostname = 'somehost.example.com'
         test_domainname = self.cleaner._get_obfuscated_domain(self.cleaner.domainname)
 
@@ -445,7 +445,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
 
-        self._domains2db()
+        self.cleaner._domains2db()
         test_hostname = 'example.com'
 
         o_hostname = self.cleaner._hn2db(test_hostname)
