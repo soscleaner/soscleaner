@@ -409,3 +409,57 @@ class SOSCleanerTests(unittest.TestCase):
             if name == 'bob':
                 test_name2 = name
         self.assertTrue(test_name == test_name2)
+
+    def test46_domains2db_confirm_addition(self):
+        self.cleaner.domains = ['example.com']
+        self._domains2db()
+
+        self.assertTrue('example.com' in self.cleaner.dn_db.values())
+
+    def test47_sub_hostname_single_3rd_level(self):
+        self.cleaner.domains = ['example.com']
+        self.cleaner.hostname = 'foo.example.com'
+        self.cleaner.domainname = 'example.com'
+
+        self._domains2db()
+        test_line = 'A sample line with somehost.example.com in it.'
+        new_line = self.cleaner._sub_hostname(test_line)
+        self.assertFalse('somehost.example.com' in new_line)
+
+    def test48_hn2db_3rd_level_not_hostname(self):
+        self.cleaner.domains = ['example.com']
+        self.cleaner.hostname = 'foo.example.com'
+        self.cleaner.domainname = 'example.com'
+
+        self._domains2db()
+        test_hostname = 'somehost.example.com'
+        test_domainname = self.cleaner._get_obfuscated_domain(self.cleaner.domainname)
+
+        o_hostname = self.cleaner._hn2db(test_hostname)
+
+        self.assertTrue(test_hostname in self.cleaner.hn_db.values())
+        self.assertTrue(test_domainname in o_hostname)
+
+    def test49_hn2db_2nd_level_domain(self):
+        self.cleaner.domains = ['example.com']
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+
+        self._domains2db()
+        test_hostname = 'example.com'
+
+        o_hostname = self.cleaner._hn2db(test_hostname)
+        o_hostname_2 = self.cleaner._get_obfuscated_domain(test_hostname)
+
+        self.assertTrue(o_hostname_2 in o_hostname.values())
+
+    def test50_hn2db_non_fqdb(self):
+        self.cleaner.domains = ['example.com']
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+
+        test_host = self.cleaner._hn2db(self.cleaner.hostname)
+        self.assertTrue(self.cleaner.hostname in self.cleaner.hn_db.values())
+        self.assertTrue('obfuscatedhost' in test_host)
+
+    
