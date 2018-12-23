@@ -315,14 +315,14 @@ class SOSCleanerTests(unittest.TestCase):
         x = fh.readlines()
         self.assertTrue('192.168.122.100' in x[1])
 
-    # def test32_sub_hostname_front_of_line(self):
-    #     self.cleaner.domains = ['myserver.com']
-    #     self.cleaner.domainname = 'myserver.com'
-    #     self.cleaner.hostname = 'myhost'
-    #     self.cleaner._domains2db()
-    #     line = 'myhost.myserver.com and this is my-host.myserver.com'
-    #     new_line = self.cleaner._sub_hostname(line)
-    #     self.assertTrue('my' not in new_line)
+    def test32_sub_hostname_front_of_line(self):
+        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domainname = 'myserver.com'
+        self.cleaner.hostname = 'myhost'
+        self.cleaner._domains2db()
+        line = 'myhost.myserver.com and this is my-host.myserver.com'
+        new_line = self.cleaner._sub_hostname(line)
+        self.assertTrue('my' not in new_line)
 
     def test33_routes_file(self):
         self.cleaner.dir_path = 'testdata/sosreport_dir'
