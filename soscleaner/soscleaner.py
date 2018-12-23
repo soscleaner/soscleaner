@@ -881,7 +881,7 @@ class SOSCleaner:
                             if len(keyword) > 1:
                                 o_kw = "keyword%s" % k_count
                                 self.kw_db[o_kw] = keyword
-                                self.logger.con_out("Added %s character Obfuscated Keyword - %s > %s", keyword, o_kw)
+                                self.logger.con_out("Added character Obfuscated Keyword - %s > %s", keyword, o_kw)
                                 k_count += 1
                             else:
                                 self.logger.con_out("Unable to add Obfuscated Keyword.")
