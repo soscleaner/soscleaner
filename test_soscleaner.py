@@ -451,7 +451,7 @@ class SOSCleanerTests(unittest.TestCase):
         o_hostname = self.cleaner._hn2db(test_hostname)
         o_hostname_2 = self.cleaner._get_obfuscated_domain(test_hostname)
 
-        self.assertTrue(o_hostname_2 in o_hostname.values())
+        self.assertTrue(o_hostname_2 in o_hostname)
 
     def test50_hn2db_non_fqdb(self):
         self.cleaner.domains = ['example.com']
