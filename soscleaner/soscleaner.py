@@ -509,40 +509,40 @@ class SOSCleaner:
         It is called by _add_hostnames to verify if the domain is in an included
         domain for obfuscation, and the entry to hn_db, and return the obfuscated value
         '''
-        # try:
-        host_found = False
-        for o_hostname, hostname in self.hn_db.items():
-            if hostname == host:  # the hostname is in the database
-                obfuscated_hostname = o_hostname
-                host_found = True
-        if host_found:
-            return obfuscated_hostname
-        else:
-            # this is where we have some work to do.
-            # 1) retrieve the obfuscated domain value from dn_db
-            # 2) increment the hostname_count integer
-            # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
-            # X = hostname_count
-            # Y = domain_count
-            split_host = host.split('.')
-            self.hostname_count += 1  # increment the counter to get the host ID number
-            if len(split_host) == 1:  # we have a non-fqdn - typically the host short name
-                obfuscated_hostname = "obfuscatedhost%s" % self.hostname_count
-                self.hn_db[obfuscated_hostname] = host
-            elif len(split_host) == 2:  # we have a root domain, a la example.com
-                obfuscated_hostname = self._get_obfuscated_domain(host)
-                self.hn_db[obfuscated_hostname] = host
-            else:  # a 3rd level domain or higher
-                domain = '.'.join(split_host[1:])
-                o_domain = self._get_obfuscated_domain(domain)
-                obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
-                self.hn_db[obfuscated_hostname] = host
+        try:
+            host_found = False
+            for o_hostname, hostname in self.hn_db.items():
+                if hostname == host:  # the hostname is in the database
+                    obfuscated_hostname = o_hostname
+                    host_found = True
+            if host_found:
+                return obfuscated_hostname
+            else:
+                # this is where we have some work to do.
+                # 1) retrieve the obfuscated domain value from dn_db
+                # 2) increment the hostname_count integer
+                # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
+                # X = hostname_count
+                # Y = domain_count
+                split_host = host.split('.')
+                self.hostname_count += 1  # increment the counter to get the host ID number
+                if len(split_host) == 1:  # we have a non-fqdn - typically the host short name
+                    obfuscated_hostname = "obfuscatedhost%s" % self.hostname_count
+                    self.hn_db[obfuscated_hostname] = host
+                elif len(split_host) == 2:  # we have a root domain, a la example.com
+                    obfuscated_hostname = self._get_obfuscated_domain(host)
+                    self.hn_db[obfuscated_hostname] = host
+                else:  # a 3rd level domain or higher
+                    domain = '.'.join(split_host[1:])
+                    o_domain = self._get_obfuscated_domain(domain)
+                    obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
+                    self.hn_db[obfuscated_hostname] = host
 
-            return obfuscated_hostname
+                return obfuscated_hostname
 
-        # except Exception, e:  # pragma: no cover
-        #     self.logger.exception(e)
-        #     raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
 
     def _get_hostname(self, hostname='hostname'):
         # gets the hostname and stores hostname/domainname so they can be filtered out later
@@ -599,41 +599,41 @@ class SOSCleaner:
         self.logger.debug("Processing Line - %s", line)
 
         potential_domains = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
-        # try:
-        domain_found = False
-        for domain in potential_domains:
-            self.logger.debug("Verifying potential hostname - %s", domain)
-            split_domain = domain.split('.')
-            domain_depth = len(split_domain)
-            if domain_depth > 2:  # 3rd level domain or higher
-                domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
-            elif domain_depth == 2:  # 2nd level
-                domainname = domain
-            # if there are values in a domain we care about we obfuscate them
-            # helps limit false positives and useless line processing
-            # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
-            if domainname in self.domains:
-                domain_found = True
-                self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
-            # If we found domains, we need to sub them all out cleanly
-            # If not, we'll just return the line as it was because we made no changes
-            if domain_found:
-                if domain_depth > 2:
-                    o_domain = self._hn2db(domain)
-                    line = re.sub(r'\b%s\b' % domain, o_domain, line)
-                if domainname:
-                    o_domainname = self._hn2db(domainname)
-                    line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
+        try:
+            domain_found = False
+            for domain in potential_domains:
+                self.logger.debug("Verifying potential hostname - %s", domain)
+                split_domain = domain.split('.')
+                domain_depth = len(split_domain)
+                if domain_depth > 2:  # 3rd level domain or higher
+                    domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
+                elif domain_depth == 2:  # 2nd level
+                    domainname = domain
+                # if there are values in a domain we care about we obfuscate them
+                # helps limit false positives and useless line processing
+                # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
+                if domainname in self.domains:
+                    domain_found = True
+                    self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
+                # If we found domains, we need to sub them all out cleanly
+                # If not, we'll just return the line as it was because we made no changes
+                if domain_found:
+                    if domain_depth > 2:
+                        o_domain = self._hn2db(domain)
+                        line = re.sub(r'\b%s\b' % domain, o_domain, line)
+                    if domainname:
+                        o_domainname = self._hn2db(domainname)
+                        line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
 
-        if self.hostname is not None:
-            o_host = self._hn2db(self.hostname)
-            line = re.sub(r'\b%s\b' % self.hostname, o_host, line)
+            if self.hostname is not None:
+                o_host = self._hn2db(self.hostname)
+                line = re.sub(r'\b%s\b' % self.hostname, o_host, line)
 
-        return line
+            return line
 
-        # except Exception, e:  # pragma: no cover
-        #     self.logger.exception(e)
-        #     raise Exception("SUB_HOSTNAME_ERROR: Unable to obfuscate hostnames on line - %s", line)
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("SUB_HOSTNAME_ERROR: Unable to obfuscate hostnames on line - %s", line)
 
     ############################
     #   Filesystem functions   #
@@ -912,8 +912,6 @@ class SOSCleaner:
             # There isn't a workflow to add a new keyword
             # in the middle of an analysis.
             # the 'if' clause is just to handle the parameter to set the var in the loop
-            if keyword_found:
-                return ret_value
 
         except Exception, e:
             self.logger.exception(e)
