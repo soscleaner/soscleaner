@@ -870,31 +870,31 @@ class SOSCleaner:
 
     def _keywords2db(self):
         # processes optional keywords to add to be obfuscated
-        try:
-            if self.keywords:   # value is set to None by default
-                k_count = 0
-                for f in self.keywords:
-                    if os.path.isfile(f):
-                        with open(f, 'r') as klist:
-                            for keyword in klist.readlines():
-                                keyword = keyword.rstrip()
-                                if len(keyword) > 1:
-                                    o_kw = "keyword%s" % k_count
-                                    self.kw_db[o_kw] = keyword
-                                    self.logger.con_out("Added %s character Obfuscated Keyword - %s > %s", keyword, o_kw)
-                                    k_count += 1
-                                else:
-                                    self.logger.con_out("Unable to add Obfuscated Keyword.")
-                        self.logger.con_out("Added Keyword Contents from file - %s", f)
+        # try:
+        if self.keywords:   # value is set to None by default
+            k_count = 0
+            for f in self.keywords:
+                if os.path.isfile(f):
+                    with open(f, 'r') as klist:
+                        for keyword in klist.readlines():
+                            keyword = keyword.rstrip()
+                            if len(keyword) > 1:
+                                o_kw = "keyword%s" % k_count
+                                self.kw_db[o_kw] = keyword
+                                self.logger.con_out("Added %s character Obfuscated Keyword - %s > %s", keyword, o_kw)
+                                k_count += 1
+                            else:
+                                self.logger.con_out("Unable to add Obfuscated Keyword.")
+                    self.logger.con_out("Added Keyword Contents from file - %s", f)
 
-                    else:
-                        self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
+                else:
+                    self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
 
-            self.kw_count = k_count
+        self.kw_count = k_count
 
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("KEYWORDS2DB_ERROR: Unable to process keywork - %s", keyword)
+        # except Exception, e:  # pragma: no cover
+        #     self.logger.exception(e)
+        #     raise Exception("KEYWORDS2DB_ERROR: Unable to process keyword - %s", keyword)
 
     def _kw2db(self, keyword):
         '''
