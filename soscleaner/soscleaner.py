@@ -884,7 +884,7 @@ class SOSCleaner:
                                     self.logger.con_out("Added character Obfuscated Keyword - %s > %s", keyword, o_kw)
                                     k_count += 1
                                 else:
-                                    self.logger.con_out("Unable to add Obfuscated Keyword.")
+                                    self.logger.con_out("Unable to add Obfuscated Keyword - %s", keyword)
                         self.logger.con_out("Added Keyword Contents from file - %s", f)
 
                     else:
@@ -928,7 +928,7 @@ class SOSCleaner:
         '''
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
-                for keyword, o_keyword in self.kw_db.items():
+                for o_keyword, keyword in self.kw_db.items():
                     line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
                     self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
 
