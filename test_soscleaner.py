@@ -453,7 +453,7 @@ class SOSCleanerTests(unittest.TestCase):
 
         self.assertTrue(o_hostname_2 in o_hostname)
 
-    def test50_hn2db_non_fqdb(self):
+    def test50_hn2db_non_fqdn(self):
         self.cleaner.domains = ['example.com']
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
@@ -461,3 +461,22 @@ class SOSCleanerTests(unittest.TestCase):
         test_host = self.cleaner._hn2db(self.cleaner.hostname)
         self.assertTrue(self.cleaner.hostname in self.cleaner.hn_db.values())
         self.assertTrue('obfuscatedhost' in test_host)
+
+    def test51_hn2db_multiple_same_domain(self):
+        self.cleaner.domains = ['example.com']
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+
+        test_line = 'this is host1.example.com and this is host2.example.com'
+        new_line = self.cleaner._clean_line(test_line)
+
+        self.assertFalse('example.com' in new_line)
+        self.assertFalse(self.cleaner._hn2db('host1.example.com') == self.cleaner._hn2db('host2.example.com'))
+
+    def test52_hn2db_high_level_host(self):
+        self.cleaner.domains = ['example.com', 'crazy.super.level.example.com']
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+
+        test_line = 'a line with some.crazy.super.level.example.com domain'
+        new_line = self.cleaner._hn2db(test_line)
