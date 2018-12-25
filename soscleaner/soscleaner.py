@@ -621,7 +621,7 @@ class SOSCleaner:
                     if domain_depth > 2:
                         o_domain = self._hn2db(domain)
                         line = re.sub(r'\b%s\b' % domain, o_domain, line)
-                    if domainname:
+                    if domain_depth == 2:
                         o_domainname = self._hn2db(domainname)
                         line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
 
