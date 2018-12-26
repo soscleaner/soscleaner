@@ -48,7 +48,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain','localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.74'
+        self.version = '0.3.76'
 
         """
         Network Obfuscation Information
@@ -1209,8 +1209,6 @@ class SOSCleaner:
 
             if self.hostname:   # if we have a hostname that's not a None type
                 self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
-
-            self._process_hosts_file()  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
         files = self._file_list(self.dir_path)
