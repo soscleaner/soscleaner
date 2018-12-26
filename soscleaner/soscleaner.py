@@ -639,7 +639,7 @@ class SOSCleaner:
             # database. They won't match the potential_domains regex because
             # they're only 1 word, so we handle them here.
             for domain in self.short_domains:
-                line = re.sub(r'\b%s\b)' % domain, self._dn2db(domain), line)
+                line = re.sub(r'\b%s\b' % domain, self._dn2db(domain), line)
 
             return line
 
