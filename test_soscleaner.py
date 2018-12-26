@@ -258,14 +258,14 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner._hn2db('foohost.foo.com') in data)
         os.remove(test_file)  # clean up
 
-    # def test23_sub_hostname_hyphens(self):
-    #     self.cleaner.domains = ['myserver.com']
-    #     self.cleaner.domainname = 'myserver.com'
-    #     self.cleaner.hostname = 'myhost'
-    #     self.cleaner._domains2db()
-    #     line = 'this is myhost.myserver.com and this is my-host.myserver.com'
-    #     new_line = self.cleaner._sub_hostname(line)
-    #     self.assertTrue('my' not in new_line)
+    def test23_sub_hostname_hyphens(self):
+        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domainname = 'myserver.com'
+        self.cleaner.hostname = 'myhost'
+        self.cleaner._domains2db()
+        line = 'this is myhost.myserver.com and this is my-host.myserver.com'
+        new_line = self.cleaner._sub_hostname(line)
+        self.assertTrue('my' not in new_line)
 
     def test24_extra_files(self):
         files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3']
@@ -480,4 +480,4 @@ class SOSCleanerTests(unittest.TestCase):
 
         test_line = 'a line with some.crazy.super.level.example.com domain'
         new_line = self.cleaner._hn2db(test_line)
-        self.cleaner.assertFalse('example.com' in new_line)
+        self.assertFalse('example.com' in new_line)
