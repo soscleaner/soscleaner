@@ -8,11 +8,11 @@ Source0: https://github.com/jduncan-rva/%{srcname}/archive/v%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
 Requires: python-magic
-Requires: python-ipaddr
+Requires: python-ipaddress
 BuildRequires: python-setuptools
 BuildRequires: python-magic
-BuildRequires: python-ipaddr
-Url: https://github.com/RedHatGov/SOSCleaner
+BuildRequires: python-ipaddress
+Url: https://github.com/jduncan-rva/SOSCleaner
 
 %if 0%{?srpm_build}
 %undefine dist
