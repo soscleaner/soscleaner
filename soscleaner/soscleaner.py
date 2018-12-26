@@ -1187,6 +1187,7 @@ class SOSCleaner:
             self._process_user_option(options.users)
         if options.users_file:  # users form a line-delimited file with the -U options
             self._process_users_file(users_file=options.users_file)
+        self.report_dir = options.report_dir
         if not sosreport:
             if not options.files:
                 raise Exception("Error: You must supply either an sosreport and/or files to process")

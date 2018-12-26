@@ -39,6 +39,9 @@ def main():
     parser.add_option("-U", "--users-file", action="store", dest="users_file",
                             help="line-delimited list of users to obfuscate",
                             metavar="USERS_FILE")
+    parser.add_option("-o", "--output-dir", action="store", default="/tmp" dest="report_dir",
+                            help="Directory to store soscleaner obfuscated sosreport or dataset",
+                            metavar="DIRECTORY")
 
     (options, args) = parser.parse_args()
     if not args and not options.files:  # we don't have an sosreport
