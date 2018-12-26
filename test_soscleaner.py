@@ -27,7 +27,7 @@ import unittest
 from soscleaner import SOSCleaner
 import os
 import shutil
-from ipaddress import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 
 class SOSCleanerTests(unittest.TestCase):

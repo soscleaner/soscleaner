@@ -8,7 +8,7 @@ import sys
 
 def main():
 
-    parser = OptionParser(usage="%prog <OPTIONS> /path/to/sosreport", version="%prog 0.3.78")
+    parser = OptionParser(usage="%prog <OPTIONS> /path/to/sosreport", version="%prog 0.3.79")
     parser.add_option("-l", "--log_level", dest="loglevel", default='INFO',
                             help="The Desired Log Level (default = INFO) Options are DEBUG, INFO, WARNING, ERROR",
                             metavar="LOGLEVEL")
@@ -21,9 +21,6 @@ def main():
     parser.add_option("-q", "--quiet", action="store_true", default=False, dest='quiet',
                             help="disable output to STDOUT",
                             metavar="QUIET")
-    parser.add_option("-r", "--report_dir", dest="report_dir",
-                            help="optional directory to store artifacts. default is /tmp",
-                            metavar="DIRECTORY")
     parser.add_option("-k", "--keywords", action="append", default=[], dest="keywords",
                             help="optional text file to be obfuscated. format is one word per line. warning: long lists may slow down soscleaner.",
                             metavar="KEYWORDS")

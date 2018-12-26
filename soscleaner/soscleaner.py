@@ -29,7 +29,7 @@ import shutil
 import tempfile
 import logging
 import tarfile
-from ipaddress import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 
 class SOSCleaner:
@@ -48,7 +48,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.78'
+        self.version = '0.3.79'
 
         """
         Network Obfuscation Information
