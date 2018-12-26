@@ -47,7 +47,7 @@ class SOSCleaner:
         self.domains = ['redhat.com']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.71'
+        self.version = '0.3.72'
 
         """
         Network Obfuscation Information
@@ -811,7 +811,7 @@ class SOSCleaner:
                 return ret_value
             else:
                 self.domain_count += 1
-                o_domain = "ofuscateddomain%s" % self.domain_count
+                o_domain = "ofuscateddomain%s.com" % self.domain_count
                 self.dn_db[o_domain] = domain
                 self.logger.con_out("Adding new obfuscated domain - %s > %s", domain, o_domain)
 
