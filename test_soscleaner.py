@@ -198,7 +198,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test16_domains2db_fqdn(self):
         self.cleaner.domainname = 'myserver.com'
-        self.cleaner.domains = ['foo.com', 'bar.com']
+        self.cleaner.domains.extend(['foo.com', 'bar.com'])
         self.cleaner._domains2db()
         self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.values())
         self.assertTrue('foo.com' in self.cleaner.dn_db.values())
@@ -229,7 +229,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test20_create_dn_report(self):
         self.cleaner.domainname = 'myserver.com'
-        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domains.append('myserver.com')
         self.cleaner._domains2db()
         self.cleaner._create_dn_report()
         fh = open(self.cleaner.dn_report, 'r')
@@ -246,7 +246,7 @@ class SOSCleanerTests(unittest.TestCase):
         test_file = '/tmp/clean_file_test'
         shutil.copyfile('testdata/sosreport_dir/var/log/messages', test_file)
         self.cleaner.process_hostnames = True
-        self.cleaner.domains = ['myserver.com', 'foo.com']
+        self.cleaner.domains.extend(['myserver.com', 'foo.com'])
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.hostname = 'myhost'
         self.cleaner._domains2db()
@@ -259,7 +259,7 @@ class SOSCleanerTests(unittest.TestCase):
         os.remove(test_file)  # clean up
 
     def test23_sub_hostname_hyphens(self):
-        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domains.append('myserver.com')
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.hostname = 'myhost'
         self.cleaner._domains2db()
@@ -316,7 +316,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('192.168.122.100' in x[1])
 
     def test32_sub_hostname_front_of_line(self):
-        self.cleaner.domains = ['myserver.com']
+        self.cleaner.domains.append('myserver.com')
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.hostname = 'myhost'
         self.cleaner._domains2db()
@@ -411,13 +411,13 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(test_name == test_name2)
 
     def test46_domains2db_confirm_addition(self):
-        self.cleaner.domains = ['example.com']
+        self.cleaner.domains.append('example.com')
         self.cleaner._domains2db()
 
         self.assertTrue('example.com' in self.cleaner.dn_db.values())
 
     def test47_sub_hostname_single_3rd_level(self):
-        self.cleaner.domains = ['example.com']
+        self.cleaner.domains.append('example.com')
         self.cleaner.hostname = 'foo.example.com'
         self.cleaner.domainname = 'example.com'
 
@@ -427,7 +427,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertFalse('somehost.example.com' in new_line)
 
     def test48_hn2db_3rd_level_not_hostname(self):
-        self.cleaner.domains = ['example.com']
+        self.cleaner.domains.append('example.com')
         self.cleaner.hostname = 'foo.example.com'
         self.cleaner.domainname = 'example.com'
 
@@ -441,7 +441,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(test_domainname in o_hostname)
 
     def test49_hn2db_2nd_level_domain(self):
-        self.cleaner.domains = ['example.com']
+        self.cleaner.domains.append('example.com')
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
 
@@ -454,7 +454,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(o_hostname_2 in o_hostname)
 
     def test50_hn2db_non_fqdn(self):
-        self.cleaner.domains = ['example.com']
+        self.cleaner.domains.append('example.com')
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
 
@@ -463,7 +463,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('obfuscatedhost' in test_host)
 
     def test51_hn2db_multiple_same_domain(self):
-        self.cleaner.domains = ['example.com']
+        self.cleaner.domains.append('example.com')
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
 
@@ -474,7 +474,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertFalse(self.cleaner._hn2db('host1.example.com') == self.cleaner._hn2db('host2.example.com'))
 
     def test52_hn2db_high_level_host(self):
-        self.cleaner.domains = ['example.com', 'crazy.super.level.example.com']
+        self.cleaner.domains.extend(['example.com', 'crazy.super.level.example.com'])
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
 
