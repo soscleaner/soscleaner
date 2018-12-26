@@ -603,13 +603,13 @@ class SOSCleaner:
             domain_found = False
             for domain in potential_domains:
                 self.logger.debug("Verifying potential hostname - %s", domain)
-                for known_domain in self.dn_db.values():
-                    if known_domain in domain:  # we have a new subdomain to add before we process hostnames
-                        self._dn2db(domain)
                 split_domain = domain.split('.')
                 domain_depth = len(split_domain)
                 if domain_depth > 2:  # 3rd level domain or higher
                     domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
+                    for known_domain in self.dn_db.values():
+                        if known_domain in domain:  # we have a new subdomain to add before we process hostnames
+                            self._dn2db(domain)
                 elif domain_depth == 2:  # 2nd level
                     domainname = domain
                 # if there are values in a domain we care about we obfuscate them
