@@ -462,10 +462,10 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner.hostname in self.cleaner.hn_db.values())
         self.assertTrue('obfuscatedhost' in test_host)
 
-    def test51_hn2db_multiple_same_domain(self):
-        self.cleaner.domains.append('example.com')
+    def test51_clean_line_multiple_same_domain(self):
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
+        self.cleaner._domains2db()
 
         test_line = 'this is host1.example.com and this is host2.example.com'
         new_line = self.cleaner._clean_line(test_line)
