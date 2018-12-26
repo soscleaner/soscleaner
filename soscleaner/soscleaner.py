@@ -460,8 +460,8 @@ class SOSCleaner:
             dn_report = open(dn_report_name, 'w')
             dn_report.write('Obfuscated Domain,Original Domain\n')
             if self.domain_count > 0:
-                for k, v in self.dn_db.items():
-                    dn_report.write('%s,%s\n' % (k, v))
+                for o_domain, domain in self.dn_db.items():
+                    dn_report.write('%s,%s\n' % (o_domain, domain))
             else:
                 dn_report.write('None,None\n')
             dn_report.close()
@@ -848,6 +848,7 @@ class SOSCleaner:
             if self.domainname is not None:
                 self.dn_db[self.root_domain] = self.domainname
                 self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
+                self.domain_count += 1
 
             if self.domains:
                 split_root_domain = self.root_domain.split('.')
