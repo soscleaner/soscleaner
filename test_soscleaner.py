@@ -480,3 +480,4 @@ class SOSCleanerTests(unittest.TestCase):
 
         test_line = 'a line with some.crazy.super.level.example.com domain'
         new_line = self.cleaner._hn2db(test_line)
+        self.cleaner.assertFalse('example.com' in new_line)
