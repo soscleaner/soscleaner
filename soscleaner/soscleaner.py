@@ -47,7 +47,7 @@ class SOSCleaner:
         self.domains = list()
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.69'
+        self.version = '0.3.70'
 
         """
         Network Obfuscation Information
