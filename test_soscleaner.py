@@ -135,12 +135,6 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(host is None)
         self.assertTrue(domain is None)
 
-    def test7_obfuscate_hosts_file(self):
-        # testing hosts file extra processing
-        self.cleaner.dir_path = 'testdata/sosreport_dir'
-        self.cleaner._process_hosts_file()
-        self.assertTrue('myhost' in self.cleaner.hn_db.values())
-
     def test8_skip_files(self):
         d = 'testdata/sosreport_dir'
         files = ['test.bin', 'test.txt']
