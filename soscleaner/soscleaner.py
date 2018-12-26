@@ -45,7 +45,7 @@ class SOSCleaner:
         self.quiet = quiet
         self.domain_count = 0
         self.domains = ['redhat.com', 'localhost.localdomain']
-        self.short_domains = ['localdomain','localhost']
+        self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
         self.version = '0.3.76'
