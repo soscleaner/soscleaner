@@ -29,7 +29,7 @@ import shutil
 import tempfile
 import logging
 import tarfile
-from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+from ipaddress import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 
 class SOSCleaner:
