@@ -599,6 +599,8 @@ class SOSCleaner:
         self.logger.debug("Processing Line - %s", line)
 
         potential_domains = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
+        if 'localdomain' in line:
+            potential_domains.append('localdomain')
         try:
             domain_found = False
             for domain in potential_domains:
