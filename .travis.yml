@@ -7,7 +7,6 @@ env:
   - OS_ARCH=x86_64
   - DOCKER_IMAGE=alectolytic/rpmbuilder
   - SOSCLEANER_VERSION=$(grep current_version setup.cfg | cut -d \= -f 2 | xargs)
-  - TRAVIS_TAG=v${SOSCLEANER_VERSION}
   - BUILD_COPR=False
   matrix:
   - OS_TYPE=centos OS_DIST=epel OS_VERSION=7 OS_SLUG=el7
@@ -36,12 +35,17 @@ deploy:
     - soscleaner-${SOSCLEANER_VERSION}.tar.gz
   on:
     repo: jduncan-rva/soscleaner
+    tags: true
 - provider: pypi
   user: jduncan
   password:
     secure: "WCDocl+RkQq9B3UM4xpcW2OBsBAVVIcP01WUzY3wFGypfrZBtHufN75utNExiWp+c5eFLv1TcSlVY7EH/KoPvTrorcVc4TiGR+F2ra0CQA+W2XimfFEvPf1twuEiidUuukFXqeiH/HrIz81CY/Qjn5xIGPgXIwgj9KWNg7sjlqfNIs1pC2vFLUdOLV+QT20HxmoQWBIJyVoPoKmz3BVP4bdfhE866VKrZtaN2cOlTz9H4GK1YNNl851F3ZUxezfO9ot0HPVUraxKdSlS8lqUCdSJQOxHQZMKWii1AmYZi5VOUZ9CE90o9VqtJkLgszx/uyesiV2vCX+wLgBHe0LALPMWxbn3T5+XUERnVtBOeYAagm/IdZw/OkfJThLFsaPnR/iHr7QuMlLtfWGxDf70i5ObnYimMZGTS9DSW19fsrfHm5GB5IkZ6B89pZAms8f1Pg+yDaoqqIYYkiTsKft0r39e1EZb5EqW5vqss880djrP/n4z/vKYgwazr5RLDAXmvG6mJ/L1yuiLNNEbE9A09ybgUq++p6aB6HRhfFUqRlonl9Org97Ibdh2QU/FBQxxhMhVi9INz0EMbBsz6Mmn27TYuPuNchI4KaL2RrNbIamPRj75HZQHxyfeulE7OlLhnl9x9Vrbhvqej8nRf42lB7I6+V04TIDy9Erl1mrInCs="
   server: https://test.pypi.org/legacy/
+  on:
+    tags: true
 - provider: pypi
   user: jduncan
   password:
     secure: "eVG/TMsMmk1a0zAF78K36h8o309Ikrr6HawlQWWxbEgPL0JH32pHCQmGcZLhfbYYDtlW9RDnhVlvqd/0fnxtsuDv+qCPo2hG7MayUjJBPikPgVqyDaE5oivKUw4grnhkJWYeynLl6apjL20fAvYHlZs1w1TDvv1fyJYGkboG/KHItmyulWSKhv878hFreSM9fBCN9cBEJ3vDuCpZCgwPSXqtahe+O7d5IMSU4sYjJK/op2pFudu6DTcJJbvEyR/2KeBJxb/uuzmMUnqSgHyx3ovxNIJrjhtS+VTR/xykNHZSQYmK6Rsce31NhL1dc/WntEH6hOFWs8CiVAZ/jKqKRQ8lqoMx0vr4UNkdYXUukZtF0Egs5H4lfhGqbZDwNkW1Uzsy9LhADwlQkdo1S9qwp0okevq7eE+26NJHJeEsNOYWNfoHypLSmbZlB9BF6xG7obfrkZ2Y4CLm8bt+rj0o+wD3AOrXqZbo+2X+nPExNcUCrWKNdhIPn1Iut3xL/2lhObFIDSe4rA9do2z0Fo9JJiyVG9AihpHocBFqvvDIc7kCE0GORr/0/pek/+QAORJfAseOt/PPMWPPBMuSZ+SrHtJ1Z1+RPvWTyJ7NYlF3KKYTEXHSQYNsZDrzaXgNtxMf+1fm63vqBU39HVQS7CTAJbEFX3VXEmuuIb+KagPXUTI="
+    on:
+      tags: true
