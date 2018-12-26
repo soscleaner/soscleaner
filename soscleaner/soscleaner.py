@@ -48,7 +48,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain','localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.73'
+        self.version = '0.3.74'
 
         """
         Network Obfuscation Information
