@@ -608,7 +608,7 @@ class SOSCleaner:
                 if domain_depth > 2:  # 3rd level domain or higher
                     domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
                     for known_domain in self.dn_db.values():
-                        if known_domain in domain:  # we have a new subdomain to add before we process hostnames
+                        if known_domain in domainname and len(domainname) > len(known_domain):  # we have a new subdomain to add 
                             self._dn2db(domain)
                 elif domain_depth == 2:  # 2nd level
                     domainname = domain
@@ -811,9 +811,9 @@ class SOSCleaner:
                 return ret_value
             else:
                 self.domain_count += 1
-                o_domain = "ofuscatedsubdomain%s" % self.domain_count
+                o_domain = "ofuscateddomain%s" % self.domain_count
                 self.dn_db[o_domain] = domain
-                self.logger.con_out("Adding new obfuscated subdomain - %s > %s", domain, o_domain)
+                self.logger.con_out("Adding new obfuscated domain - %s > %s", domain, o_domain)
 
                 return o_domain
 
