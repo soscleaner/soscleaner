@@ -1,4 +1,4 @@
-ipaddress
+ipaddr
 python_magic
 python_coveralls
 coveralls
