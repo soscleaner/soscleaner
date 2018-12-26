@@ -44,7 +44,7 @@ class SOSCleaner:
         self.loglevel = 'INFO'  # this can be overridden by the command-line app
         self.quiet = quiet
         self.domain_count = 0
-        self.domains = list()
+        self.domains = ['redhat.com']
         self.domainname = None
         self.report_dir = '/tmp'
         self.version = '0.3.71'
@@ -530,11 +530,11 @@ class SOSCleaner:
                     obfuscated_hostname = "obfuscatedhost%s" % self.hostname_count
                     self.hn_db[obfuscated_hostname] = host
                 elif len(split_host) == 2:  # we have a root domain, a la example.com
-                    obfuscated_hostname = self._get_obfuscated_domain(host)
+                    obfuscated_hostname = self._dn2db(host)
                     self.hn_db[obfuscated_hostname] = host
                 else:  # a 3rd level domain or higher
                     domain = '.'.join(split_host[1:])
-                    o_domain = self._get_obfuscated_domain(domain)
+                    o_domain = self._dn2db(domain)
                     obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
                     self.hn_db[obfuscated_hostname] = host
 
@@ -603,6 +603,9 @@ class SOSCleaner:
             domain_found = False
             for domain in potential_domains:
                 self.logger.debug("Verifying potential hostname - %s", domain)
+                for known_domain in self.dn_db.values():
+                    if known_domain in domain:  # we have a new subdomain to add before we process hostnames
+                        self._dn2db(domain)
                 split_domain = domain.split('.')
                 domain_depth = len(split_domain)
                 if domain_depth > 2:  # 3rd level domain or higher
@@ -788,6 +791,37 @@ class SOSCleaner:
     ########################
     #   Domain Functions   #
     ########################
+
+    def _dn2db(self, domain):
+        '''
+        Adds a domain to dn_db and returns the obfuscated value.
+        '''
+        try:
+            domain_found = False
+            for obfuscated_domain, dom in self.dn_db.items():
+                if domain == dom:
+                    ret_value = obfuscated_domain
+                    domain_found = True
+
+            # there should be no other clause here.
+            # There isn't a workflow to add a new domain
+            # in the middle of an analysis.
+            # the 'if' clause is just to handle the parameter to stop the loop
+            if domain_found:
+                return ret_value
+            else:
+                self.domain_count += 1
+                o_domain = "ofuscatedsubdomain%s" % self.domain_count
+                self.dn_db[o_domain] = domain
+                self.logger.con_out("Adding new obfuscated subdomain - %s > %s", domain, o_domain)
+
+                return o_domain
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception("DN2DB_ERROR: Unable to retrieve obfuscated domain - %s", domain)
+
+
 
     def _process_hosts_file(self):
         # this will process the hosts file more thoroughly to try and capture as many server short names/aliases as possible
