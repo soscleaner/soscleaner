@@ -234,7 +234,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._create_dn_report()
         fh = open(self.cleaner.dn_report, 'r')
         x = fh.readlines()
-        self.assertTrue(self.cleaner.domainname in x[2])
+        self.assertTrue(self.cleaner.domainname in x[3])
 
     def test21_create_dn_report_none(self):
         self.cleaner._create_dn_report()
@@ -481,3 +481,19 @@ class SOSCleanerTests(unittest.TestCase):
         test_line = 'a line with some.crazy.super.level.example.com domain'
         new_line = self.cleaner._hn2db(test_line)
         self.assertFalse('example.com' in new_line)
+
+    def test53_resolv_conf_check(self):
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+        self.cleaner._domains2db()
+        hline1 = 'search localdomain redhat.com'
+        hline2 = 'nameserver 172.16.238.2'
+
+        o_hline1 = self.cleaner._clean_line(hline1)
+        o_hline2 = self.cleaner._clean_line(hline2)
+
+        self.assertFalse('localdomain' in o_hline1)
+        self.assertFalse('redhat.com' in o_hline2)
+        self.assertTrue('search' in o_hline1)
+        self.assertTrue('nameserver' in o_hline2)
+        self.assertFalse('172.16.238.2' in o_hline2)

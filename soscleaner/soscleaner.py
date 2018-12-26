@@ -44,10 +44,10 @@ class SOSCleaner:
         self.loglevel = 'INFO'  # this can be overridden by the command-line app
         self.quiet = quiet
         self.domain_count = 0
-        self.domains = ['redhat.com']
+        self.domains = ['redhat.com', 'localdomain']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.72'
+        self.version = '0.3.73'
 
         """
         Network Obfuscation Information
@@ -821,8 +821,6 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("DN2DB_ERROR: Unable to retrieve obfuscated domain - %s", domain)
 
-
-
     def _process_hosts_file(self):
         # this will process the hosts file more thoroughly to try and capture as many server short names/aliases as possible
         # could lead to false positives if people use dumb things for server aliases, like 'file' or 'server' or other common terms
@@ -1195,7 +1193,7 @@ class SOSCleaner:
             for network in options.networks:
                 self._ip4_add_network(network)
         if options.domains:
-            self.domains = options.domains
+            self.domains.extend(options.domains)
         if options.keywords:
             self.keywords = options.keywords
             self._keywords2db()
