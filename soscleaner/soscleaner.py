@@ -41,7 +41,6 @@ class SOSCleaner:
     def __init__(self, quiet=False):
 
         self.name = 'soscleaner'
-        self.loglevel = 'INFO'  # this can be overridden by the command-line app
         self.quiet = quiet
         self.domain_count = 0
         self.domains = ['redhat.com', 'localhost.localdomain']
@@ -1185,6 +1184,7 @@ class SOSCleaner:
         if options.report_dir:  # override the default location for artifacts (/tmp)
             if os.path.isdir(options.report_dir):
                 self.report_dir = options.report_dir
+        self.loglevel = options.loglevel
         self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
         self._start_logging(self.logfile)
         self._check_uid()  # make sure it's soscleaner is running as root
