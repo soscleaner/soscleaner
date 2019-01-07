@@ -49,6 +49,7 @@ class SOSCleaner:
         self.domainname = None
         self.report_dir = '/tmp'
         self.version = '0.3.80'
+        self.ip_false_positives = ['installed_rpms','sos_commands/rpm']
 
         """
         Network Obfuscation Information
@@ -651,20 +652,35 @@ class SOSCleaner:
     #   Filesystem functions   #
     ############################
 
-    def _clean_line(self, l):
-        '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
+    def _clean_line(self, line, filename):
+        '''
+        this will return a line with obfuscations for all possible variables,
+        hostname, ip, etc. The filename is passed in so we can know whether or
+        not to obfuscate IP addresses. Th
+
+        '''
 
         try:
-            new_line = self._sub_ip(l)                  # IP substitution
-            new_line = self._sub_hostname(new_line)     # Hostname substitution
-            new_line = self._sub_keywords(new_line)     # Keyword Substitution
-            new_line = self._sub_username(new_line)
+            process_ips = True
+            # We want to skip the files in self.ip_false_positives for IP
+            # obfuscation because they don't have any IP info in them
+            # and they generate a lot of false positives that much up the
+            # obfuscation and confuse people when they're working with the files
+            #  Issue #60
+            for false_positive in self.ip_false_positives:
+                if false_positive in filename:
+                    process_ips = False
+            new_line = self._sub_hostname(line)  # Hostname substitution
+            new_line = self._sub_keywords(new_line)  # Keyword Substitution
+            new_line = self._sub_username(new_line)  # Username substitution
+            if process_ips:
+                new_line = self._sub_ip(new_line)  # IP substitution
 
             return new_line
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % l)
+            raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % line)
 
     def _clean_file(self, f):
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file tmpin the same location'''
@@ -675,7 +691,7 @@ class SOSCleaner:
                 if len(data) > 0:  # if the file isn't empty:
                     for l in data:
                         self.logger.debug("Obfuscating Line - %s", l)
-                        new_l = self._clean_line(l)
+                        new_l = self._clean_line(l, f)
                         tmp_file.write(new_l)
 
                     tmp_file.seek(0)
