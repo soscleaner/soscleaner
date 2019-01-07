@@ -170,7 +170,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domainname = 'example.com'
         self.cleaner.dn_db['example.com'] = 'myservers.com'
         new_line = 'foo bar %s some words %s more words' % (self.cleaner._hn2db(hostname), self.cleaner._ip4_2_db(ip))
-        self.assertTrue(self.cleaner._clean_line(line) == new_line)
+        self.assertTrue(self.cleaner._clean_line(line, 'foo_file') == new_line)
 
     def test14_make_dest_env(self):
         self.cleaner.report = self.testdir
@@ -462,7 +462,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._domains2db()
 
         test_line = 'this is host1.example.com and this is host2.example.com'
-        new_line = self.cleaner._clean_line(test_line)
+        new_line = self.cleaner._clean_line(test_line, 'foo_line')
 
         self.assertFalse('example.com' in new_line)
         self.assertFalse(self.cleaner._hn2db('host1.example.com') == self.cleaner._hn2db('host2.example.com'))
@@ -483,8 +483,8 @@ class SOSCleanerTests(unittest.TestCase):
         hline1 = 'search localdomain redhat.com'
         hline2 = 'nameserver 172.16.238.2'
 
-        o_hline1 = self.cleaner._clean_line(hline1)
-        o_hline2 = self.cleaner._clean_line(hline2)
+        o_hline1 = self.cleaner._clean_line(hline1, 'foo_file')
+        o_hline2 = self.cleaner._clean_line(hline2, 'foo_file')
 
         self.assertFalse('localdomain' in o_hline1)
         self.assertFalse('redhat.com' in o_hline2)
