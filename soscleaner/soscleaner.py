@@ -705,6 +705,14 @@ class SOSCleaner:
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
+            except OSError as e:
+                # If there's an IO error (disk is full)
+                if e.errno == errno.EIO:  # pragma: no cover
+                    self.logger.exception(e)
+                    self.logger.con_out("CLEAN_FILE_ERROR: Not enough disk space to complete report obfusation")
+                    self.logger.con_out("CLEAN_FILE_ERROR: Remove partially obfuscated report and other artifacts")
+                    self.logger.con_out("CLEAN_FILE_ERROR: Please remedy the disk pressure and re-run soscleaner")
+                    self._clean_up()
             except Exception, e:  # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CLEAN_FILE_ERROR: Unable to write obfuscated file - %s" % f)
@@ -807,6 +815,8 @@ class SOSCleaner:
             self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
+            if disk_error:
+                shutil.rmtree(self.)
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
@@ -1168,8 +1178,16 @@ class SOSCleaner:
             self._add_extra_files(files)
 
         except OSError, e:  # pragma: no cover
+            # If the file already exists
             if e.errno == errno.EEXIST:
                 pass
+            # If there's an IO error (disk is full)
+            elif e.errno == errno.EIO:  # pragma: no cover
+                self.logger.exception(e)
+                self.logger.con_out("CLEAN_FILE_ERROR: Not enough disk space to complete report obfusation")
+                self.logger.con_out("CLEAN_FILE_ERROR: Remove partially obfuscated report and other artifacts")
+                self.logger.con_out("CLEAN_FILE_ERROR: Please remedy the disk pressure and re-run soscleaner")
+                self._clean_up()
             else:   # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CLEAN_FILES_ONLY_ERROR: Unable to clean file from dataset - OSError")
