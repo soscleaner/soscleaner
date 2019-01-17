@@ -706,7 +706,7 @@ class SOSCleaner:
                         new_fh.write(line)
                     new_fh.close()
             except OSError as e:
-                # If there's an IO error (disk is full)
+                # If there's an IO error (disk is full) 
                 if e.errno == errno.EIO:  # pragma: no cover
                     self.logger.exception(e)
                     self.logger.con_out("CLEAN_FILE_ERROR: Not enough disk space to complete report obfusation")
