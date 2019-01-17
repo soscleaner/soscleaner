@@ -33,10 +33,10 @@ from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 
 class SOSCleaner:
-    '''
-    A class to parse through an sosreport and generic datasets to begin the
+    """
+    A class to parse through an sosreport or generic dataset to begin the
     cleaning and obfuscation process required in many industries.
-    '''
+    """
 
     def __init__(self, quiet=False):
 
@@ -130,9 +130,13 @@ class SOSCleaner:
         self.user_count = 1
         self._prime_userdb()
 
-    def _check_uid(self):  # pragma no cover
+    def _check_uid(self):
+        """Ensures soscleaner is running as root. This isn't required for soscleaner,
+        but sosreports are run as root and root tends to own the files inside the
+        sosreport tarball
+        """
 
-        try:
+        try:  # pragma: no cover
             if os.getuid() != 0:
                 self.logger.con_out("soscleaner must be executed by the root user in the same manner as sosreport")
                 self.logger.con_out("soscleaner cannot continue. Exiting...")
@@ -144,9 +148,7 @@ class SOSCleaner:
             raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
 
     def _extract_file_data(self, filename):
-        '''
-        simple internal function to extract data from a file and return the data
-        '''
+        """Extracts data from a file and return the data"""
         try:
             fh = open(filename, 'r')
             data = fh.readlines()
@@ -159,14 +161,11 @@ class SOSCleaner:
             raise Exception("FILE_OPEN_ERROR - unable to open %s", filename)
 
     def _skip_file(self, d, files):
-        '''
-        The function passed into shutil.copytree to ignore certain patterns and filetypes
-        Currently Skipped
-        Directories - handled by copytree
-        Symlinks - handled by copytree
-        Write-only files (stuff in /proc)
+        """The function passed into shutil.copytree to ignore certain patterns and filetypes
+        Currently Skipped: 1) Directories - handled by copytree 2) Symlinks - handled by copytree
+        3) Write-only files (stuff in /proc)
         Binaries (can't scan them)
-        '''
+        """
         skip_list = []
         for f in files:
             f_full = os.path.join(d, f)
@@ -183,6 +182,7 @@ class SOSCleaner:
         return skip_list
 
     def _start_logging(self, filename):
+        """Creates the logging objects and starts a logging instance."""
         # will get the logging instance going
         loglevel_config = 'logging.%s' % self.loglevel
 
@@ -214,6 +214,12 @@ class SOSCleaner:
         self.logger.con_out("Log File Created at %s" % filename)
 
     def _prep_environment(self):
+        """Creates the needed definitions to identify the unique soscleaner runs
+        It creates a 16 character UUID, then uses that to create an origin_path to define
+        where the temporary working files are stored, a dir_path that is where the
+        obfuscated files are located, and a session value, which is used in multiple
+        locations to identify objects for a given soscleaner run
+        """
 
         # we set up our various needed directory structures, etc.
         ran_uuid = str(uuid.uuid4().int)[:16]                                                 # 16 digit random string
@@ -225,6 +231,9 @@ class SOSCleaner:
         return origin_path, dir_path, session, logfile, ran_uuid
 
     def _extract_sosreport(self, path):
+        """Extracts an sosreport, accounting for all common compression algorithms
+        as well as working with uncompressed directories and single files.
+        """
         try:
             self.logger.con_out("Beginning SOSReport Extraction")
             if os.path.isdir(path):
@@ -273,10 +282,9 @@ class SOSCleaner:
     ################################
 
     def _prime_userdb(self):
-        '''
-        Creates an initial entry in the user_db for the root user. This is needed so we
+        """Creates an initial entry in the user_db for the root user. This is needed so we
         have something to iterate through for later functions.
-        '''
+        """
 
         try:
             new_user = "obfuscateduser%s" % self.user_count
@@ -289,9 +297,7 @@ class SOSCleaner:
             raise Exception('PRIME_USERDB_ERROR: unable to prime user database')
 
     def _process_user_option(self, users):
-        '''
-        A convenience function to add users specified from the command line to the user_db object
-        '''
+        """Adds users specified from the command line to the user_db object"""
 
         try:
             for username in users:
@@ -303,11 +309,10 @@ class SOSCleaner:
             raise Exception("PROCESS_USER_OPTION_ERROR: unable to add user to user database")
 
     def _sub_username(self, line):
-        '''
-        Accepts a line from a file as input and replaces all occurrences of the users in the
+        """Accepts a line from a file as input and replaces all occurrences of the users in the
         user_db with the obfuscated values.
         Returns the obfuscated line.
-        '''
+        """
 
         try:
             if self.user_count > 0:    # we have obfuscated keywords to work with
@@ -322,12 +327,11 @@ class SOSCleaner:
             raise Exception('SUB_USERNAME_ERROR: Unable to obfuscate usernames on line - %s', line)
 
     def _user2db(self, username):
-        '''
-        Takes a username and adds it to the user_db with an obfuscated partner
+        """Takes a username and adds it to the user_db with an obfuscated partner.
         If the user hasn't been encountered before, it will add it to the database
         and return the obfuscated partner entry.
         If the user is already in the database it will return the obfuscated username
-        '''
+        """
 
         db = self.user_db
         user_found = False
@@ -355,11 +359,10 @@ class SOSCleaner:
             raise Exception("USER_TO_DB_ERROR: unable to add user %s to database", username)
 
     def _process_users_file(self, users_file='sos_commands/last/last'):
-        '''
-        This will use the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
+        """Uses the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
         By default it looks for the last file from an sosreport. But it can process any line-delimited list of users
         From RFE #67
-        '''
+        """
 
         ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
@@ -401,12 +404,12 @@ class SOSCleaner:
     ################################
 
     def _sub_ip(self, line):
-        '''
-        This will substitute an obfuscated IP for each instance of a given IP in a file
-        This is called in the self._clean_line function, along with user _sub_* functions to scrub a given
-        line in a file.
-        It scans a given line and if an IP exists, it obfuscates the IP using _ip4_2_db and returns the altered line
-        '''
+        """Substitutes a found IP with its corresponding obfuscated partner.
+        This is called in the self._clean_line function, along with user _sub_*
+        functions to scrub a given line in a file. It scans a given line and if
+        an IP exists, it obfuscates the IP using _ip4_2_db and returns the altered
+        line
+        """
         try:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
@@ -425,8 +428,8 @@ class SOSCleaner:
     #   Formatting Functions    #
     #############################
 
-    def _get_disclaimer(self):  # pragma: no cover
-        # prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
+    def _get_disclaimer(self):
+        """Prints out a disclaimer at the beginning of each soscleaner run"""
 
         self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
         self.logger.warning("Please review the content before passing it along to any third party.")
@@ -436,6 +439,7 @@ class SOSCleaner:
     ###########################
 
     def _create_hn_report(self):
+        """Creates a report of hostnames and their obfuscated counterparts"""
         try:
             hn_report_name = os.path.join(self.report_dir, "%s-hostname.csv" % self.session)
             self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
@@ -455,6 +459,7 @@ class SOSCleaner:
             raise Exception('CREATE_HN_REPORT_ERROR: Unable to create report - %s', hn_report_name)
 
     def _create_dn_report(self):
+        """Creates a report of domain names and their obfuscated conterparts"""
         try:
             dn_report_name = os.path.join(self.report_dir, "%s-dn.csv" % self.session)
             self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
@@ -475,6 +480,7 @@ class SOSCleaner:
             raise Exception('CREATE_DN_REPORT_ERROR: Unable to create report - %s', dn_report_name)
 
     def _create_ip_report(self):
+        """Creates a report of IP addresses and their obfuscated counterparts"""
         try:
             ip_report_name = os.path.join(self.report_dir, "%s-ip.csv" % self.session)
             self.logger.con_out('Creating IP Report - %s', ip_report_name)
@@ -491,25 +497,30 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('CREATE_IP_REPORT_ERROR: Unable to create report - %s', ip_report_name)
 
-    def _create_reports(self):  # pragma: no cover
-        '''
-        A simple convenience function to call all the reports at once
-        '''
+    def _create_reports(self):
+        """Creates the reports at the end of an soscleaner run"""
 
         self._create_ip_report()
         self._create_hn_report()
         self._create_dn_report()
+
+    #############################
+    #   MAC Address functions   #
+    #############################
+
+    def _mac2db(self, mac):
+
+        pass
 
     ###########################
     #   Hostname functions    #
     ###########################
 
     def _hn2db(self, host):
-        '''
-        This will add a hostname for a hostname for an included domain or return an existing entry.
+        """Adds a hostname for a hostname for an included domain or return an existing entry.
         It is called by _add_hostnames to verify if the domain is in an included
         domain for obfuscation, and the entry to hn_db, and return the obfuscated value
-        '''
+        """
         try:
             host_found = False
             for o_hostname, hostname in self.hn_db.items():
@@ -546,7 +557,9 @@ class SOSCleaner:
             raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
 
     def _get_hostname(self, hostname='hostname'):
-        # gets the hostname and stores hostname/domainname so they can be filtered out later
+        """Gets the hostname from an sosreport. Used at the beginning of an
+        SOSCleaner run to set self.hostname and self.domainname
+        """
 
         try:
             hostfile = os.path.join(self.dir_path, hostname)
@@ -578,9 +591,12 @@ class SOSCleaner:
             raise Exception('GET_HOSTNAME_ERROR: Cannot resolve hostname from %s') % hostfile
 
     def _sub_hostname(self, line):
-        '''
-        This will replace the exact hostname and all instances of the domain name with the obfuscated alternatives.
-        '''
+        """Replaces the exact hostname and all instances of the domain name with
+        their obfuscated alternatives. Also handles auto-creation of subdomains
+        for known domains. Example: if redhat.com is in the domain database,
+        access.redhat.com and registry.redhat.com will both be obfuscated as
+        unique domain entries.
+        """
         # Logic behind this definition of a valid domain:
         # A domain can be a total of 253 characters, per RFC 1035, RFC 1123 and RFC 2181
         # Each label can be a maximum of 63 characters
@@ -652,12 +668,12 @@ class SOSCleaner:
     ############################
 
     def _clean_line(self, line, filename):
-        '''
-        this will return a line with obfuscations for all possible variables,
-        hostname, ip, etc. The filename is passed in so we can know whether or
-        not to obfuscate IP addresses. Th
-
-        '''
+        """Returns a line with obfuscations for all covered data types:
+        hostname, ip, user, keyword, and MAC address. The filename is passed in
+        so we can know whether or not to obfuscate IP addresses. IP obfuscation
+        is excluding in a few files where RPM version numbers cause false
+        positives and are known to not contain IP address information.
+        """
 
         try:
             process_ips = True
@@ -682,7 +698,9 @@ class SOSCleaner:
             raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % line)
 
     def _clean_file(self, f):
-        '''this will take a given file path, scrub it accordingly, and save a new copy of the file tmpin the same location'''
+        """Takes a given file path, scrubs it, and saves a new copy of
+         the obfuscated file in the same location
+         """
         if os.path.exists(f) and not os.path.islink(f):
             tmp_file = tempfile.TemporaryFile()
             try:
@@ -706,11 +724,11 @@ class SOSCleaner:
                         new_fh.write(line)
                     new_fh.close()
             except OSError as e:
-                # If there's an IO error (disk is full) 
+                # If there's an IO error (disk is full)
                 if e.errno == errno.EIO:  # pragma: no cover
                     self.logger.exception(e)
                     self.logger.con_out("CLEAN_FILE_ERROR: Not enough disk space to complete report obfusation")
-                    self.logger.con_out("CLEAN_FILE_ERROR: Remove partially obfuscated report and other artifacts")
+                    self.logger.con_out("CLEAN_FILE_ERROR: Removing partially obfuscated report and other artifacts")
                     self.logger.con_out("CLEAN_FILE_ERROR: Please remedy the disk pressure and re-run soscleaner")
                     self._clean_up()
             except Exception, e:  # pragma: no cover
@@ -721,7 +739,9 @@ class SOSCleaner:
                 tmp_file.close()
 
     def _add_extra_files(self, files):
-        '''if extra files are to be analyzed with an sosreport, this will add them to the origin path to be analyzed'''
+        """Incorporates extra files are to be analyzed with an sosreport by
+        adding them to the origin path to be analyzed
+        """
 
         try:
             for f in files:
@@ -738,7 +758,7 @@ class SOSCleaner:
             raise Exception("ADD_EXTRA_FILES_ERROR: Unable to process extra file - %s" % f)
 
     def _walk_report(self, folder):
-        '''returns a dictonary of dictionaries in the format {directory_name:[file1,file2,filex]}'''
+        """Returns a dictonary of dictionaries in the format {directory_name:[file1,file2,filex]}"""
 
         dir_list = {}
         try:
@@ -754,7 +774,7 @@ class SOSCleaner:
             raise Exception("WALK_REPORT_ERROR: Unable to create file list in folder - %s", folder)
 
     def _file_list(self, folder):
-        '''returns a list of file names in an sosreport directory'''
+        """returns a list of file names in an sosreport directory"""
         try:
             rtn = []
             walk = self._walk_report(folder)
@@ -771,10 +791,10 @@ class SOSCleaner:
             raise Exception("FILE_LIST_ERROR: Unable to create file list from directory - %s", folder)
 
     def _make_dest_env(self):
-        '''
-        This will create the folder in self.report_dir (defaults to /tmp) to store the sanitized files and populate it using shutil
-        These are the files that will be scrubbed
-        '''
+        """Creates the folder in self.report_dir (defaults to /tmp) to store
+        sanitized files and populates it using shutil. These are the files that
+        will be scrubbed.
+        """
         try:
             shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
 
@@ -783,7 +803,7 @@ class SOSCleaner:
             raise Exception("MAKE_DESTINATION_ENV_ERROR: Cannot Create Destination Environment")
 
     def _create_archive(self):
-        '''This will create a tar.gz compressed archive of the scrubbed directory'''
+        """Creates a tar.gz compressed archive of the scrubbed directory"""
         try:
             self.archive_path = os.path.join(self.report_dir, "%s.tar.gz" % self.session)
             self.logger.con_out('Creating SOSCleaner Archive - %s', self.archive_path)
@@ -806,7 +826,7 @@ class SOSCleaner:
         t.close()
 
     def _clean_up(self):
-        '''This will clean up origin directories, etc.'''
+        """Cleans up origin directories and other soscleaner processing artifacts"""
         self.logger.info('Beginning Clean Up Process')
         try:
             if self.origin_path:
@@ -815,8 +835,6 @@ class SOSCleaner:
             self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
-            if disk_error:
-                shutil.rmtree(self.)
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
@@ -827,9 +845,7 @@ class SOSCleaner:
     ########################
 
     def _dn2db(self, domain):
-        '''
-        Adds a domain to dn_db and returns the obfuscated value.
-        '''
+        """Adds a domain to dn_db and returns the obfuscated value."""
         try:
             domain_found = False
             for obfuscated_domain, dom in self.dn_db.items():
@@ -856,9 +872,7 @@ class SOSCleaner:
             raise Exception("DN2DB_ERROR: Unable to retrieve obfuscated domain - %s", domain)
 
     def _get_obfuscated_domain(self, dom):
-        '''
-        This function returns the obfuscated domain value for a domain that we care about
-        '''
+        """Returns the obfuscated domain value for a domain in the domain database"""
         try:
             domain_found = False
             for obfuscated_domain, domain in self.dn_db.items():
@@ -878,7 +892,7 @@ class SOSCleaner:
             raise Exception("GET_OBFUSCATED_DOMAIN_ERROR: Unable to retrieve obfuscated domain - %s", domain)
 
     def _domains2db(self):
-        # adds any additional domainnames to the domain database to be searched for
+        """Adds domains to the domain database"""
         try:
             # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
             # value, which defaults to "obfuscateddomain.com"
@@ -913,7 +927,7 @@ class SOSCleaner:
     #########################
 
     def _keywords2db(self):
-        # processes optional keywords to add to be obfuscated
+        """Adds keywords to the keyword database"""
         try:
             if self.keywords:   # value is set to None by default
                 k_count = 0
@@ -941,10 +955,10 @@ class SOSCleaner:
             raise Exception("KEYWORDS2DB_ERROR: Unable to process keyword - %s", keyword)
 
     def _kw2db(self, keyword):
-        '''
-        returns the obfuscated value for a keyword
-        '''
-
+        """Returns the obfuscated value for a keyword. Since new keywords cannot
+        be added after the inital keywords2db() call, there is not capability to
+        add keywords to the database if they're not found
+        """
         try:
             keyword_found = False
             for obfuscated_keyword, kw in self.kw_db.items():
@@ -967,9 +981,7 @@ class SOSCleaner:
             raise Exception("KW2DB_ERROR: Unable to retrieve obfuscated keyword - %s", keyword)
 
     def _sub_keywords(self, line):
-        '''
-        Accepts a line from a file in an sosreport and obfuscates any known keyword entries on the line.
-        '''
+        """Accepts a line from a file in an sosreport and obfuscates any known keyword entries on the line."""
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
                 for o_keyword, keyword in self.kw_db.items():
@@ -987,9 +999,9 @@ class SOSCleaner:
     #########################
 
     def _process_route_file(self):
-        '''
-        When there is a full sosreport, this will parse the output from the route command to populate self.net_db
-        '''
+        """Parses the output from the route command in an sosreport to populate
+        self.net_db with networks to obfuscate
+        """
         try:
             route_path = os.path.join(self.dir_path, 'route')
             if os.path.exists(route_path):
@@ -1010,9 +1022,7 @@ class SOSCleaner:
             raise Exception("PROCESS_ROUTE_FILE_ERROR: Cannot process file - %s", route_path)
 
     def _ip4_new_obfuscate_net(self, netmask):
-        '''
-        This will return a new IPv4 Network Object for a newly obfuscated network
-        '''
+        """Returns a new IPv4 Network Object to be used as an obfuscated network."""
         try:
             # this is going to get hacky
             start_point = self.default_net.broadcast + 1    # this will return an IPv4Address object that is 129.0.0.0
@@ -1030,12 +1040,10 @@ class SOSCleaner:
             raise Exception("IP4_NEW_OBFUSCATE_NET_ERROR: Unable to create new network - %s", new_net_string)
 
     def _ip4_parse_network(self, network):
-        '''
-        This will take the input values and return useable objects from them.
-        Generated:
-        an IPv4Network object for the original network
-        a string value for the subnet mask that is used to create the obfuscated network
-        '''
+        """Takes the input values and return useable objects from them.
+        Generates an IPv4Network object for the original network, and a string
+        value for the subnet mask that is used to create the obfuscated network
+        """
         try:
             net = IPv4Network(network)
             subnet = str(net.prefixlen)
@@ -1047,10 +1055,9 @@ class SOSCleaner:
             raise Exception("IP4_PARSE_NETWORK_ERROR: Unable to parse network - %s", network)
 
     def _ip4_network_in_db(self, network):
-        '''
-        This will return True if a network already exists in net_db
-        It is used in _ip4_add_network to ensure we don't get duplicate network entries
-        '''
+        """Returns True if a network already exists in self.net_db. Is used in
+        self._ip4_add_network to ensure we don't get duplicate network entries
+        """
         try:
             if any(network in x for x in self.net_db):
                 return True
@@ -1061,10 +1068,11 @@ class SOSCleaner:
             raise Exception("IP4_NETWORK_IN_DB_ERROR: Unable to test for network in network database - %s", network)
 
     def _add_loopback_network(self):
-        '''
-        This will add an entry into the needed databases to keep loopback addresses somewhat sane. They will be obfuscated, but within the loopback numberspace.
+        """
+        Adds an entry into the needed databases to keep loopback addresses
+        somewhat sane. They will be obfuscated, but within the loopback numberspace.
         So more of a shuffler than anything else.
-        '''
+        """
         try:
             self.logger.info("Adding Entry to Network Metadata Database - 127.0.0.0")
             self.net_metadata['127.0.0.0'] = dict()
@@ -1080,11 +1088,11 @@ class SOSCleaner:
             raise Exception("ADD_LOOPBACK_NETWORK_ERROR: Unable to create obfuscated loopback network")
 
     def _ip4_add_network(self, network):
-        '''
-        This will take any networks specified via the command-line parameters as well as the routes file (if present)
-        and create obfuscated networks for each of them.
-        This is called within self._process_route_file as well as in self.clean_report
-        '''
+        """Takes any networks specified via the command-line parameters as well
+        as the routes file (if present) and creates obfuscated networks for each
+        of them. This is called in self._process_route_file as well as in
+        self.clean_report
+        """
         try:
             net, netmask = self._ip4_parse_network(network)
 
@@ -1106,12 +1114,11 @@ class SOSCleaner:
             raise Exception("IP4_ADD_NETWORK_ERROR: Unable to add obfuscated network - %s", network)
 
     def _ip4_find_network(self, ip):
-        '''
-        This will take an IP address and return back the obfuscated network that it belongs to
+        """Takes an IP address and returns back the obfuscated network it belongs to
         This is called by the _ip4_2_db function
         The value returned is a string that is the network address for the given network - IPv4Network.network.compressed
         This can be used to create a new obfuscated IP address for this value
-        '''
+        """
         try:
             ip = IPv4Address(ip)    # re-cast as an IPv4 object
             network = self.default_net.network
@@ -1126,12 +1133,10 @@ class SOSCleaner:
             raise Exception("IP4_FIND_NETWORK_ERROR: Unable to determin obfuscated network for IP address - %s", ip)
 
     def _ip4_in_db(self, ip):
-        '''
-        Returns True if an IP is found the the obfuscation database
-        Returns False otherwise
-        The ip parameter is an IPv4Address object
-        This function is called from within _ip4_2_db
-        '''
+        """Returns True if an IP is found the the obfuscation database. Returns
+        False otherwise The ip parameter is an IPv4Address object This function
+        is called from within _ip4_2_db
+        """
         try:
             if any(ip in x for x in self.ip_db):
                 return True
@@ -1142,10 +1147,9 @@ class SOSCleaner:
             raise Exception("IP4_IN_DB_ERROR: Unable to verify if IP is in database - %s", ip)
 
     def _ip4_2_db(self, orig_ip):
-        '''
-        adds an IP address to the IP database and returns the obfuscated entry, or returns the
-        existing obfuscated IP entry
-        '''
+        """Adds an IP address to the IP database and returns the obfuscated
+        entry, or returns the existing obfuscated IP entry.
+        """
         try:
             if self._ip4_in_db(orig_ip):  # the IP exists already in the database
                 data = dict(self.ip_db)  # http://stackoverflow.com/a/18114565/263834
@@ -1167,7 +1171,7 @@ class SOSCleaner:
             raise Exception("IP4_2_DB_ERROR: unable to add IP to database - %s", orig_ip)
 
     def _clean_files_only(self, files):
-        ''' if a user only wants to process one or more specific files, instead of a full sosreport '''
+        """Processes one or more specific files, instead of a full sosreport."""
         try:
             if not (os.path.exists(self.origin_path)):
                 self.logger.info("Creating Origin Path - %s" % self.origin_path)
@@ -1192,21 +1196,39 @@ class SOSCleaner:
                 self.logger.exception(e)
                 raise Exception("CLEAN_FILES_ONLY_ERROR: Unable to clean file from dataset - OSError")
 
-        except Exception, e:    # pragma: no cover
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("CLEAN_FILES_ONLY_ERROR: Unable toclean files from dataset")
 
-    def clean_report(self, options, sosreport):  # pragma: no cover
-        ''' this is the primary function, to put everything together and analyze an sosreport '''
+    def _process_report_dir(self, report_dir):
+        """Overrides the default (/tmp) location for the soscleaner run"""
+        try:
+            if os.path.isdir(report_dir):
+                self.report_dir = report_dir
 
-        if options.report_dir:  # override the default location for artifacts (/tmp)
-            if os.path.isdir(options.report_dir):
-                self.report_dir = options.report_dir
+            return True
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("PROCESS_REPORT_DIR_ERROR: Unable to set report output directory")
+
+    def _start_soscleaner(self):
+        """Sets up the data structures and filesystem attributes to get soscleaner going properly"""
+        try:
+            self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
+            self._start_logging(self.logfile)
+            self._check_uid()  # make sure it's soscleaner is running as root
+            self._get_disclaimer()
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("START_SOSCLEANER_ERROR: Unable to create needed artifacts to run soscleaner")
+
+    def clean_report(self, options, sosreport):  # pragma: no cover
+        """The primary function, to put everything together and analyze an sosreport."""
+        if options.report_dir:
+            self._process_report_dir(options.report_dir)
         self.loglevel = options.loglevel
-        self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
-        self._start_logging(self.logfile)
-        self._check_uid()  # make sure it's soscleaner is running as root
-        self._get_disclaimer()
+        self._start_soscleaner()
         self._add_loopback_network()
         if options.networks:    # we have defined networks
             self.networks = options.networks
@@ -1225,7 +1247,6 @@ class SOSCleaner:
         if not sosreport:
             if not options.files:
                 raise Exception("Error: You must supply either an sosreport and/or files to process")
-
             self.logger.con_out("No sosreport supplied. Only processing specific files")
             if not options.networks:
                 self.logger.con_out("No sosreport supplied and no networks specified. All IP addresses will be obfuscated into the same default subnet")
