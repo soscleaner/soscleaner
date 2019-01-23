@@ -12,5 +12,8 @@ root     tty1                          Tue Oct 30 17:07 - 17:07  (00:00)
 reboot   system boot  3.10.0-862.el7.x Tue Oct 30 17:07 - 14:52 (44+22:45)
 root     tty1                          Tue Oct 30 16:41 - 16:41  (00:00)
 reboot   system boot  3.10.0-862.el7.x Tue Oct 30 16:41 - 14:52 (44+23:11)
+bob      system boot
+sam      system boot
+jane     tty2 
 
 wtmp begins Tue Oct 30 16:41:34 2018

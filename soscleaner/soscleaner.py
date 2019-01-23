@@ -340,7 +340,7 @@ class SOSCleaner:
         """
         try:
             o_user = self.user_db.get(username)
-            if o_user is not None:  # no match, so we need to add to the database
+            if o_user is None:  # no match, so we need to add to the database
                 self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
                 o_user = "obfuscateduser%s" % self.user_count
                 self.logger.info("Adding new obfuscated user: %s > %s", username, o_user)
