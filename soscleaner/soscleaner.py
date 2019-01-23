@@ -30,7 +30,8 @@ import tempfile
 import logging
 import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
-
+from itertools import imap
+from random import randint
 
 class SOSCleaner:
     """
@@ -428,6 +429,26 @@ class SOSCleaner:
     ###########################
     #   Reporting Functions   #
     ###########################
+    def _create_mac_report(self):
+        """Creates a report of MAC addresses and their obfuscated counterparts"""
+        try:
+            mac_report_name = os.path.join(self.report_dir, "%s-mac.csv" % self.session)
+            self.logger.con_out('Creating MAC address Report - %s', mac_report_name)
+            mac_report = open(mac_report_name, 'w')
+            mac_report.write('Original MAC Address,Obfuscated MAC Address\n')
+            if len(self.mac_db) > 0:
+                for k, v in self.mac_db.items():
+                    mac_report.write('%s,%s\n' % (k, v))
+            else:
+                mac_report.write('None,None\n')
+            mac_report.close()
+            self.logger.info('Completed MAC Address Report')
+
+            self.mac_report = mac_report_name
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception('CREATE_MAC_REPORT_ERROR: Unable to create report - %s', mac_report_name)
 
     def _create_un_report(self):
         """Creates a report of usernames and their obfuscated counterparts"""
@@ -515,6 +536,7 @@ class SOSCleaner:
         self._create_hn_report()
         self._create_dn_report()
         self._create_un_report()
+        self._create_mac_report()
 
     #############################
     #   MAC Address functions   #
@@ -527,8 +549,8 @@ class SOSCleaner:
             macs = [each[0] for each in re.findall(pattern, line)]
             if len(macs) > 0:
                 for mac in macs:
-                    new_mac = self._mac_2_db(mac)
-                    self.logger.debug("Obfuscating MAC - %s > %s", mac, new_mac)
+                    new_mac = self._mac2db(mac)
+                    self.logger.debug("Obfuscating MAC address - %s > %s", mac, new_mac)
                     line = line.replace(mac, new_mac)
             return line
 
@@ -541,16 +563,16 @@ class SOSCleaner:
         entry, or returns the existing obfuscated MAC entry.
         """
         try:
-            mac_found = False
-            for o_mac, orig_mac in self.mac_db.items():
-                if orig_mac == mac:
-                    mac_found = True
+            o_mac = self.mac_db.get(mac)
+            if o_mac is None:  # no match: we have to add it to the db
+                # using this lambda to create a valid randomized mac address is
+                # documented at https://www.commandlinefu.com/commands/view/7245/generate-random-valid-mac-addresses
+                # many thanks for putting that little thought together
+                o_mac = ':'.join(['%02x'%x for x in imap(lambda x:randint(0, 255), range(6))])
+                self.logger.debug("Creating new obfuscated MAC address: %s > %s", mac, o_mac)
+                self.mac_db[mac] = o_mac
 
-                    return o_mac
-
-
-            if mac_found:
-                return self.mac_db()
+            return o_mac
 
         except Exception as e:    # pragma: no cover
             self.logger.exception(e)
@@ -720,6 +742,7 @@ class SOSCleaner:
             new_line = self._sub_hostname(line)  # Hostname substitution
             new_line = self._sub_keywords(new_line)  # Keyword Substitution
             new_line = self._sub_username(new_line)  # Username substitution
+            new_line = self._sub_mac(new_line)  # MAC address obfuscation
             if process_ips:
                 new_line = self._sub_ip(new_line)  # IP substitution
 
