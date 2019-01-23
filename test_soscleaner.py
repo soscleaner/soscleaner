@@ -394,7 +394,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test46_confirm_no_user_double_adds(self):
         self.cleaner._user2db('bob')
-        self.assertTrue('bob' in self.cleaner.user_db.values())
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
         for name, o_name in self.cleaner.user_db.items():
             if name == 'bob':
                 test_name = name
