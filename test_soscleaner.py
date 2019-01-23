@@ -431,7 +431,7 @@ class SOSCleanerTests(unittest.TestCase):
 
         o_hostname = self.cleaner._hn2db(test_hostname)
 
-        self.assertTrue(test_hostname in self.cleaner.hn_db.values())
+        self.assertTrue(test_hostname in self.cleaner.hn_db.keys())
         self.assertTrue(test_domainname in o_hostname)
 
     def test50_hn2db_2nd_level_domain(self):
