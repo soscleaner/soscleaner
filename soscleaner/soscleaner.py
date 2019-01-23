@@ -926,7 +926,7 @@ class SOSCleaner:
 
         except Exception, e:
             self.logger.exception(e)
-            raise Exception("GET_OBFUSCATED_DOMAIN_ERROR: Unable to retrieve obfuscated domain - %s", domain)
+            raise Exception("GET_OBFUSCATED_DOMAIN_ERROR: Unable to retrieve obfuscated domain - %s", o_domain)
 
     def _domains2db(self):
         """Adds domains to the domain database"""
@@ -934,23 +934,23 @@ class SOSCleaner:
             # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
             # value, which defaults to "obfuscateddomain.com"
             if self.domainname is not None:
-                self.dn_db[self.root_domain] = self.domainname
+                self.dn_db[self.domainname] = self.root_domain
                 self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
                 self.domain_count += 1
 
             split_root_domain = self.root_domain.split('.')
             for dom in self.domains:
-                if dom not in self.dn_db.values():  # no duplicates
+                if dom not in self.dn_db.keys():  # no duplicates
                     self.domain_count += 1
                     obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
                     self.dn_db[dom] = obfuscated_domain
                     self.logger.con_out("Obfuscated Domain Created - %s > %s", dom, obfuscated_domain)
 
             for dom in self.short_domains:
-                if dom not in self.dn_db.values():  # no duplicates
+                if dom not in self.dn_db.keys():  # no duplicates
                     self.domain_count += 1
                     obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
-                    self.dn_db[obfuscated_domain] = dom
+                    self.dn_db[dom] = obfuscated_domain
                     self.logger.con_out("Obfuscated Domain Created - %s > %s", dom, obfuscated_domain)
 
             return True
