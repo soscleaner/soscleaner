@@ -228,7 +228,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._create_dn_report()
         fh = open(self.cleaner.dn_report, 'r')
         x = fh.readlines()
-        self.assertTrue(self.cleaner.domainname in x[5])
+        self.assertTrue(self.cleaner.domainname in x[1])
 
     def test21_create_dn_report_none(self):
         self.cleaner._create_dn_report()
