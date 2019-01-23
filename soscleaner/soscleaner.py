@@ -50,6 +50,7 @@ class SOSCleaner:
         self.report_dir = '/tmp'
         self.version = '0.3.80'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
+        self.loglevel = 'INFO'
 
         """
         Network Obfuscation Information
