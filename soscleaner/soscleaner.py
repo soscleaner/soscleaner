@@ -114,6 +114,9 @@ class SOSCleaner:
         self.hostname_count = 0
         self.hostname = None
 
+        self.mac_db = dict() # mac address database
+        self.mac_count = 0
+
         # Domainname obfuscation information
         self.dn_db = dict()  # domainname database
         # right now this needs to be a 2nd level domain
@@ -332,27 +335,15 @@ class SOSCleaner:
         and return the obfuscated partner entry.
         If the user is already in the database it will return the obfuscated username
         """
-
-        db = self.user_db
-        user_found = False
         try:
-            self.logger.debug("Processing user - %s", username)
-            for k, v in db.iteritems():
-                if v == username:  # the username is in the database
-                    ret_user = k
-                    user_found = True
-                    self.logger.debug("User found - %s", username)
-
-            if user_found:
-                return ret_user
-
-            else:
+            o_user = self.user_db.get(username)
+            if o_user is not None:  # no match, so we need to add to the database
                 self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
-                ret_user = "obfuscateduser%s" % self.user_count
-                self.logger.con_out("Adding new obfuscated user: %s > %s", username, ret_user)
-                self.user_db[ret_user] = username
+                o_user = "obfuscateduser%s" % self.user_count
+                self.logger.con_out("Adding new obfuscated user: %s > %s", username, o_user)
+                self.user_db[username] = o_user
 
-                return ret_user
+                return o_user
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
@@ -422,7 +413,7 @@ class SOSCleaner:
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise e
+            raise Exception("SUB_IP_ERROR: Unable to obfuscate IP address")
 
     #############################
     #   Formatting Functions    #
@@ -438,13 +429,33 @@ class SOSCleaner:
     #   Reporting Functions   #
     ###########################
 
+    def _create_un_report(self):
+        """Creates a report of usernames and their obfuscated counterparts"""
+        try:
+            un_report_name = os.path.join(self.report_dir, "%s-username.csv" % self.session)
+            self.logger.con_out('Creating Userfname Report - %s', un_report_name)
+            un_report = open(un_report_name, 'w')
+            un_report.write('Original Username,Obfuscated Username\n')
+            if self.user_count > 0:
+                for k, v in self.user_db.items():
+                    un_report.write('%s,%s\n' % (k, v))
+            else:
+                un_report.write('None,None\n')
+            un_report.close()
+            self.logger.info('Completed Hostname Report')
+
+            self.un_report = un_report_name
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('CREATE_USERNAME_REPORT_ERROR: Unable to create report - %s', un_report_name)
+
     def _create_hn_report(self):
         """Creates a report of hostnames and their obfuscated counterparts"""
         try:
             hn_report_name = os.path.join(self.report_dir, "%s-hostname.csv" % self.session)
             self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
             hn_report = open(hn_report_name, 'w')
-            hn_report.write('Obfuscated Hostname,Original Hostname\n')
+            hn_report.write('Original Hostname,Obfuscated Hostname\n')
             if self.hostname_count > 0:
                 for k, v in self.hn_db.items():
                     hn_report.write('%s,%s\n' % (k, v))
@@ -464,10 +475,10 @@ class SOSCleaner:
             dn_report_name = os.path.join(self.report_dir, "%s-dn.csv" % self.session)
             self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
             dn_report = open(dn_report_name, 'w')
-            dn_report.write('Obfuscated Domain,Original Domain\n')
+            dn_report.write('Original Domain,Obfuscated Domain\n')
             if self.domain_count > 0:
-                for o_domain, domain in self.dn_db.items():
-                    dn_report.write('%s,%s\n' % (o_domain, domain))
+                for domain, o_domain in self.dn_db.items():
+                    dn_report.write('%s,%s\n' % (domain, o_domain))
             else:
                 dn_report.write('None,None\n')
             dn_report.close()
@@ -503,14 +514,47 @@ class SOSCleaner:
         self._create_ip_report()
         self._create_hn_report()
         self._create_dn_report()
+        self._create_un_report()
 
     #############################
     #   MAC Address functions   #
     #############################
 
-    def _mac2db(self, mac):
+    def _sub_mac(self, line):
+        """Finds potential MAC addresses and obfuscates them in a single line."""
+        try:
+            pattern = r"([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})"
+            macs = [each[0] for each in re.findall(pattern, line)]
+            if len(macs) > 0:
+                for mac in macs:
+                    new_mac = self._mac_2_db(mac)
+                    self.logger.debug("Obfuscating MAC - %s > %s", mac, new_mac)
+                    line = line.replace(mac, new_mac)
+            return line
 
-        pass
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("SUB_MAC_ERROR: Unable to obfuscate MAC address")
+
+    def _mac2db(self, mac):
+        """Adds an MAC address to the MAC database and returns the obfuscated
+        entry, or returns the existing obfuscated MAC entry.
+        """
+        try:
+            mac_found = False
+            for o_mac, orig_mac in self.mac_db.items():
+                if orig_mac == mac:
+                    mac_found = True
+
+                    return o_mac
+
+
+            if mac_found:
+                return self.mac_db()
+
+        except Exception as e:    # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("MAC2DB_ERROR: unable to add MAC to database - %s", mac)
 
     ###########################
     #   Hostname functions    #
@@ -522,35 +566,23 @@ class SOSCleaner:
         domain for obfuscation, and the entry to hn_db, and return the obfuscated value
         """
         try:
-            host_found = False
-            for o_hostname, hostname in self.hn_db.items():
-                if hostname == host:  # the hostname is in the database
-                    obfuscated_hostname = o_hostname
-                    host_found = True
-            if host_found:
-                return obfuscated_hostname
-            else:
-                # this is where we have some work to do.
-                # 1) retrieve the obfuscated domain value from dn_db
-                # 2) increment the hostname_count integer
-                # 3) set the obfuscated hostname to hostX.obfuscateddomainY.com
-                # X = hostname_count
-                # Y = domain_count
+            o_host = self.hn_db.get(host)
+            if o_host is None:  # no database match
                 split_host = host.split('.')
                 self.hostname_count += 1  # increment the counter to get the host ID number
                 if len(split_host) == 1:  # we have a non-fqdn - typically the host short name
-                    obfuscated_hostname = "obfuscatedhost%s" % self.hostname_count
-                    self.hn_db[obfuscated_hostname] = host
+                    o_host = "obfuscatedhost%s" % self.hostname_count
+                    self.hn_db[host] = o_host
                 elif len(split_host) == 2:  # we have a root domain, a la example.com
-                    obfuscated_hostname = self._dn2db(host)
-                    self.hn_db[obfuscated_hostname] = host
+                    o_host = self._dn2db(host)
+                    self.hn_db[host] = o_host
                 else:  # a 3rd level domain or higher
                     domain = '.'.join(split_host[1:])
                     o_domain = self._dn2db(domain)
-                    obfuscated_hostname = "host%s.%s" % (self.hostname_count, o_domain)
-                    self.hn_db[obfuscated_hostname] = host
+                    o_host = "host%s.%s" % (self.hostname_count, o_domain)
+                    self.hn_db[host] = o_host
 
-                return obfuscated_hostname
+            return o_host
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
@@ -847,25 +879,14 @@ class SOSCleaner:
     def _dn2db(self, domain):
         """Adds a domain to dn_db and returns the obfuscated value."""
         try:
-            domain_found = False
-            for obfuscated_domain, dom in self.dn_db.items():
-                if domain == dom:
-                    ret_value = obfuscated_domain
-                    domain_found = True
-
-            # there should be no other clause here.
-            # There isn't a workflow to add a new domain
-            # in the middle of an analysis.
-            # the 'if' clause is just to handle the parameter to stop the loop
-            if domain_found:
-                return ret_value
-            else:
+            o_domain = self.dn_db.get(domain)
+            if o_domain is None:
                 self.domain_count += 1
                 o_domain = "ofuscateddomain%s.com" % self.domain_count
-                self.dn_db[o_domain] = domain
+                self.dn_db[domain] = o_domain
                 self.logger.con_out("Adding new obfuscated domain - %s > %s", domain, o_domain)
 
-                return o_domain
+            return o_domain
 
         except Exception, e:
             self.logger.exception(e)
@@ -960,19 +981,15 @@ class SOSCleaner:
         add keywords to the database if they're not found
         """
         try:
-            keyword_found = False
-            for obfuscated_keyword, kw in self.kw_db.items():
-                if kw == keyword:
-                    ret_value = obfuscated_keyword
-                    keyword_found = True
+            o_kw = self.kw_db.get(keyword)
 
             # there should be no other clause here.
             # There isn't a workflow to add a new keyword
             # in the middle of an analysis.
             # the 'if' clause is just to handle the parameter to set the var in the loop
 
-            if keyword_found:
-                return ret_value
+            if o_kw is not None:
+                return o_kw
             else:
                 return keyword
 
