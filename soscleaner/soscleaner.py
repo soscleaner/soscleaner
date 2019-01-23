@@ -346,7 +346,7 @@ class SOSCleaner:
                 self.logger.info("Adding new obfuscated user: %s > %s", username, o_user)
                 self.user_db[username] = o_user
 
-                return o_user
+            return o_user
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
