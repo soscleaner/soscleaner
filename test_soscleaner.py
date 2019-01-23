@@ -349,21 +349,21 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test39_add_users_from_command_line(self):
         self.cleaner._user2db('bob')
-        self.assertTrue('bob' in self.cleaner.user_db.values())
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
 
     def test40_process_user_option(self):
         users = ('bob', 'sam', 'george')
         self.cleaner._process_user_option(users)
-        self.assertTrue('bob' in self.cleaner.user_db.values())
-        self.assertTrue('sam' in self.cleaner.user_db.values())
-        self.assertTrue('george' in self.cleaner.user_db.values())
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
+        self.assertTrue('sam' in self.cleaner.user_db.keys())
+        self.assertTrue('george' in self.cleaner.user_db.keys())
 
     def test41_process_users_file(self):
         users_file = 'testdata/userfile1'
         self.cleaner._process_users_file(users_file=users_file)
-        self.assertTrue('bob' in self.cleaner.user_db.values())
-        self.assertTrue('sam' in self.cleaner.user_db.values())
-        self.assertTrue('george' in self.cleaner.user_db.values())
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
+        self.assertTrue('sam' in self.cleaner.user_db.keys())
+        self.assertTrue('george' in self.cleaner.user_db.keys())
 
     def test42_sub_username(self):
         self.cleaner._user2db('bob')
