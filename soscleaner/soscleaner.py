@@ -680,7 +680,7 @@ class SOSCleaner:
                 domain_depth = len(split_domain)
                 if domain_depth > 2:  # 3rd level domain or higher
                     domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
-                    for known_domain in self.dn_db.values():
+                    for known_domain in self.dn_db.keys():
                         if known_domain in domainname and len(domainname) > len(known_domain):  # we have a new subdomain to add
                             self._dn2db(domainname)
                 elif domain_depth == 2:  # 2nd level
