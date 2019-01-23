@@ -22,6 +22,7 @@
 import os
 import re
 import errno
+import stat
 import sys
 import magic
 import uuid
@@ -171,6 +172,7 @@ class SOSCleaner:
         Currently Skipped: 1) Directories - handled by copytree 2) Symlinks - handled by copytree
         3) Write-only files (stuff in /proc)
         Binaries (can't scan them)
+        Sockets and FIFO files. Scanning them locks up the copying.
         """
         skip_list = []
         for f in files:
@@ -182,7 +184,10 @@ class SOSCleaner:
                     # i thought i'd already removed it. - jduncan
                     # if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
-                    if 'text' not in magic.from_file(f_full):
+                    mode = os.stat(f_full).st_mode
+                    if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                        skip_list.append(f)
+                    elif 'text' not in magic.from_file(f_full):
                         skip_list.append(f)
 
         return skip_list
