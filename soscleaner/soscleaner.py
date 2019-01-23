@@ -33,6 +33,7 @@ from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
 
+
 class SOSCleaner:
     """
     A class to parse through an sosreport or generic dataset to begin the
@@ -293,7 +294,7 @@ class SOSCleaner:
 
         try:
             new_user = "obfuscateduser%s" % self.user_count
-            self.user_db[new_user] = 'root'
+            self.user_db['root'] = new_user
 
             return True
 
@@ -342,7 +343,7 @@ class SOSCleaner:
             if o_user is not None:  # no match, so we need to add to the database
                 self.user_count += 1  # new username, so we increment the counter to get the user's obfuscated name
                 o_user = "obfuscateduser%s" % self.user_count
-                self.logger.con_out("Adding new obfuscated user: %s > %s", username, o_user)
+                self.logger.info("Adding new obfuscated user: %s > %s", username, o_user)
                 self.user_db[username] = o_user
 
                 return o_user
