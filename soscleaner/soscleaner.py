@@ -920,18 +920,9 @@ class SOSCleaner:
     def _get_obfuscated_domain(self, dom):
         """Returns the obfuscated domain value for a domain in the domain database"""
         try:
-            domain_found = False
-            for obfuscated_domain, domain in self.dn_db.items():
-                if domain == dom:
-                    ret_value = obfuscated_domain
-                    domain_found = True
-
-            # there should be no other clause here.
-            # There isn't a workflow to add a new domain
-            # in the middle of an analysis.
-            # the 'if' clause is just to handle the parameter to stop the loop
-            if domain_found:
-                return ret_value
+            o_domain = self.dn_db.get(dom)
+            if o_domain is not None:
+                return o_domain
 
         except Exception, e:
             self.logger.exception(e)
