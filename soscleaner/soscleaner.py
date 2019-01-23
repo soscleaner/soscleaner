@@ -50,7 +50,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.84'
+        self.version = '0.3.85'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
 
@@ -118,7 +118,7 @@ class SOSCleaner:
         self.hostname_count = 0
         self.hostname = None
 
-        self.mac_db = dict() # mac address database
+        self.mac_db = dict()  # mac address database
         self.mac_count = 0
 
         # Domainname obfuscation information
@@ -1190,8 +1190,8 @@ class SOSCleaner:
         """
         try:
             if self._ip4_in_db(orig_ip):  # the IP exists already in the database
-                data = dict(self.ip_db)  # http://stackoverflow.com/a/18114565/263834
-                obf_ip = data[orig_ip]  # we'll pull the existing obfuscated IP from the database
+                data = dict(self.ip_db)   # http://stackoverflow.com/a/18114565/263834
+                obf_ip = data[orig_ip]    # we'll pull the existing obfuscated IP from the database
 
                 return obf_ip.compressed
 
