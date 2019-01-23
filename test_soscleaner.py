@@ -194,9 +194,9 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.domains.extend(['foo.com', 'bar.com'])
         self.cleaner._domains2db()
-        self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.values())
-        self.assertTrue('foo.com' in self.cleaner.dn_db.values())
-        self.assertTrue('bar.com' in self.cleaner.dn_db.values())
+        self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.keys())
+        self.assertTrue('foo.com' in self.cleaner.dn_db.keys())
+        self.assertTrue('bar.com' in self.cleaner.dn_db.keys())
 
     def test17_file_list(self):
         x = self.cleaner._file_list('testdata/sosreport_dir')
@@ -408,7 +408,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domains.append('example.com')
         self.cleaner._domains2db()
 
-        self.assertTrue('example.com' in self.cleaner.dn_db.values())
+        self.assertTrue('example.com' in self.cleaner.dn_db.keys())
 
     def test48_sub_hostname_single_3rd_level(self):
         self.cleaner.domains.append('example.com')
