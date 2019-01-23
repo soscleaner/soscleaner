@@ -683,34 +683,55 @@ class SOSCleaner:
                 self.logger.debug("Verifying potential hostname - %s", domain)
                 split_domain = domain.split('.')
                 domain_depth = len(split_domain)
-                if domain_depth > 2:  # 3rd level domain or higher
-                    domainname = '.'.join(split_domain[1:domain_depth])  # everything after the hostname is the domain we need to check
-                    for known_domain in self.dn_db.keys():
-                        if known_domain in domainname and len(domainname) > len(known_domain):  # we have a new subdomain to add
-                            self._dn2db(domainname)
-                elif domain_depth == 2:  # 2nd level
-                    domainname = domain
-                # if there are values in a domain we care about we obfuscate them
-                # helps limit false positives and useless line processing
-                # we also only want to do the _hn2db lookup once for each item we may want to obfuscate
-                if domainname in self.dn_db.keys():
+                # The first clause checks for potential domains that are 3rd level
+                # domains or higher. If the base domain (everything except the
+                # first octet) is already in the database, it adds the host. If
+                # the root domain is in the database, but this is a new higher-
+                # level domain, it adds the higher-level domain to the database
+                # before moving forward.
+                if domain_depth > 2:
+                    # everything after the hostname is the domain we need to check
+                    domainname = '.'.join(split_domain[1:domain_depth])
+                    # We try a straigh match first
+                    o_domain = self.dn_db.get(domainname)
+                    # If we don't get a straight match, then we look to see if
+                    # it is a subdomain of an already obfuscated domain.
+                    if o_domain is None:
+                        for known_domain in self.dn_db.keys():
+                            # If the domaininame is part of a known domain, we
+                            # need to add a new obfuscated domain to account for
+                            # the new subdomain we just found.
+                            if known_domain in domainname and len(domainname) > len(known_domain):
+                                self._dn2db(domainname)
+                                domain_found = True
+                    # Finally, we calculate the new obfuscated hostname
+                    o_host = self._hn2db(domain)
                     domain_found = True
-                    self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
-                # If we found domains, we need to sub them all out cleanly
-                # If not, we'll just return the line as it was because we made no changes
+                # The second clause checks for second-level domains. This is the
+                # highest order we will check for, as top-level domains would be
+                # a single word, and that would make no sense. We won't add any
+                # additional 2nd level domains because they could be just about
+                # anything. False positives would be 100's or 1000's per report
+                elif domain_depth == 2:
+                    o_domain = self.dn_db.get(domainname)
+                    if o_domain is not None:
+                        self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
+                        o_host = self._hn2db(domain)
+                        domain_found = True
+                # We only want to obfuscate things if we've confirmed that we've
+                # found a match in our domain database and we have then gotten
+                # the obfuscated hostname.
                 if domain_found:
-                    if domain_depth > 2:
-                        o_domain = self._hn2db(domain)
-                        line = re.sub(r'\b%s\b' % domain, o_domain, line)
-                    if domain_depth == 2:
-                        o_domainname = self._hn2db(domainname)
-                        line = re.sub(r'\b%s\b' % domainname, o_domainname, line)
+                    line = re.sub(r'\b%s\b' % domain, o_domain, line)
 
+            # Now that the hard work is done, we account for the handful of
+            # single-word "short domains" that we care about. We start with
+            # the hostname.
             if self.hostname is not None:
                 o_host = self._hn2db(self.hostname)
                 line = re.sub(r'\b%s\b' % self.hostname, o_host, line)
 
-            # There are a handful of short domains that we want to obfuscated
+            # There are a handful of short domains that we want to obfuscate
             # Things like 'localhost' and 'localdomain'
             # They are kept in self.short_domains and added to the domain
             # database. They won't match the potential_domains regex because
