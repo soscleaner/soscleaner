@@ -757,28 +757,28 @@ class SOSCleaner:
         positives and are known to not contain IP address information.
         """
 
-        try:
-            process_ips = True
-            # We want to skip the files in self.ip_false_positives for IP
-            # obfuscation because they don't have any IP info in them
-            # and they generate a lot of false positives that much up the
-            # obfuscation and confuse people when they're working with the files
-            #  Issue #60
-            for false_positive in self.ip_false_positives:
-                if false_positive in filename:
-                    process_ips = False
-            new_line = self._sub_hostname(line)  # Hostname substitution
-            new_line = self._sub_keywords(new_line)  # Keyword Substitution
-            new_line = self._sub_username(new_line)  # Username substitution
-            new_line = self._sub_mac(new_line)  # MAC address obfuscation
-            if process_ips:
-                new_line = self._sub_ip(new_line)  # IP substitution
+        # try:
+        process_ips = True
+        # We want to skip the files in self.ip_false_positives for IP
+        # obfuscation because they don't have any IP info in them
+        # and they generate a lot of false positives that much up the
+        # obfuscation and confuse people when they're working with the files
+        #  Issue #60
+        for false_positive in self.ip_false_positives:
+            if false_positive in filename:
+                process_ips = False
+        new_line = self._sub_hostname(line)  # Hostname substitution
+        new_line = self._sub_keywords(new_line)  # Keyword Substitution
+        new_line = self._sub_username(new_line)  # Username substitution
+        new_line = self._sub_mac(new_line)  # MAC address obfuscation
+        if process_ips:
+            new_line = self._sub_ip(new_line)  # IP substitution
 
-            return new_line
+        return new_line
 
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % line)
+        # except Exception, e:  # pragma: no cover
+        #     self.logger.exception(e)
+        #     raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % line)
 
     def _clean_file(self, f):
         """Takes a given file path, scrubs it, and saves a new copy of
