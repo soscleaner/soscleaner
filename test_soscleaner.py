@@ -166,9 +166,8 @@ class SOSCleanerTests(unittest.TestCase):
         ip = '192.168.1.10'
         line = "foo bar %s some words %s more words" % (hostname, ip)
         self.cleaner.hostname = hostname
-        self.cleaner.process_hostnames = True
         self.cleaner.domainname = 'example.com'
-        self.cleaner.dn_db['example.com'] = 'myservers.com'
+        self.cleaner._domains2db()
         new_line = 'foo bar %s some words %s more words' % (self.cleaner._hn2db(hostname), self.cleaner._ip4_2_db(ip))
         self.assertTrue(self.cleaner._clean_line(line, 'foo_file') == new_line)
 
