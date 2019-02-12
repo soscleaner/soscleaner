@@ -40,8 +40,4 @@ setup(
     test_suite='test_soscleaner',
     py_modules=['soscleaner'],
     scripts=['scripts/soscleaner'],
-    data_files=[
-            ('/usr/share/doc/%s-%s' % (name, version), ['LICENSE']),
-            ('/usr/share/man/man8', ['doc/soscleaner.8.gz']),
-        ],
     )

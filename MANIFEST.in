@@ -1,5 +1,4 @@
 recursive-include soscleaner *
-recursive-include doc *
 recursive-include scripts *
 include LICENSE
 include soscleaner.spec

@@ -36,7 +36,6 @@ SOSCleaner helps filter out controlled or sensitive data from an SOSReport
 %files
 %dir %{_docdir}/%{name}-%{version}
 %{_docdir}/%{name}-%{version}/*
-%{_mandir}/man8/%{name}.8*
 %{python2_sitelib}/%{name}*
 %{_bindir}/soscleaner
 
