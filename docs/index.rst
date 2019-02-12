@@ -9,9 +9,10 @@ SOSCleaner
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-.. automodule:: soscleaner
 .. autoclass:: SOSCleaner
-.. autoexception::
+    :members:
+.. autoexception:: SOSCleaner
+    :members:
 
 
 Indices and tables
