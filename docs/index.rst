@@ -9,15 +9,7 @@ SOSCleaner
 .. toctree::
    :maxdepth: 5
    :caption: Contents:
-.. automodule:: soscleaner
+.. automodule:: soscleaner.SOSCleaner
     :members:
-.. automodule:: test_soscleaner
+.. automodule:: test_soscleaner.SOSCleanerTests
     :members:
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
