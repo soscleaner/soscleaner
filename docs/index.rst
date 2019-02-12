@@ -9,7 +9,7 @@ SOSCleaner
 We're just getting started with some better documentation for soscleaner. This will be good to go
 by the time the 0.4.0 release is out the door. Feel free to help!
 
-Functions
+Function docstrings
 ==========
 
 .. toctree::
