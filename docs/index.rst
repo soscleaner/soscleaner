@@ -9,6 +9,7 @@ SOSCleaner
 .. toctree::
    :maxdepth: 5
    :caption: Contents:
+   
 .. autoclass:: soscleaner.SOSCleaner
     :members:
     :special-members:
