@@ -11,5 +11,5 @@ SOSCleaner
    :caption: Contents:
 .. autoclass:: soscleaner.SOSCleaner
     :members:
-.. autoclass:: test_soscleaner.SOSCleanerTests
+.. automod:: soscleaner.SOSCleaner
     :members:
