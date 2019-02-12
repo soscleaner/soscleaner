@@ -7,13 +7,11 @@ SOSCleaner
 ======================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
    :caption: Contents:
 .. automodule:: soscleaner
     :members:
-.. autoclass:: SOSCleaner
-    :members:
-.. autoexception:: SOSCleaner
+.. automodule:: test_soscleaner
     :members:
 
 
