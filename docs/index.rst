@@ -11,5 +11,5 @@ SOSCleaner
    :caption: Contents:
 .. autoclass:: soscleaner.SOSCleaner
     :members:
-.. automod:: soscleaner.SOSCleaner.__init__
+.. automodule:: soscleaner.SOSCleaner.__init__
     :members:
