@@ -16,7 +16,7 @@ lib
 lib64
 __pycache__
 MANIFEST
-
+_build
 
 # Installer logs
 pip-log.txt
