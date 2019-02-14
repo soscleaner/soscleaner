@@ -653,7 +653,7 @@ class SOSCleaner:
                 add_domain = _eval_domains(root_domain)
                 if add_domain:
                     self.logger.debug("Found new subdomain of %s - %$s", root_domain, domainname)
-                    o_domain = self._dn2db(domainname)
+                    o_domain = self._dn2db(root_domain, add_domain=True)
                     found_domain = True
 
         elif domain_depth == 2:
