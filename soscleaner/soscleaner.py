@@ -665,7 +665,7 @@ class SOSCleaner:
         self.logger.debug("Processing Line - %s", line)
         potential_hostnames = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
         try:
-                for hostname in potential_hostnames:
+            for hostname in potential_hostnames:
                 self.logger.debug("Verifying potential hostname - %s", hostname)
                 domainname = hostname.split('.')
                 domain_found = self._validate_domainname(domainname)
