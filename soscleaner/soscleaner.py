@@ -652,6 +652,7 @@ class SOSCleaner:
                             # need to add a new obfuscated domain to account for
                             # the new subdomain we just found.
                             if known_domain in domainname and len(domainname) > len(known_domain):
+                                self.logger.debug("Found new subdomain of %s - %$s", known_domain, domainname)
                                 self._dn2db(domainname)
                                 domain_found = True
                     # Finally, we calculate the new obfuscated hostname
@@ -666,7 +667,7 @@ class SOSCleaner:
                     o_domain = self.dn_db.get(domain)
                     if o_domain is not None:
                         self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
-                        o_host = self._hn2db(domain)
+                        o_host = self._dn2db(domain)
                         domain_found = True
                 # We only want to obfuscate things if we've confirmed that we've
                 # found a match in our domain database and we have then gotten
