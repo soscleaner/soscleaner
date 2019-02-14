@@ -426,7 +426,7 @@ class SOSCleanerTests(unittest.TestCase):
 
         self.cleaner._domains2db()
         test_hostname = 'somehost.example.com'
-        test_domainname = self.cleaner._get_obfuscated_domain(self.cleaner.domainname)
+        test_domainname = self.cleaner._dn2db(self.cleaner.domainname)
 
         o_hostname = self.cleaner._hn2db(test_hostname)
 
@@ -442,7 +442,7 @@ class SOSCleanerTests(unittest.TestCase):
         test_hostname = 'example.com'
 
         o_hostname = self.cleaner._hn2db(test_hostname)
-        o_hostname_2 = self.cleaner._get_obfuscated_domain(test_hostname)
+        o_hostname_2 = self.cleaner._dn2db(test_hostname)
 
         self.assertTrue(o_hostname_2 in o_hostname)
 
