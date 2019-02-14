@@ -628,7 +628,6 @@ class SOSCleaner:
 
         potential_domains = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
         try:
-            domain_found = False
             for domain in potential_domains:
                 self.logger.debug("Verifying potential hostname - %s", domain)
                 split_domain = domain.split('.')
@@ -653,11 +652,12 @@ class SOSCleaner:
                             # the new subdomain we just found.
                             if known_domain in domainname and len(domainname) > len(known_domain):
                                 self.logger.debug("Found new subdomain of %s - %$s", known_domain, domainname)
-                                self._dn2db(domainname)
-                                domain_found = True
+                                o_domain = self._dn2db(domainname)
                     # Finally, we calculate the new obfuscated hostname
+                    # its newly obfuscated domain should be in the dn_db at this
+                    # point for the match to be clean
                     o_host = self._hn2db(domain)
-                    domain_found = True
+                    line = re.sub(r'\b%s\b' % domain, o_host, line)
                 # The second clause checks for second-level domains. This is the
                 # highest order we will check for, as top-level domains would be
                 # a single word, and that would make no sense. We won't add any
@@ -668,13 +668,7 @@ class SOSCleaner:
                     if o_domain is not None:
                         self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
                         o_host = self._dn2db(domain)
-                        domain_found = True
-                # We only want to obfuscate things if we've confirmed that we've
-                # found a match in our domain database and we have then gotten
-                # the obfuscated hostname.
-                if domain_found:
-                    line = re.sub(r'\b%s\b' % domain, o_domain, line)
-
+                        line = re.sub(r'\b%s\b' % domain, o_host, line)
             # Now that the hard work is done, we account for the handful of
             # single-word "short domains" that we care about. We start with
             # the hostname.
