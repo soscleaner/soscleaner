@@ -628,11 +628,13 @@ class SOSCleaner:
             """
             for known_domain in self.dn_db.keys():
                 if known_domain in root_domain:
+                    self.logger.debug("evaluated domain found in database %s > %s", root_domain, known_domain)
                     return True
             return False
 
         domainname = hostname.split('.')
         domain_depth = len(domainname)
+        self.logger.debug("validating domain %s - depth: %s", hostname, domain_depth)
         # The first clause checks for potential domains that are 3rd level
         # domains or higher. If the base domain (everything except the
         # first octet) is already in the database, it adds the host. If
@@ -643,6 +645,7 @@ class SOSCleaner:
         if domain_depth > 2:
             # everything after the hostname is the domain we need to check
             root_domain = '.'.join(domainname[1:domain_depth])
+            self.logger.debug("validating domain - %s", root_domain)
             # We try a straigh match first
             o_domain = self._dn2db(root_domain)
             if o_domain is not None:  # we got a straight match
