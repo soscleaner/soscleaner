@@ -601,7 +601,7 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('GET_HOSTNAME_ERROR: Cannot resolve hostname from %s') % hostfile
 
-    def _validate_domainname(self, domainname):
+    def _validate_domainname(self, hostname):
         """Takes a potential domain name and validates it against the domain database
         (self.dn_db). It takes care to look for higher-level subdomains for the
         domains entered at the beginning of the sosreport run. Logic behind this definition of a valid domain:
@@ -620,6 +620,7 @@ class SOSCleaner:
         Valid domain is defined as
         <word><Up to 200 chars of alpha, digit, dash, and dot>.<Up to 63 chars of alpha></word>
         """
+        domainname = hostname.split('.')
         domain_depth = len(domainname)
         # The first clause checks for potential domains that are 3rd level
         # domains or higher. If the base domain (everything except the
@@ -667,8 +668,7 @@ class SOSCleaner:
         try:
             for hostname in potential_hostnames:
                 self.logger.debug("Verifying potential hostname - %s", hostname)
-                domainname = hostname.split('.')
-                domain_found = self._validate_domainname(domainname)
+                domain_found = self._validate_domainname(hostname)
 
                 # If we have a potential match that is a host on a domain that
                 # we care about, we regex it out of the line.
