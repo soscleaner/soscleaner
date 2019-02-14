@@ -601,6 +601,60 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('GET_HOSTNAME_ERROR: Cannot resolve hostname from %s') % hostfile
 
+    def _validate_domainname(self, domainname):
+        """Takes a potential domain name and validates it against the domain database
+        (self.dn_db). It takes care to look for higher-level subdomains for the
+        domains entered at the beginning of the sosreport run. Logic behind this definition of a valid domain:
+        A domain can be a total of 253 characters, per RFC 1035, RFC 1123 and RFC 2181
+        Each label can be a maximum of 63 characters
+        With 4th, 5th, 6th level domains being more the norm today, I wanted to take as
+        broad an interpretation of a domain as I could. SO:
+        seperated by a word boundary
+        the lower domains can be a max of 190 characters, not including dots
+        any valid domain character is allowed (alpha, digit, dash)
+        the top level domain can be up to 63 characters, and not contain numbers
+        With a 200 character limit to the lower domains, technically an 11th level domain
+        would not be obfuscated. As for right now, I'm OK with that. Please file an issue
+        in Github if you are not.
+        Summary:
+        Valid domain is defined as
+        <word><Up to 200 chars of alpha, digit, dash, and dot>.<Up to 63 chars of alpha></word>
+        """
+        domain_depth = len(domainname)
+        # The first clause checks for potential domains that are 3rd level
+        # domains or higher. If the base domain (everything except the
+        # first octet) is already in the database, it adds the host. If
+        # the root domain is in the database, but this is a new higher-
+        # level domain, it adds the higher-level domain to the database
+        # before moving forward with obfuscating the full hostname.
+        found_domain = False
+        if domain_depth > 2:
+            # everything after the hostname is the domain we need to check
+            root_domain = '.'.join(domainname[1:domain_depth])
+            # We try a straigh match first
+            o_domain = self.dn_db.get(root_domain)
+            if o_domain:
+                found_domain = True
+            # If we don't get a straight match, then we look to see if
+            # it is a subdomain of an already obfuscated domain.
+            else:
+                add_domain = False
+                for known_domain in self.dn_db.keys():
+                    if known_domain in domainname:
+                        add_domain = True
+                if add_domain:
+                    self.logger.debug("Found new subdomain of %s - %$s", known_domain, domainname)
+                    o_domain = self._dn2db(domainname)
+                    found_domain = True
+
+        elif domain_depth == 2:
+            o_domain = self.dn_db.get(domainname)
+            if o_domain:
+                self.logger.debug("Domain found in domain database - %s", domainname)
+                found_domain = True
+
+        return found_domain
+
     def _sub_hostname(self, line):
         """Replaces the exact hostname and all instances of the domain name with
         their obfuscated alternatives. Also handles auto-creation of subdomains
@@ -608,67 +662,20 @@ class SOSCleaner:
         access.redhat.com and registry.redhat.com will both be obfuscated as
         unique domain entries.
         """
-        # Logic behind this definition of a valid domain:
-        # A domain can be a total of 253 characters, per RFC 1035, RFC 1123 and RFC 2181
-        # Each label can be a maximum of 63 characters
-        # With 4th, 5th, 6th level domains being more the norm today, I wanted to take as
-        # broad an interpretation of a domain as I could. SO:
-        # seperated by a word boundary
-        # the lower domains can be a max of 190 characters, not including dots
-        # any valid domain character is allowed (alpha, digit, dash)
-        # the top level domain can be up to 63 characters, and not contain numbers
-        # With a 200 character limit to the lower domains, technically an 11th level domain
-        # would not be obfuscated. As for right now, I'm OK with that. Please file an issue
-        # in Github if you are not.
-        # Summary:
-        # Valid domain is defined as
-        # <word><Up to 200 chars of alpha, digit, dash, and dot>.<Up to 63 chars of alpha></word>
-        # - jduncan
         self.logger.debug("Processing Line - %s", line)
-
-        potential_domains = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
+        potential_hostnames = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
         try:
-            for domain in potential_domains:
-                self.logger.debug("Verifying potential hostname - %s", domain)
-                split_domain = domain.split('.')
-                domain_depth = len(split_domain)
-                # The first clause checks for potential domains that are 3rd level
-                # domains or higher. If the base domain (everything except the
-                # first octet) is already in the database, it adds the host. If
-                # the root domain is in the database, but this is a new higher-
-                # level domain, it adds the higher-level domain to the database
-                # before moving forward.
-                if domain_depth > 2:
-                    # everything after the hostname is the domain we need to check
-                    domainname = '.'.join(split_domain[1:domain_depth])
-                    # We try a straigh match first
-                    o_domain = self.dn_db.get(domainname)
-                    # If we don't get a straight match, then we look to see if
-                    # it is a subdomain of an already obfuscated domain.
-                    if o_domain is None:
-                        for known_domain in self.dn_db.keys():
-                            # If the domaininame is part of a known domain, we
-                            # need to add a new obfuscated domain to account for
-                            # the new subdomain we just found.
-                            if known_domain in domainname and len(domainname) > len(known_domain):
-                                self.logger.debug("Found new subdomain of %s - %$s", known_domain, domainname)
-                                o_domain = self._dn2db(domainname)
-                    # Finally, we calculate the new obfuscated hostname
-                    # its newly obfuscated domain should be in the dn_db at this
-                    # point for the match to be clean
-                    o_host = self._hn2db(domain)
-                    line = re.sub(r'\b%s\b' % domain, o_host, line)
-                # The second clause checks for second-level domains. This is the
-                # highest order we will check for, as top-level domains would be
-                # a single word, and that would make no sense. We won't add any
-                # additional 2nd level domains because they could be just about
-                # anything. False positives would be 100's or 1000's per report
-                elif domain_depth == 2:
-                    o_domain = self.dn_db.get(domain)
-                    if o_domain is not None:
-                        self.logger.debug("Domain found in domain database, obfuscating host - %s", domain)
-                        o_host = self._dn2db(domain)
-                        line = re.sub(r'\b%s\b' % domain, o_host, line)
+            for hostname in potential_hostnames:
+                self.logger.debug("Verifying potential hostname - %s", hostname)
+                domainname = hostname.split('.')
+                domain_found = self._validate_domainname(domainname)
+
+                # If we have a potential match that is a host on a domain that
+                # we care about, we regex it out of the line.
+                if domain_found:
+                    o_hostname = self._hn2db(hostname)
+                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
+
             # Now that the hard work is done, we account for the handful of
             # single-word "short domains" that we care about. We start with
             # the hostname.
