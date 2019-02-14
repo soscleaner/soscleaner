@@ -554,14 +554,14 @@ class SOSCleaner:
                     self.hn_db[host] = o_host
                 elif len(split_host) == 2:  # we have a root domain, a la example.com
                     o_host = self._dn2db(host)
-                    self.hn_db[host] = o_host
                 else:  # a 3rd level domain or higher
                     domain = '.'.join(split_host[1:])
                     o_domain = self._dn2db(domain)
                     o_host = "host%s.%s" % (self.hostname_count, o_domain)
                     self.hn_db[host] = o_host
 
-            return o_host
+            if o_host is not None:
+                return o_host
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
@@ -689,7 +689,8 @@ class SOSCleaner:
             # database. They won't match the potential_domains regex because
             # they're only 1 word, so we handle them here.
             for domain in self.short_domains:
-                line = re.sub(r'\b%s\b' % domain, self._dn2db(domain), line)
+                o_host = self._hn2db(domain)
+                line = re.sub(r'\b%s\b' % domain, o_host, line)
 
             return line
 
@@ -879,32 +880,25 @@ class SOSCleaner:
     #   Domain Functions   #
     ########################
 
-    def _dn2db(self, domain):
+    def _dn2db(self, domain, add_domain=False):
         """Adds a domain to dn_db and returns the obfuscated value."""
         try:
             o_domain = self.dn_db.get(domain)
             if o_domain is None:
-                self.domain_count += 1
-                o_domain = "ofuscateddomain%s.com" % self.domain_count
-                self.dn_db[domain] = o_domain
-                self.logger.con_out("Adding new obfuscated domain - %s > %s", domain, o_domain)
+                if add_domain:
+                    self.domain_count += 1
+                    o_domain = "ofuscateddomain%s.com" % self.domain_count
+                    self.dn_db[domain] = o_domain
+                    self.logger.con_out("Adding new obfuscated domain - %s > %s", domain, o_domain)
 
-            return o_domain
+            if o_domain:
+                return o_domain
+            else:
+                return None
 
         except Exception, e:
             self.logger.exception(e)
             raise Exception("DN2DB_ERROR: Unable to retrieve obfuscated domain - %s", domain)
-
-    def _get_obfuscated_domain(self, dom):
-        """Returns the obfuscated domain value for a domain in the domain database"""
-        try:
-            o_domain = self.dn_db.get(dom)
-            if o_domain is not None:
-                return o_domain
-
-        except Exception, e:
-            self.logger.exception(e)
-            raise Exception("GET_OBFUSCATED_DOMAIN_ERROR: Unable to retrieve obfuscated domain - %s", o_domain)
 
     def _domains2db(self):
         """Adds domains to the domain database"""
@@ -912,24 +906,13 @@ class SOSCleaner:
             # First we'll grab the domain for the sosreport and obfuscate it to the base root_domain
             # value, which defaults to "obfuscateddomain.com"
             if self.domainname is not None:
-                self.dn_db[self.domainname] = self.root_domain
-                self.logger.con_out("Obfuscated Domain Created - %s > %s", self.domainname, self.root_domain)
-                self.domain_count += 1
+                self._dn2db(self.domainname, add_domain=True)
 
-            split_root_domain = self.root_domain.split('.')
             for dom in self.domains:
-                if dom not in self.dn_db.keys():  # no duplicates
-                    self.domain_count += 1
-                    obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
-                    self.dn_db[dom] = obfuscated_domain
-                    self.logger.con_out("Obfuscated Domain Created - %s > %s", dom, obfuscated_domain)
+                self._dn2db(dom, add_domain=True)
 
             for dom in self.short_domains:
-                if dom not in self.dn_db.keys():  # no duplicates
-                    self.domain_count += 1
-                    obfuscated_domain = "%s%s.%s" % (split_root_domain[0], self.domain_count, split_root_domain[1])
-                    self.dn_db[dom] = obfuscated_domain
-                    self.logger.con_out("Obfuscated Domain Created - %s > %s", dom, obfuscated_domain)
+                self._dn2db(dom, add_domain=True)
 
             return True
 
