@@ -620,6 +620,17 @@ class SOSCleaner:
         Valid domain is defined as
         <word><Up to 200 chars of alpha, digit, dash, and dot>.<Up to 63 chars of alpha></word>
         """
+        def _eval_domains(root_domain):
+            """Looks for matches of higher-level domains against the existing
+            domains in self.dn_db. Returns True if it's a match, and false if
+            no match is found. This is used to determine if we should add a new
+            subdomain to self.dn_db.
+            """
+            for known_domain in self.dn_db.keys():
+                if known_domain in root_domain:
+                    return True
+            return False
+
         domainname = hostname.split('.')
         domain_depth = len(domainname)
         # The first clause checks for potential domains that are 3rd level
@@ -633,18 +644,15 @@ class SOSCleaner:
             # everything after the hostname is the domain we need to check
             root_domain = '.'.join(domainname[1:domain_depth])
             # We try a straigh match first
-            o_domain = self.dn_db.get(root_domain)
-            if o_domain:
+            o_domain = self._dn2db(root_domain)
+            if o_domain is not None:  # we got a straight match
                 found_domain = True
             # If we don't get a straight match, then we look to see if
             # it is a subdomain of an already obfuscated domain.
             else:
-                add_domain = False
-                for known_domain in self.dn_db.keys():
-                    if known_domain in domainname:
-                        add_domain = True
+                add_domain = _eval_domains(root_domain)
                 if add_domain:
-                    self.logger.debug("Found new subdomain of %s - %$s", known_domain, domainname)
+                    self.logger.debug("Found new subdomain of %s - %$s", root_domain, domainname)
                     o_domain = self._dn2db(domainname)
                     found_domain = True
 
