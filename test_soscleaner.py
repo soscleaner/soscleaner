@@ -358,8 +358,8 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('george' in self.cleaner.user_db.keys())
 
     def test41_process_users_file(self):
-        users_file = 'testdata/userfile1'
-        self.cleaner._process_users_file(users_file=users_file)
+        self.users_file = 'testdata/userfile1'
+        self.cleaner._process_users_file()
         self.assertTrue('bob' in self.cleaner.user_db.keys())
         self.assertTrue('sam' in self.cleaner.user_db.keys())
         self.assertTrue('george' in self.cleaner.user_db.keys())
