@@ -33,6 +33,7 @@ import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
+import platform
 
 
 class SOSCleaner:
@@ -50,7 +51,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.88'
+        self.version = '0.3.89'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -82,11 +83,25 @@ class SOSCleaner:
         self.kw_db = dict()  # keyword database
         self.kw_count = 0
 
-        # obfuscating users from the last command, per rfe #67
+        # obfuscating users from the last command, per rfe #79
         self.users_file = 'sos_commands/last/last'
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
+        self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
+
+    def _get_linux_distro(self):
+        """There are some issues with the python-magic library, and we're adding
+        this in as a stopgap to have soscleaner cleanly function on RHEL and CentOS
+        without needing to alter the source code. Will Fix #79
+        """
+
+        try:
+            return platform.dist()
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception("GET_LINUX_DISTRO_ERROR")
 
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
@@ -135,11 +150,18 @@ class SOSCleaner:
                     # i thought i'd already removed it. - jduncan
                     # if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
-                    mode = os.stat(f_full).st_mode
-                    if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
-                        skip_list.append(f)
-                    elif 'text' not in magic.from_file(f_full):
-                        skip_list.append(f)
+                    if self.os_distro == 'centos':
+                        mode = os.stat(f_full).st_mode
+                        if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                            skip_list.append(f)
+                        elif 'text' not in magic.from_file(f_full):
+                            skip_list.append(f)
+                    else:  # works with RHEL or Fedora #79
+                        mode = os.stat(f_full).st_mode
+                        if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                            skip_list.append(f)
+                        elif 'text' not in magic.detect_from_filename(f_full):
+                            skip_list.append(f)
 
         return skip_list
 
@@ -205,8 +227,11 @@ class SOSCleaner:
                 return path
             else:
                 try:
-                    compression_sig = magic.from_file(path)
-                    if compression_sig.lower() == 'xz compressed data':
+                    if self.os_distro == 'centos':
+                        compression_sig = magic.from_file(path).lower()
+                    else:  # works with Fedora and RHEL #79
+                        compression_sig = magic.detect_from_filename(path).lower()
+                    if compression_sig == 'xz compressed data':
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
                             self.logger.info('LZMA Hack - Creating %s', self.origin_path)
@@ -311,7 +336,7 @@ class SOSCleaner:
     def _process_users_file(self):
         """Uses the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
         By default it looks for the last file from an sosreport. But it can process any line-delimited list of users
-        From RFE #67
+        From RFE #79
         """
 
         ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
