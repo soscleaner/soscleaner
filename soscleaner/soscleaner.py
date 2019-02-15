@@ -660,7 +660,7 @@ class SOSCleaner:
                     found_domain = True
 
         elif domain_depth == 2:
-            o_domain = self.dn_db.get(root_domain)
+            o_domain = self.dn_db.get(hostname)
             if o_domain:
                 self.logger.debug("Domain found in domain database - %s", domainname)
                 found_domain = True
