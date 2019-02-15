@@ -83,6 +83,7 @@ class SOSCleaner:
         self.kw_count = 0
 
         # obfuscating users from the last command, per rfe #67
+        self.users_file = os.path.join(self.dir_path, 'sos_commands/last/last')
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
@@ -307,7 +308,7 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("USER_TO_DB_ERROR: unable to add user %s to database", username)
 
-    def _process_users_file(self, users_file='sos_commands/last/last'):
+    def _process_users_file(self):
         """Uses the 'last' output from an sosreport and generate a list of usernames to obfuscate in log files, etc.
         By default it looks for the last file from an sosreport. But it can process any line-delimited list of users
         From RFE #67
@@ -316,37 +317,34 @@ class SOSCleaner:
         ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
-        if users_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
-            users_file = os.path.join(self.origin_path, 'sos_commands/last/last')  # pragma: no cover
-
-        if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
-            self.logger.con_out("Processing output from user file - %s", users_file)
-
-        else:  # pragma: no cover
-            self.logger.info("Unable to locate user file - %s", users_file)
-            self.logger.info("Continuing without default users file")
-            pass
-
         try:
-            data = self._extract_file_data(users_file)
-            sorted_users = list()
+            if os.path.exists(self.users_file):  # check to make sure users_file is there and we can access it
+                self.logger.con_out("Processing output from user file - %s", self.users_file)
+                data = self._extract_file_data(self.users_file)
+                sorted_users = list()
 
-            # first, we get out the unique user entries
-            for line in data:
-                if len(line) > 1:  # there are some blank lines at the end of the last ouput
-                    sorted_users.append(line.split()[0])
+                # first, we get out the unique user entries
+                for line in data:
+                    if len(line) > 1:  # there are some blank lines at the end of the last ouput
+                        sorted_users.append(line.split()[0])
 
-            # then we add them to the obfuscation database
-            for user in sorted_users:
-                if user not in ignored_users:
-                    self.logger.debug("Obfuscating user %s", user)
-                    self._user2db(user)
+                # then we add them to the obfuscation database
+                for user in sorted_users:
+                    if user not in ignored_users:
+                        self.logger.debug("Obfuscating user %s", user)
+                        self._user2db(user)
 
-            return True
+                return True
+
+            else:
+                self.logger.info("Unable to locate user file - %s", self.users_file)
+                self.logger.info("Continuing without processing users file")
+
+                return True
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
-            raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", users_file)
+            raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", self.users_file)
 
     ################################
     #   IP Obfuscation Functions   #
@@ -1247,8 +1245,7 @@ class SOSCleaner:
         if options.users:  # users from the command line with the -u option
             self._process_user_option(options.users)
         if options.users_file:
-            self._process_users_file(users_file=options.users_file)
-        else:
+            self.users_file = options.users_file
             self._process_users_file()
         self.report_dir = options.report_dir
         if not sosreport:
@@ -1269,7 +1266,6 @@ class SOSCleaner:
             self._process_route_file()
             if options.files:
                 self._add_extra_files(options.files)
-
             if self.hostname:   # if we have a hostname that's not a None type
                 self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
 
