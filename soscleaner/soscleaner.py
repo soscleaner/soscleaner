@@ -320,7 +320,7 @@ class SOSCleaner:
             users_file = os.path.join(self.report_dir, 'sos_commands/last/last')  # pragma: no cover
 
         if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
-            self.logger.debug("Processing output from user file - %s", users_file)
+            self.logger.con_out("Processing output from user file - %s", users_file)
 
         else:  # pragma: no cover
             self.logger.info("Unable to locate user file - %s", users_file)
@@ -1246,8 +1246,7 @@ class SOSCleaner:
             self._keywords2db()
         if options.users:  # users from the command line with the -u option
             self._process_user_option(options.users)
-        if options.users_file:  # users form a line-delimited file with the -U options
-            self._process_users_file(users_file=options.users_file)
+        self._process_users_file(users_file=options.users_file)
         self.report_dir = options.report_dir
         if not sosreport:
             if not options.files:
@@ -1283,6 +1282,7 @@ class SOSCleaner:
         self.logger.con_out("IP Addresses Obfuscated - %s", len(self.ip_db))
         self.logger.con_out("Hostnames Obfuscated - %s", len(self.hn_db))
         self.logger.con_out("Domains Obfuscated - %s", len(self.dn_db))
+        self.logger.con_out("Users Obfuscated - %s", self.user_count)
         self.logger.con_out("Total Files Analyzed - %s", self.file_count)
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
