@@ -343,10 +343,10 @@ class SOSCleaner:
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
         try:
-            self.users_file = os.path.join(self.dir_path, self.users_file)
-            if os.path.exists(self.users_file):  # check to make sure users_file is there and we can access it
-                self.logger.con_out("Processing output from user file - %s", self.users_file)
-                data = self._extract_file_data(self.users_file)
+            users_file = os.path.join(self.dir_path, self.users_file)
+            if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
+                self.logger.con_out("Processing output from user file - %s", users_file)
+                data = self._extract_file_data(users_file)
                 sorted_users = list()
 
                 # first, we get out the unique user entries
@@ -357,7 +357,7 @@ class SOSCleaner:
                 # then we add them to the obfuscation database
                 for user in sorted_users:
                     if user not in ignored_users:
-                        self.logger.debug("Obfuscating user %s", user)
+                        self.logger.con_out("Obfuscating user %s", user)
                         self._user2db(user)
 
                 return True
