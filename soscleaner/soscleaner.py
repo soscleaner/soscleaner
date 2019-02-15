@@ -83,7 +83,7 @@ class SOSCleaner:
         self.kw_count = 0
 
         # obfuscating users from the last command, per rfe #67
-        self.users_file = os.path.join(self.dir_path, 'sos_commands/last/last')
+        self.users_file = 'sos_commands/last/last'
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
@@ -318,6 +318,7 @@ class SOSCleaner:
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
         try:
+            self.users_file = os.path.join(self.dir_path, self.users_file)
             if os.path.exists(self.users_file):  # check to make sure users_file is there and we can access it
                 self.logger.con_out("Processing output from user file - %s", self.users_file)
                 data = self._extract_file_data(self.users_file)
