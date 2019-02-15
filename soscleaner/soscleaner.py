@@ -1246,7 +1246,10 @@ class SOSCleaner:
             self._keywords2db()
         if options.users:  # users from the command line with the -u option
             self._process_user_option(options.users)
-        self._process_users_file(users_file=options.users_file)
+        if options.users_file:
+            self._process_users_file(users_file=options.users_file)
+        else:
+            self._process_users_file()
         self.report_dir = options.report_dir
         if not sosreport:
             if not options.files:
