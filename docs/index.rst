@@ -3,20 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+===========
 SOSCleaner
-======================================
-
-We're just getting started with some better documentation for soscleaner. This will be good to go
-by the time the 0.4.0 release is out the door. Feel free to help!
-
-Function docstrings
-==========
+===========
 
 .. toctree::
-   :maxdepth: 5
-   :caption: Contents:
+   :numbered:
+   :Caption: Index
+   :name: mastertoc
 
-.. autoclass:: soscleaner.SOSCleaner
-    :members:
-    :special-members:
-    :private-members:
+   intro
+   network-obfuscation
+   docstrings
+   contributing
+   license
