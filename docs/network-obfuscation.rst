@@ -2,19 +2,29 @@
 Network Obfuscation Information
 ===============================
 
-Beginning with version 0.3.0, soscleaner will use the ipaddr module to manage network objects and their obfuscation
+Network Obfuscation Overview
+-----------------------------
+
+Beginning with version 0.3.0, soscleaner uses the ipaddr module to manage network objects and their obfuscation
 This will let the program be much more intelligent with how it obfuscates the data while being network away, etc.
 
-Each entry in net_db represents a network and its obfuscated value
-net_db is a list of tuples. Each tuple has the following format:
+IPv4 Network database
+----------------------
 
-(original_network, obfuscated_network)
-so for each entry in net_db, x[0] is the original network as an IPv4Network object
-and x[1] is the obfuscated network as an IPv4Network object.
+Each entry in ``self.net_db`` represents a network and its obfuscated value. ``self.net_db`` is a list of tuples. Each tuple has the following format::
 
-Each entry in ip_db represents a found IP address and its obfuscated value
+    (original_network, obfuscated_network)
 
-When self.clean_report is run, it will populate net_db.
+For each entry in ``self.net_db``, ``x[0]`` is the original network as an ``ipaddr.IPv4Network`` object
+and ``x[1]`` is the obfuscated network as an ``ipaddr.IPv4Network`` object.
+
+IPv4 database
+--------------
+
+Each entry in ``self.ip_db`` represents a found IP address and its obfuscated value
+
+When ``self.clean_report is run``, it populates ``self.net_db`` with the networks found in an sosreports routing table as well as with any networks specified using the ``-n`` command line parameter.
+
 Each time an IP is matched against, it will be compared against the values in net_db to see which network it is member to.
 The IP is then obfuscated sanely with fidelity to the subnet and relative network space.
 
