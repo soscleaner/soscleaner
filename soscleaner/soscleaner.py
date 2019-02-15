@@ -184,7 +184,7 @@ class SOSCleaner:
 
         # we set up our various needed directory structures, etc.
         ran_uuid = str(uuid.uuid4().int)[:16]                                                 # 16 digit random string
-        origin_path = os.path.join(self.report_dir, "soscleaner-origin-%s" % ran_uuid)        # the origin dir we'll copy the files into
+        origin_path = os.path.join(self.report_dir, "soscleaner-origin-%s" % ran_uuid)        # the origin dir we'll copy the files from
         dir_path = os.path.join(self.report_dir, "soscleaner-%s" % ran_uuid)                  # the dir we will put our cleaned files into
         session = os.path.join(self.report_dir, "soscleaner-%s" % ran_uuid)                   # short-hand for the soscleaner session to create reports, etc.
         logfile = os.path.join(self.report_dir, "%s.log" % session)                           # the primary logfile
@@ -317,7 +317,7 @@ class SOSCleaner:
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
         if users_file == 'sos_commands/last/last':   # we are using the default value for processing the 'last' file
-            users_file = os.path.join(self.report_dir, 'sos_commands/last/last')  # pragma: no cover
+            users_file = os.path.join(self.origin_path, 'sos_commands/last/last')  # pragma: no cover
 
         if os.path.exists(users_file):  # check to make sure users_file is there and we can access it
             self.logger.con_out("Processing output from user file - %s", users_file)
