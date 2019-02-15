@@ -1246,7 +1246,6 @@ class SOSCleaner:
             self._process_user_option(options.users)
         if options.users_file:
             self.users_file = options.users_file
-            self._process_users_file()
         self.report_dir = options.report_dir
         if not sosreport:
             if not options.files:
@@ -1271,6 +1270,7 @@ class SOSCleaner:
 
         self._domains2db()
         files = self._file_list(self.dir_path)
+        self._process_users_file()
         self.logger.con_out("IP Obfuscation Network Created - %s", self.default_net.compressed)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
