@@ -7,6 +7,8 @@
 SOSCleaner
 ===========
 
+Soscleaner is an open-source tool to take an `sosreport <https://access.redhat.com/solutions/3592>`__, or any arbitrary dataset, and sanely obfuscate potentially sensitive information so it can be shared with outside parties for support. An unaltered copy of the data is maintained by the user so data can be mapped and suggestions supplied by a support team can still be actionable, even without the sensitive information.
+
 .. toctree::
    :numbered:
    :Caption: Index
