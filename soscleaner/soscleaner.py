@@ -90,8 +90,8 @@ class SOSCleaner:
         self._prime_userdb()
         self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
         if self.os_distro == 'redhat':
-            self.magic = magic.open(magic.MAGIC_NONE)
-            self.magic.load()
+            self.os_magic = magic.open(magic.MAGIC_NONE)
+            self.os_magic.load()
 
     def _get_linux_distro(self):
         """There are some issues with the python-magic library, and we're adding
