@@ -89,9 +89,9 @@ class SOSCleaner:
         self.user_count = 1
         self._prime_userdb()
         self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
-        if self.os_distro == 'redhat':
-            self.os_magic = magic.open(magic.MAGIC_NONE)
-            self.os_magic.load()
+        # if self.os_distro == 'redhat':
+        #     self.os_magic = magic.open(magic.MAGIC_NONE)
+        #     self.os_magic.load()
 
     def _get_linux_distro(self):
         """There are some issues with the python-magic library, and we're adding
@@ -156,15 +156,15 @@ class SOSCleaner:
                     mode = os.stat(f_full).st_mode
                     if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
                         skip_list.append(f)
-                    if self.os_distro in ['centos', 'ubuntu']:
+                    if self.os_distro in ['centos', 'ubuntu', 'redhat']:
                         if 'text' not in magic.from_file(f_full):
                             skip_list.append(f)
                     elif self.os_distro == 'fedora':  # works with Fedora #79
                         if 'text' not in magic.detect_from_filename(f_full):
                             skip_list.append(f)
-                    elif self.os_distro == 'redhat':
-                        if 'text' not in self.magic.file(f_full):
-                            skip_list.append(f)
+                    # elif self.os_distro == 'redhat':
+                    #     if 'text' not in self.magic.file(f_full):
+                    #         skip_list.append(f)
                     else:  # we can't figure out the linux distro for this little nightmare
                         self.logger.exception("SKIP_FILE_ERROR: Unable to manage OS Distro - %s", self.os_distro)
                         raise Exception("SKIP_FILE_ERROR: Unable to manage OS Distro - %s", self.os_distro)
@@ -233,12 +233,12 @@ class SOSCleaner:
                 return path
             else:
                 try:
-                    if self.os_distro in ['centos', 'ubuntu']:
+                    if self.os_distro in ['centos', 'ubuntu', 'redhat']:
                         compression_sig = magic.from_file(path).lower()
                     elif self.os_distro == 'fedora':  # works with Fedora and RHEL #79
                         compression_sig = magic.detect_from_filename(path).lower()
-                    elif self.os_distro == 'redhat':
-                        compression_sig = self.magic.file(path).lower()
+                    # elif self.os_distro == 'redhat':
+                    #     compression_sig = self.magic.file(path).lower()
                     else:
                         raise Exception("EXTRACT_SOSREPORT_ERROR - Cannot work with OS distro - %s", self.os_distro)
                     if compression_sig == 'xz compressed data':
