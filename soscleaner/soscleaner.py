@@ -51,7 +51,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.92'
+        self.version = '0.3.93'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
