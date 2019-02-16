@@ -51,7 +51,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.90'
+        self.version = '0.3.92'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -89,6 +89,7 @@ class SOSCleaner:
         self.user_count = 1
         self._prime_userdb()
         self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
+        self.magic = magic.Magic(magic.MAGIC_NONE)
 
     def _get_linux_distro(self):
         """There are some issues with the python-magic library, and we're adding
@@ -145,22 +146,10 @@ class SOSCleaner:
             f_full = os.path.join(d, f)
             if not os.path.isdir(f_full):
                 if not os.path.islink(f_full):
-                    # mode = oct(os.stat(f_full).st_mode)[-3:]
-                    # executing as root makes this first if clause useless.
-                    # i thought i'd already removed it. - jduncan
-                    # if mode == '200' or mode == '444' or mode == '400':
-                    #    skip_list.append(f)
-                    if self.os_distro == 'centos':
-                        mode = os.stat(f_full).st_mode
-                        if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
-                            skip_list.append(f)
-                        elif 'text' not in magic.from_file(f_full):
-                            skip_list.append(f)
-                    else:  # works with RHEL or Fedora #79
-                        mode = os.stat(f_full).st_mode
-                        if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
-                            skip_list.append(f)
-                        elif 'text' not in magic.detect_from_filename(f_full):
+                    mode = os.stat(f_full).st_mode
+                    if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                        skip_list.append(f)
+                    if 'text' not in self.magic.from_file(f_full):
                             skip_list.append(f)
 
         return skip_list
@@ -227,10 +216,7 @@ class SOSCleaner:
                 return path
             else:
                 try:
-                    if self.os_distro == 'centos':
-                        compression_sig = magic.from_file(path).lower()
-                    else:  # works with Fedora and RHEL #79
-                        compression_sig = magic.detect_from_filename(path).lower()
+                    compression_sig = self.magic.from_file(path).lower()
                     if compression_sig == 'xz compressed data':
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
