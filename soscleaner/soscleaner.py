@@ -89,6 +89,9 @@ class SOSCleaner:
         self.user_count = 1
         self._prime_userdb()
         self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
+        if self.os_distro == 'redhat':
+            self.magic = magic.open(magic.MAGIC_NONE)
+            self.magic.load()
 
     def _get_linux_distro(self):
         """There are some issues with the python-magic library, and we're adding
@@ -150,18 +153,21 @@ class SOSCleaner:
                     # i thought i'd already removed it. - jduncan
                     # if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
-                    if self.os_distro == 'centos':
-                        mode = os.stat(f_full).st_mode
-                        if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                    mode = os.stat(f_full).st_mode
+                    if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                        skip_list.append(f)
+                    if self.os_distro in ['centos', 'ubuntu']:
+                        if 'text' not in magic.from_file(f_full):
                             skip_list.append(f)
-                        elif 'text' not in magic.from_file(f_full):
+                    elif self.os_distro == 'fedora':  # works with Fedora #79
+                        if 'text' not in magic.detect_from_filename(f_full):
                             skip_list.append(f)
-                    else:  # works with RHEL or Fedora #79
-                        mode = os.stat(f_full).st_mode
-                        if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
+                    elif self.os_distro == 'redhat':
+                        if 'text' not in self.magic.file(f_full):
                             skip_list.append(f)
-                        elif 'text' not in magic.detect_from_filename(f_full):
-                            skip_list.append(f)
+                    else:  # we can't figure out the linux distro for this little nightmare
+                        self.logger.exception("SKIP_FILE_ERROR: Unable to manage OS Distro - %s", self.os_distro)
+                        raise Exception("SKIP_FILE_ERROR: Unable to manage OS Distro - %s", self.os_distro)
 
         return skip_list
 
@@ -227,10 +233,14 @@ class SOSCleaner:
                 return path
             else:
                 try:
-                    if self.os_distro == 'centos':
+                    if self.os_distro in ['centos', 'ubuntu']:
                         compression_sig = magic.from_file(path).lower()
-                    else:  # works with Fedora and RHEL #79
+                    elif self.os_distro == 'fedora':  # works with Fedora and RHEL #79
                         compression_sig = magic.detect_from_filename(path).lower()
+                    elif self.os_distro == 'redhat':
+                        compression_sig = self.magic.file(path).lower()
+                    else:
+                        raise Exception("EXTRACT_SOSREPORT_ERROR - Cannot work with OS distro - %s", self.os_distro)
                     if compression_sig == 'xz compressed data':
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
