@@ -163,7 +163,7 @@ class SOSCleaner:
                         if 'text' not in magic.detect_from_filename(f_full):
                             skip_list.append(f)
                     elif self.os_distro == 'centos':
-                        if 'text' not in self.magic.file(f_full):
+                        if 'text' not in self.os_magic.file(f_full):
                             skip_list.append(f)
                     else:  # we can't figure out the linux distro for this little nightmare
                         self.logger.exception("SKIP_FILE_ERROR: Unable to manage OS Distro - %s", self.os_distro)
@@ -238,7 +238,7 @@ class SOSCleaner:
                     elif self.os_distro == 'fedora':  # works with Fedora and RHEL #79
                         compression_sig = magic.detect_from_filename(path).lower()
                     elif self.os_distro == 'centos':
-                        compression_sig = self.magic.file(path).lower()
+                        compression_sig = self.os_magic.file(path).lower()
                     else:
                         raise Exception("EXTRACT_SOSREPORT_ERROR - Cannot work with OS distro - %s", self.os_distro)
                     if compression_sig == 'xz compressed data':
