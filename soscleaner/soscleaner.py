@@ -156,7 +156,7 @@ class SOSCleaner:
                     mode = os.stat(f_full).st_mode
                     if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
                         skip_list.append(f)
-                    if self.os_distro in ['ubuntu', 'redhat']:
+                    if self.os_distro in ['debian', 'redhat']:
                         if 'text' not in magic.from_file(f_full):
                             skip_list.append(f)
                     elif self.os_distro == 'fedora':  # works with Fedora #79
@@ -233,7 +233,7 @@ class SOSCleaner:
                 return path
             else:
                 try:
-                    if self.os_distro in ['ubuntu', 'redhat']:
+                    if self.os_distro in ['debian', 'redhat']:
                         compression_sig = magic.from_file(path).lower()
                     elif self.os_distro == 'fedora':  # works with Fedora and RHEL #79
                         compression_sig = magic.detect_from_filename(path).lower()
