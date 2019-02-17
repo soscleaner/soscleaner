@@ -1,8 +1,8 @@
 ---
-name: Hostname Obfuscation Bug
+name: Username obfuscation bug
 about: Create a report to help us improve
-title: "[bug][hostnames]"
-labels: Obfuscation Engine, host and domain obfuscation
+title: "[BUG][users]"
+labels: Exception Engine, username obfuscation
 assignees: ''
 
 ---
