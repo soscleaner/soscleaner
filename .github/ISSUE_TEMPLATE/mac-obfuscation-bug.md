@@ -1,8 +1,8 @@
 ---
-name: Hostname Obfuscation Bug
+name: MAC obfuscation bug
 about: Create a report to help us improve
-title: "[bug][hostnames]"
-labels: Obfuscation Engine, host and domain obfuscation
+title: "[BUG][mac]"
+labels: MAC obfuscation, Obfuscation Engine
 assignees: ''
 
 ---
