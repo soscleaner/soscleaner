@@ -720,7 +720,7 @@ class SOSCleaner:
         try:
             for hostname in potential_hostnames:
                 self.logger.debug("Verifying potential hostname - %s", hostname)
-                domain_found = self._validate_domainname(hostname)
+                domain_found = self._validate_domainname(hostname.lower())
 
                 # If we have a potential match that is a host on a domain that
                 # we care about, we regex it out of the line.
@@ -738,7 +738,7 @@ class SOSCleaner:
             # There are a handful of short domains that we want to obfuscate
             # Things like 'localhost' and 'localdomain'
             # They are kept in self.short_domains and added to the domain
-            # database. They won't match the potential_domains regex because
+            # database. They won't match the potential_hostnames regex because
             # they're only 1 word, so we handle them here.
             for domain in self.short_domains:
                 o_host = self._hn2db(domain)
@@ -935,7 +935,7 @@ class SOSCleaner:
     def _dn2db(self, domain, add_domain=False):
         """Adds a domain to dn_db and returns the obfuscated value."""
         try:
-            o_domain = self.dn_db.get(domain).lower()
+            o_domain = self.dn_db.get(domain)
             if o_domain is None:
                 # Try converting it all to lowercase
                 if add_domain:
