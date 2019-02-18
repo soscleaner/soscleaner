@@ -7,10 +7,10 @@ Release: 1%{dist}
 Source0: https://github.com/jduncan-rva/%{srcname}/archive/v%{version}.tar.gz
 License: GPLv2
 BuildArch: noarch
-Requires: python-magic
+Requires: file
 Requires: python-ipaddr
 BuildRequires: python-setuptools
-BuildRequires: python-magic
+BuildRequires: file
 BuildRequires: python-ipaddr
 Url: https://github.com/jduncan-rva/SOSCleaner
 
