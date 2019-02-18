@@ -719,8 +719,9 @@ class SOSCleaner:
         potential_hostnames = re.findall(r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
         try:
             for hostname in potential_hostnames:
+                hostname = hostname.lower()
                 self.logger.debug("Verifying potential hostname - %s", hostname)
-                domain_found = self._validate_domainname(hostname.lower())
+                domain_found = self._validate_domainname(hostname)
 
                 # If we have a potential match that is a host on a domain that
                 # we care about, we regex it out of the line.
