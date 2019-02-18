@@ -499,3 +499,4 @@ class SOSCleanerTests(unittest.TestCase):
         test_line = "some log file with bob@EXAMPLE.COM in it"
         new_line = self.cleaner._clean_line(test_line, 'foo_file')
         self.assertFalse('EXAMPLE.COM' in new_line)
+        self.assertTrue(self.cleaner._dn2db('example.com') in new_line)
