@@ -935,8 +935,9 @@ class SOSCleaner:
     def _dn2db(self, domain, add_domain=False):
         """Adds a domain to dn_db and returns the obfuscated value."""
         try:
-            o_domain = self.dn_db.get(domain)
+            o_domain = self.dn_db.get(domain).lower()
             if o_domain is None:
+                # Try converting it all to lowercase
                 if add_domain:
                     self.domain_count += 1
                     o_domain = "ofuscateddomain%s.com" % self.domain_count
