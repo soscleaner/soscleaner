@@ -726,7 +726,7 @@ class SOSCleaner:
                 # we care about, we regex it out of the line.
                 if domain_found:
                     o_hostname = self._hn2db(hostname)
-                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
+                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line, flags=re.IGNORECASE)
 
             # Now that the hard work is done, we account for the handful of
             # single-word "short domains" that we care about. We start with
@@ -742,7 +742,7 @@ class SOSCleaner:
             # they're only 1 word, so we handle them here.
             for domain in self.short_domains:
                 o_host = self._hn2db(domain)
-                line = re.sub(r'\b%s\b' % domain, o_host, line)
+                line = re.sub(r'\b%s\b' % domain, o_host, line, flags=re.IGNORECASE)
 
             return line
 
