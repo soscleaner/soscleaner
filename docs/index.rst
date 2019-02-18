@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. sectionauthor:: Jamie Duncan <jamie.e.duncan@gmail.com>
+
 ===========
 SOSCleaner
 ===========
@@ -17,6 +19,10 @@ Soscleaner is an open-source tool to take an `sosreport <https://access.redhat.c
 
    intro
    network-obfuscation
-   docstrings
+   hostname-obfuscation
+   mac-address-obfuscation
+   keyword-obfuscation
+   user-obfuscation
    contributing
+   docstrings
    license

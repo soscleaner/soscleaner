@@ -417,6 +417,27 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception('CREATE_MAC_REPORT_ERROR: Unable to create report - %s', mac_report_name)
 
+    def _create_kw_report(self):
+        """Creates a report of keywords and their obfuscated counterparts"""
+        try:
+            kw_report_name = os.path.join(self.report_dir, "%s-kw.csv" % self.session)
+            self.logger.con_out('Creating keyword address Report - %s', kw_report_name)
+            kw_report = open(kw_report_name, 'w')
+            kw_report.write('Original Keyword,Obfuscated Keyword\n')
+            if len(self.kw_db) > 0:
+                for k, v in self.kw_db.items():
+                    kw_report.write('%s,%s\n' % (k, v))
+            else:
+                kw_report.write('None,None\n')
+            kw_report.close()
+            self.logger.info('Completed Keyword Report')
+
+            self.kw_report = kw_report_name
+
+        except Exception, e:
+            self.logger.exception(e)
+            raise Exception('CREATE_KW_REPORT_ERROR: unable to create report - $%s', kw_report_name)
+
     def _create_un_report(self):
         """Creates a report of usernames and their obfuscated counterparts"""
         try:
