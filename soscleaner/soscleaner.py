@@ -89,7 +89,6 @@ class SOSCleaner:
         self.user_count = 1
         self._prime_userdb()
         self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
-        self.magic = magic.Magic(magic.MAGIC_NONE)
 
     def _get_linux_distro(self):
         """There are some issues with the python-magic library, and we're adding
@@ -141,6 +140,21 @@ class SOSCleaner:
         Binaries (can't scan them)
         Sockets and FIFO files. Scanning them locks up the copying.
         """
+        def confirm_text_file(filename):
+            """I know this is an epic hack, but I've seen a _ton_ of inconsistency around different
+            distribution's builds of python-magic. Until it stabilizes, I'm just going to hack around it.
+            """
+            try:
+                command = "file %s" % filename
+                filetype = os.popen(command).read().strip('\n').split(':')[1].strip().lower()
+                if 'text' in filetype:
+                    return True
+                else:
+                    return False
+            except Exception, e:  # pragma: no cover
+                self.logger.exception(e)
+                raise Exception("CONFIRM_TEXT_FILE_ERROR - Cannot confirm file type - %s", filename)
+
         skip_list = []
         for f in files:
             f_full = os.path.join(d, f)
@@ -149,7 +163,7 @@ class SOSCleaner:
                     mode = os.stat(f_full).st_mode
                     if stat.S_ISSOCK(mode) or stat.S_ISFIFO(mode):
                         skip_list.append(f)
-                    if 'text' not in self.magic.from_file(f_full):
+                    if not confirm_text_file(f_full):  # if it's not a text file
                             skip_list.append(f)
 
         return skip_list
@@ -207,6 +221,15 @@ class SOSCleaner:
         """Extracts an sosreport, accounting for all common compression algorithms
         as well as working with uncompressed directories and single files.
         """
+        def get_compression_sig(filename):
+            try:
+                """I know this is an epic hack, but I've seen a _ton_ of inconsistency around different
+                distribution's builds of python-magic. Until it stabilizes, I'm just going to hack around it.
+                """
+                command = "file %s" % filename
+                compression_type = os.popen(command).read().strip('\n').split(':')[1].strip().lower()
+                return compression_type
+
         try:
             self.logger.con_out("Beginning SOSReport Extraction")
             if os.path.isdir(path):
