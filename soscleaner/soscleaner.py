@@ -32,8 +32,6 @@ import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
-import platform
-
 
 class SOSCleaner:
     """
@@ -735,7 +733,7 @@ class SOSCleaner:
             # the hostname.
             if self.hostname is not None:
                 o_host = self._hn2db(self.hostname)
-                line = re.sub(r'\b%s\b' % self.hostname, o_host, line)
+                line = re.sub(r'\b%s\b' % self.hostname, o_host, line, flags=re.IGNORECASE)
 
             # There are a handful of short domains that we want to obfuscate
             # Things like 'localhost' and 'localdomain'
