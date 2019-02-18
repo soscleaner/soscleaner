@@ -32,8 +32,6 @@ import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
-import platform
-
 
 class SOSCleaner:
     """
@@ -50,7 +48,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.94'
+        self.version = '0.3.95'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -722,29 +720,29 @@ class SOSCleaner:
         try:
             for hostname in potential_hostnames:
                 self.logger.debug("Verifying potential hostname - %s", hostname)
-                domain_found = self._validate_domainname(hostname)
+                domain_found = self._validate_domainname(hostname.lower())
 
                 # If we have a potential match that is a host on a domain that
                 # we care about, we regex it out of the line.
                 if domain_found:
                     o_hostname = self._hn2db(hostname)
-                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line)
+                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line, flags=re.IGNORECASE)
 
             # Now that the hard work is done, we account for the handful of
             # single-word "short domains" that we care about. We start with
             # the hostname.
             if self.hostname is not None:
                 o_host = self._hn2db(self.hostname)
-                line = re.sub(r'\b%s\b' % self.hostname, o_host, line)
+                line = re.sub(r'\b%s\b' % self.hostname, o_host, line, flags=re.IGNORECASE)
 
             # There are a handful of short domains that we want to obfuscate
             # Things like 'localhost' and 'localdomain'
             # They are kept in self.short_domains and added to the domain
-            # database. They won't match the potential_domains regex because
+            # database. They won't match the potential_hostnames regex because
             # they're only 1 word, so we handle them here.
             for domain in self.short_domains:
                 o_host = self._hn2db(domain)
-                line = re.sub(r'\b%s\b' % domain, o_host, line)
+                line = re.sub(r'\b%s\b' % domain, o_host, line, flags=re.IGNORECASE)
 
             return line
 
@@ -939,6 +937,7 @@ class SOSCleaner:
         try:
             o_domain = self.dn_db.get(domain)
             if o_domain is None:
+                # Try converting it all to lowercase
                 if add_domain:
                     self.domain_count += 1
                     o_domain = "ofuscateddomain%s.com" % self.domain_count

@@ -491,3 +491,12 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('search' in o_hline1)
         self.assertTrue('nameserver' in o_hline2)
         self.assertFalse('172.16.238.2' in o_hline2)
+
+    def test55_all_caps_hostname(self):
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+        self.cleaner._domains2db()
+        test_line = "some log file with bob@EXAMPLE.COM in it"
+        new_line = self.cleaner._clean_line(test_line, 'foo_file')
+        self.assertFalse('EXAMPLE.COM' in new_line)
+        self.assertTrue(self.cleaner._dn2db('example.com') in new_line)
