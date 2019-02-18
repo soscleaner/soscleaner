@@ -49,6 +49,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.extlinks',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,6 +101,16 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+extlinks = {
+    'github_url': ('https://github.com/jduncan-rva/soscleaner/', 'GitHub '),
+    'github_issues_url': ('https://github.com/jduncan-rva/soscleaner/issues/%s', 'GitHub Issue '),
+    'dev_group_url': ('https://groups.google.com/forum/#!forum/%s', 'SOSCleaner mailing list'),
+    }
+
+# show_authors = True
+highlight_language = 'python'
+pygments_style = 'sphinx'
+# add_module_names = True
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
