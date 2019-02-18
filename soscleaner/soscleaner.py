@@ -230,6 +230,10 @@ class SOSCleaner:
                 compression_type = os.popen(command).read().strip('\n').split(':')[1].strip().lower()
                 return compression_type
 
+            except Exception, e:  # pragma: no cover
+                self.logger.exception(e)
+                raise Exception("GET_COMPRESSION_SIG_ERROR: Unable to verify compression sig - %s", filename)
+
         try:
             self.logger.con_out("Beginning SOSReport Extraction")
             if os.path.isdir(path):
