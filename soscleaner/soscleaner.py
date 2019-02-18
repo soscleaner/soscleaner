@@ -24,7 +24,6 @@ import re
 import errno
 import stat
 import sys
-import magic
 import uuid
 import shutil
 import tempfile
@@ -88,20 +87,6 @@ class SOSCleaner:
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
-        self.os_distro, self.os_version, self.os_release = self._get_linux_distro()
-
-    def _get_linux_distro(self):
-        """There are some issues with the python-magic library, and we're adding
-        this in as a stopgap to have soscleaner cleanly function on RHEL and CentOS
-        without needing to alter the source code. Will Fix #79
-        """
-
-        try:
-            return platform.dist()
-
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("GET_LINUX_DISTRO_ERROR")
 
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
@@ -243,7 +228,6 @@ class SOSCleaner:
                 return path
             else:
                 try:
-                    compression_sig = self.magic.from_file(path).lower()
                     if compression_sig == 'xz compressed data':
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
