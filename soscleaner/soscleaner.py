@@ -228,6 +228,7 @@ class SOSCleaner:
                 return path
             else:
                 try:
+                    compression_sig = get_compression_sig(path)
                     if compression_sig == 'xz compressed data':
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
