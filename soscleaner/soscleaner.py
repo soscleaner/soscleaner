@@ -444,7 +444,7 @@ class SOSCleaner:
 
             self.kw_report = kw_report_name
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_KW_REPORT_ERROR: unable to create report - $%s', kw_report_name)
 

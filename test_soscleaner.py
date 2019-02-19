@@ -511,6 +511,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(fifo_file in skip_list)
         self.assertFalse('extrafile1' in skip_list)
         self.assertFalse('extrafile2' in skip_list)
+        os.remove(test_fifo)
 
     def test57_missing_users_file(self):
         test_run = self.cleaner._process_users_file()
@@ -530,6 +531,25 @@ class SOSCleanerTests(unittest.TestCase):
     def test59_mac_report_empty(self):
         self.cleaner._create_mac_report()
         fh = open(self.cleaner.mac_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        self.assertTrue('None,None' in data[1])
+
+    def test60_kw_report(self):
+        self.cleaner.keywords = ['testdata/keyword2.txt']
+        self.cleaner._keywords2db()
+        self.cleaner._create_kw_report()
+        fh = open(self.cleaner.kw_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        report_data = data[1].split(',')
+        self.assertTrue(report_data[0] == 'keyword3')
+        self.assertTrue('here' in report_data[1])
+        self.assertTrue(len(data) == 5)
+
+    def test61_kw_report_empty(self):
+        self.cleaner._create_kw_report()
+        fh = open(self.cleaner.kw_report, 'r')
         data = fh.readlines()
         fh.close()
         self.assertTrue('None,None' in data[1])
