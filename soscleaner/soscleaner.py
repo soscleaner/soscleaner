@@ -948,7 +948,7 @@ class SOSCleaner:
             else:
                 return None
 
-        except Exception, e:
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("DN2DB_ERROR: Unable to retrieve obfuscated domain - %s", domain)
 
@@ -1003,28 +1003,6 @@ class SOSCleaner:
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("KEYWORDS2DB_ERROR: Unable to process keyword - %s", keyword)
-
-    def _kw2db(self, keyword):
-        """Returns the obfuscated value for a keyword. Since new keywords cannot
-        be added after the inital keywords2db() call, there is not capability to
-        add keywords to the database if they're not found
-        """
-        try:
-            o_kw = self.kw_db.get(keyword)
-
-            # there should be no other clause here.
-            # There isn't a workflow to add a new keyword
-            # in the middle of an analysis.
-            # the 'if' clause is just to handle the parameter to set the var in the loop
-
-            if o_kw is not None:
-                return o_kw
-            else:
-                return keyword
-
-        except Exception, e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception("KW2DB_ERROR: Unable to retrieve obfuscated keyword - %s", keyword)
 
     def _sub_keywords(self, line):
         """Accepts a line from a file in an sosreport and obfuscates any known keyword entries on the line."""
@@ -1246,26 +1224,26 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("CLEAN_FILES_ONLY_ERROR: Unable toclean files from dataset")
 
-    def _process_report_dir(self, report_dir):
+    def _process_report_dir(self, report_dir):  # pragma: no cover
         """Overrides the default (/tmp) location for the soscleaner run"""
-        try:
+        try:  # pragma: no cover
             if os.path.isdir(report_dir):
                 self.report_dir = report_dir
 
             return True
 
-        except Exception, e:  # pragma: no cover
+        except Exception, e:
             self.logger.exception(e)
             raise Exception("PROCESS_REPORT_DIR_ERROR: Unable to set report output directory")
 
-    def _start_soscleaner(self):
+    def _start_soscleaner(self):  # pragma no cover
         """Sets up the data structures and filesystem attributes to get soscleaner going properly"""
         try:
             self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
             self._start_logging(self.logfile)
             self._check_uid()  # make sure it's soscleaner is running as root
             self._get_disclaimer()
-        except Exception, e:  # pragma: no cover
+        except Exception, e:
             self.logger.exception(e)
             raise Exception("START_SOSCLEANER_ERROR: Unable to create needed artifacts to run soscleaner")
 
