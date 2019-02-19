@@ -525,7 +525,7 @@ class SOSCleanerTests(unittest.TestCase):
         fh.close()
         report_data = data[1].split(',')
         self.assertTrue(mac_addy == report_data[0])
-        self.assertTrue(o_mac == report_data[1])
+        self.assertTrue(o_mac in report_data[1])
 
     def test59_mac_report_empty(self):
         self.cleaner._create_mac_report()
