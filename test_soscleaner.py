@@ -500,3 +500,14 @@ class SOSCleanerTests(unittest.TestCase):
         new_line = self.cleaner._clean_line(test_line, 'foo_file')
         self.assertFalse('EXAMPLE.COM' in new_line)
         self.assertTrue(self.cleaner._dn2db('example.com') in new_line)
+
+    def test56_test_skip_file(self):
+        dir_path = 'testdata/'
+        fifo_file = 'fifo1'
+        test_files = [fifo_file, 'extrafile1', 'extrafile2']
+        test_fifo = os.path.join(dir_path, fifo_file)
+        os.mkfifo(test_fifo)
+        skip_list = self.cleaner._skip_file(dir_path, test_files)
+        self.assertTrue(fifo_file in skip_list)
+        self.assertFalse('extrafile1' in skip_list)
+        self.assertFalse('extrafile2' in skip_list)
