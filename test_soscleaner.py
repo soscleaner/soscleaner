@@ -568,3 +568,11 @@ class SOSCleanerTests(unittest.TestCase):
         o_line = self.cleaner._sub_mac(test_line)
         self.assertFalse('00:0c:29:64:72:3e' in o_line)
         self.assertTrue(self.cleaner._mac2db('00:0c:29:64:72:3e') in o_line)
+
+    def test64_add_subdomain(self):
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+        self.cleaner._domains2db()
+        test_line = 'a line with a subdomain.example.com domain in it'
+        o_line = self.cleaner._sub_hostname(test_line)
+        self.assertFalse('example.com' in o_line)
