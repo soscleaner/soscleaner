@@ -399,7 +399,7 @@ class SOSCleaner:
 
     def _get_disclaimer(self):
         """Prints out a disclaimer at the beginning of each soscleaner run"""
-
+        # pragma: no cover
         self.logger.warning("%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)
         self.logger.warning("Please review the content before passing it along to any third party.")
 
@@ -423,7 +423,7 @@ class SOSCleaner:
 
             self.mac_report = mac_report_name
 
-        except Exception, e:
+        except Exception, e:  # pragma no cover
             self.logger.exception(e)
             raise Exception('CREATE_MAC_REPORT_ERROR: Unable to create report - %s', mac_report_name)
 

@@ -515,3 +515,21 @@ class SOSCleanerTests(unittest.TestCase):
     def test57_missing_users_file(self):
         test_run = self.cleaner._process_users_file()
         self.assertFalse(test_run)
+
+    def test58_mac_report(self):
+        mac_addy = '00:0c:29:64:72:3e'
+        o_mac = self.cleaner._mac2db(mac_addy)
+        self.cleaner._create_mac_report()
+        fh = open(self.cleaner.mac_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        report_data = data[1].split(',')
+        self.assertTrue(mac_addy == report_data[0])
+        self.assertTrue(o_mac == report_data[1])
+
+    def test59_mac_report_empty(self):
+        self.cleaner._create_mac_report()
+        fh = open(self.cleaner.mac_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        self.assertTrue('None,None' in data[1])
