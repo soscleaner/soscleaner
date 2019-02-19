@@ -50,6 +50,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.extlinks',
+    'sphinx.ext.graphviz',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
