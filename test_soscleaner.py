@@ -500,3 +500,71 @@ class SOSCleanerTests(unittest.TestCase):
         new_line = self.cleaner._clean_line(test_line, 'foo_file')
         self.assertFalse('EXAMPLE.COM' in new_line)
         self.assertTrue(self.cleaner._dn2db('example.com') in new_line)
+
+    def test56_test_skip_file(self):
+        dir_path = 'testdata/'
+        fifo_file = 'fifo1'
+        test_files = [fifo_file, 'extrafile1', 'extrafile2']
+        test_fifo = os.path.join(dir_path, fifo_file)
+        os.mkfifo(test_fifo)
+        skip_list = self.cleaner._skip_file(dir_path, test_files)
+        self.assertTrue(fifo_file in skip_list)
+        self.assertFalse('extrafile1' in skip_list)
+        self.assertFalse('extrafile2' in skip_list)
+        os.remove(test_fifo)
+
+    def test57_missing_users_file(self):
+        test_run = self.cleaner._process_users_file()
+        self.assertFalse(test_run)
+
+    def test58_mac_report(self):
+        mac_addy = '00:0c:29:64:72:3e'
+        o_mac = self.cleaner._mac2db(mac_addy)
+        self.cleaner._create_mac_report()
+        fh = open(self.cleaner.mac_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        report_data = data[1].split(',')
+        self.assertTrue(mac_addy == report_data[0])
+        self.assertTrue(o_mac in report_data[1])
+
+    def test59_mac_report_empty(self):
+        self.cleaner._create_mac_report()
+        fh = open(self.cleaner.mac_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        self.assertTrue('None,None' in data[1])
+
+    def test60_kw_report(self):
+        self.cleaner.keywords = ['testdata/keyword2.txt']
+        self.cleaner._keywords2db()
+        self.cleaner._create_kw_report()
+        fh = open(self.cleaner.kw_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        report_data = data[1].split(',')
+        self.assertTrue(report_data[0] == 'keyword3')
+        self.assertTrue('here' in report_data[1])
+        self.assertTrue(len(data) == 5)
+
+    def test61_kw_report_empty(self):
+        self.cleaner._create_kw_report()
+        fh = open(self.cleaner.kw_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        self.assertTrue('None,None' in data[1])
+
+    def test62_un_report(self):
+        self.cleaner._create_un_report()
+        fh = open(self.cleaner.un_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        user_data = data[1].split(',')
+        self.assertTrue(user_data[0] == 'root')
+        self.assertTrue(user_data[1] == 'obfuscateduser1\n')
+
+    def test63_sub_mac(self):
+        test_line = 'a line with a 00:0c:29:64:72:3e valid mac address'
+        o_line = self.cleaner._sub_mac(test_line)
+        self.assertFalse('00:0c:29:64:72:3e' in o_line)
+        self.assertTrue(self.cleaner._mac2db('00:0c:29:64:72:3e') in o_line)
