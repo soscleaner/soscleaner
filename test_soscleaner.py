@@ -553,3 +553,18 @@ class SOSCleanerTests(unittest.TestCase):
         data = fh.readlines()
         fh.close()
         self.assertTrue('None,None' in data[1])
+
+    def test62_un_report(self):
+        self.cleaner._create_un_report()
+        fh = open(self.cleaner.un_report, 'r')
+        data = fh.readlines()
+        fh.close()
+        user_data = data[1].split(',')
+        self.assertTrue(user_data[0] == 'root')
+        self.assertTrue(user_data[1] == 'obfuscateduser1\n')
+
+    def test63_sub_mac(self):
+        test_line = 'a line with a 00:0c:29:64:72:3e valid mac address'
+        o_line = self.cleaner._sub_mac(test_line)
+        self.assertFalse('00:0c:29:64:72:3e' in o_line)
+        self.assertTrue(self.cleaner._mac2db('00:0c:29:64:72:3e') in o_line)
