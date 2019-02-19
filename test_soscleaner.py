@@ -511,3 +511,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(fifo_file in skip_list)
         self.assertFalse('extrafile1' in skip_list)
         self.assertFalse('extrafile2' in skip_list)
+
+    def test57_missing_users_file(self):
+        test_run = self.cleaner._process_users_file()
+        self.assertFalse(test_run)

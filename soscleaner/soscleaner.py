@@ -359,10 +359,10 @@ class SOSCleaner:
                 return True
 
             else:
-                self.logger.info("Unable to locate user file - %s", self.users_file)
-                self.logger.info("Continuing without processing users file")
+                self.logger.con_out("Unable to locate user file - %s", users_file)
+                self.logger.con_out("Continuing without processing users file")
 
-                return True
+                return False
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
