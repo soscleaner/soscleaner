@@ -81,7 +81,7 @@ class SOSCleaner:
         self.kw_count = 0
 
         # obfuscating users from the last command, per rfe #79
-        self.users_file = 'sos_commands/last/last'
+        self.users_file = 'sos_commands/last/lastlog'
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
@@ -697,7 +697,6 @@ class SOSCleaner:
                     self.logger.debug("Found new subdomain of %s - %s", root_domain, domainname)
                     found_domain = True
                     o_domain = self._dn2db(root_domain, add_domain=True)
-
 
         elif domain_depth == 2:
             o_domain = self.dn_db.get(hostname)
