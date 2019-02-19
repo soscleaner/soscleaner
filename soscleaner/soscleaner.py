@@ -541,8 +541,8 @@ class SOSCleaner:
     def _sub_mac(self, line):
         """Finds potential MAC addresses and obfuscates them in a single line."""
         try:
-            pattern = r"([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})"
-            macs = [each[0] for each in re.findall(pattern, line)]
+            pattern = re.compile(ur'(?:[0-9a-fA-F]:?){12}')
+            macs = re.findall(pattern, line)
             if len(macs) > 0:
                 for mac in macs:
                     new_mac = self._mac2db(mac)
