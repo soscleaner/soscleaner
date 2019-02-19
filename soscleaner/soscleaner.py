@@ -48,7 +48,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.98'
+        self.version = '0.3.99'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -300,6 +300,7 @@ class SOSCleaner:
         try:
             if self.user_count > 0:    # we have obfuscated keywords to work with
                 for user, o_user in self.user_db.items():
+                    if user in line:
                         line = re.sub(r'\b%s\b' % user, o_user, line)
                         self.logger.debug("Obfuscating User - %s > %s", user, o_user)
 
