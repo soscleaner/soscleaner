@@ -284,7 +284,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(os.path.exists(self.cleaner.origin_path))
 
     def test28_add_keywords_badfile(self):
-        self.cleaner.keywords = ['testdata/keyword_bad.txt']
+        self.cleaner.keywords_file = ['testdata/keyword_bad.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 0)
 
@@ -292,10 +292,10 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.keywords_file = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
-        self.assertTrue(all(['foo' in self.cleaner.kw_db.values(), 'some' in self.cleaner.kw_db.values()]))
+        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
 
     def test30_sub_keywords(self):
-        self.cleaner.keywords = ['testdata/keyword1.txt']
+        self.cleaner.keywords_file = ['testdata/keyword1.txt']
         self.cleaner._keywords2db()
         test_line = 'this is a sample foo bar. this should be different bar foo.'
         new_line = self.cleaner._sub_keywords(test_line)
@@ -536,15 +536,15 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('None,None' in data[1])
 
     def test60_kw_report(self):
-        self.cleaner.keywords = ['testdata/keyword2.txt']
+        self.cleaner.keywords_file = ['testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.cleaner._create_kw_report()
         fh = open(self.cleaner.kw_report, 'r')
         data = fh.readlines()
         fh.close()
         report_data = data[1].split(',')
-        self.assertTrue(report_data[0] == 'keyword3')
-        self.assertTrue('here' in report_data[1])
+        self.assertTrue('keyword' in report_data[1])
+        self.assertTrue('some' in report_data[0])
         self.assertTrue(len(data) == 5)
 
     def test61_kw_report_empty(self):

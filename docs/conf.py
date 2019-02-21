@@ -25,9 +25,9 @@ copyright = u'2019, Jamie Duncan'
 author = u'Jamie Duncan'
 
 # The short X.Y version
-version = u'0.3.100'
+version = u'0.3.101'
 # The full version, including alpha/beta/rc tags
-release = u'0.3.100'
+release = u'0.3.101'
 
 
 # -- General configuration ---------------------------------------------------

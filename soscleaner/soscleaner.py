@@ -48,7 +48,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.100'
+        self.version = '0.3.101'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -990,7 +990,7 @@ class SOSCleaner:
         """Adds keywords to the keyword database"""
         try:
             if self.keywords_file:   # value is set to None by default
-                for f in self.keywords:
+                for f in self.keywords_file:
                     if os.path.isfile(f):
                         with open(f, 'r') as klist:
                             for keyword in klist.readlines():
@@ -1009,10 +1009,11 @@ class SOSCleaner:
                         self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
             if self.keywords:
                 for kw in self.keywords:
-                    o_kw = "keyword%s" % self.kw_count
-                    self.kw_db[kw] = o_kw
-                    self.logger.con_out("Added obfuscated keyword - %s > %s", kw, o_kw)
-                    self.kw_count += 1
+                    if len(kw) > 1:  # no single digit keywords
+                        o_kw = "keyword%s" % self.kw_count
+                        self.kw_db[kw] = o_kw
+                        self.logger.con_out("Added obfuscated keyword - %s > %s", kw, o_kw)
+                        self.kw_count += 1
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
