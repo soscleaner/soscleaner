@@ -600,4 +600,4 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.keywords = ['foo', 'bar', 'hello', 'world']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 4)
-        self.assertTrue('foo' in self.kw_db.keys())
+        self.assertTrue('foo' in self.cleaner.kw_db.keys())
