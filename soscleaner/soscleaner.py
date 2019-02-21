@@ -126,8 +126,10 @@ class SOSCleaner:
             self.loglevel = config.get('Default', 'loglevel').upper()
             self.root_domain = config.get('Default', 'root_domain')
 
+            return True
+
         except Exception:  # pragma: no cover
-            pass
+            return False
 
     def _read_later_config_options(self):
         """Reads an optional configuration file to load often-used defaults for
