@@ -996,10 +996,11 @@ class SOSCleaner:
                             for keyword in klist.readlines():
                                 keyword = keyword.rstrip()
                                 if len(keyword) > 1:
-                                    o_kw = "keyword%s" % self.kw_count
-                                    self.kw_db[keyword] = o_kw
-                                    self.logger.con_out("Added Obfuscated Keyword from Keywords File - %s > %s", keyword, o_kw)
-                                    self.kw_count += 1
+                                    if self.kw_db.get(keyword) is None:  # no duplicates
+                                        o_kw = "keyword%s" % self.kw_count
+                                        self.kw_db[keyword] = o_kw
+                                        self.logger.con_out("Added Obfuscated Keyword from Keywords File - %s > %s", keyword, o_kw)
+                                        self.kw_count += 1
                                 else:
                                     self.logger.con_out("Unable to add Obfuscated Keyword - %s", keyword)
                         self.logger.con_out("Added Keyword Contents from file - %s", f)
