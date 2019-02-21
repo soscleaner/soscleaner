@@ -88,10 +88,8 @@ class SOSCleaner:
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
-        self._read_early_config_options()
-
-        # config file options
         self.config_file = '/etc/sysconfig/soscleaner'
+        self._read_early_config_options()
 
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
