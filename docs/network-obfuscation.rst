@@ -75,3 +75,11 @@ CIDR          Network
 ============  =========================
 
 Essentially we're using up a lot of IP addresses to keep the math simple. The default network starts 1 above the loopback, so we don't have to account for that. We know there are corner cases here that could break the math. We have to hope common sense will prevail.
+
+Network report
+---------------
+At the conclusion of a soscleaner run, the supplied network mappings are recorded in ``self.report_dir/<SESSION_ID>-ip.csv``. If an SOSCleaner session fails to complete, this report isn't created.
+
+..admonition:: Attention
+
+  This report only includes IPv4 data. IPv6 is (likely) coming in an upcoming release. The work for IPv6 obfuscation will happen under :github_issues_url:`7`.

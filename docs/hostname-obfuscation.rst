@@ -65,3 +65,7 @@ There are a few short domain names that soscleaner obfuscates. By default, ``loc
 .. admonition:: Short domains aren't editable
 
   Currently there isn't a way to add additional entries to ``self.short_domains``.
+
+Hostname and Domainname reports
+--------------------------------
+At the conclusion of a soscleaner run, the domain and hostname mappings are recorded in ``self.report_dir/<SESSION_ID>-hostname.csv`` and ``self.report_dir/<SESSION_ID>-dn.csv``, respectively. If an SOSCleaner session fails to complete, these reports aren't created.

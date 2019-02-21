@@ -32,3 +32,7 @@ SOSCleaner does ignore a few common system users: ``('reboot', 'shutdown', 'wtmp
 Filing user bugs
 ```````````````````````
 Please open user obfuscation bugs using the :github_issues_url:`user obfuscation bug template <new?assignees=&labels=Exception+Engine%2C+username+obfuscation&template=username-obfuscation-bug.md&title=%5BBUG%5D%5Busers%5D>`. This will ensure the proper labels are applied and we can move forward quickly with your issue.
+
+Username report
+---------------
+At the conclusion of a soscleaner run, the supplied username mappings are recorded in ``self.report_dir/<SESSION_ID>-username.csv``. If an SOSCleaner session fails to complete, this report isn't created.

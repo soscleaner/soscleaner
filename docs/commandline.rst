@@ -51,19 +51,17 @@ SOSCleaner is a python library at its heart, and can be used in other applicatio
 .. code-block:: python
    :linenos:
 
-    import re
-    import sys
-    sys.path.append('soscleaner/')
-    import unittest
     from soscleaner import SOSCleaner
-    import os
-    import shutil
-    from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
-    testdir = 'testdata/sosreport_dir'
     cleaner = SOSCleaner()
     cleaner.loglevel = 'DEBUG'
     cleaner.origin_path, cleaner.dir_path, cleaner.session, cleaner.logfile, cleaner.uuid = cleaner._prep_environment()
     cleaner._start_logging(cleaner.logfile)
+
+Once the ``cleaner`` instance has been created, you can begin to populate the data structures. For example:
+
+.. code-block:: python
+   :linenos:
+
     cleaner.hostname = 'somehost'
     cleaner.domainname = 'example.com'
     cleaner.domains.append('foo.com')
