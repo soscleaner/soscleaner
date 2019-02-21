@@ -76,7 +76,8 @@ class SOSCleaner:
         self.root_domain = 'obfuscateddomain.com'
 
         # Keyword obfuscation information
-        self.keywords = None
+        self.keywords_file = None
+        self.keywords = list()
         self.kw_db = dict()  # keyword database
         self.kw_count = 0
 
@@ -436,9 +437,9 @@ class SOSCleaner:
             self.logger.con_out('Creating keyword address Report - %s', kw_report_name)
             kw_report = open(kw_report_name, 'w')
             kw_report.write('Original Keyword,Obfuscated Keyword\n')
-            if len(self.kw_db) > 0:
-                for k, v in self.kw_db.items():
-                    kw_report.write('%s,%s\n' % (k, v))
+            if self.kw_count > 0:
+                for keyword, o_keyword in self.kw_db.items():
+                    kw_report.write('%s,%s\n' % (keyword, o_keyword))
             else:
                 kw_report.write('None,None\n')
             kw_report.close()
@@ -988,26 +989,30 @@ class SOSCleaner:
     def _keywords2db(self):
         """Adds keywords to the keyword database"""
         try:
-            if self.keywords:   # value is set to None by default
-                k_count = 0
+            if self.keywords_file:   # value is set to None by default
                 for f in self.keywords:
                     if os.path.isfile(f):
                         with open(f, 'r') as klist:
                             for keyword in klist.readlines():
                                 keyword = keyword.rstrip()
                                 if len(keyword) > 1:
-                                    o_kw = "keyword%s" % k_count
-                                    self.kw_db[o_kw] = keyword
-                                    self.logger.con_out("Added character Obfuscated Keyword - %s > %s", keyword, o_kw)
-                                    k_count += 1
+                                    if self.kw_db.get(keyword) is None:  # no duplicates
+                                        o_kw = "keyword%s" % self.kw_count
+                                        self.kw_db[keyword] = o_kw
+                                        self.logger.con_out("Added Obfuscated Keyword from Keywords File - %s > %s", keyword, o_kw)
+                                        self.kw_count += 1
                                 else:
                                     self.logger.con_out("Unable to add Obfuscated Keyword - %s", keyword)
                         self.logger.con_out("Added Keyword Contents from file - %s", f)
 
                     else:
                         self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
-
-            self.kw_count = k_count
+            if self.keywords:
+                for kw in self.keywords:
+                    o_kw = "keyword%s" % self.kw_count
+                    self.kw_db[kw] = o_kw
+                    self.logger.con_out("Added obfuscated keyword - %s > %s", kw, o_kw)
+                    self.kw_count += 1
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
@@ -1017,9 +1022,10 @@ class SOSCleaner:
         """Accepts a line from a file in an sosreport and obfuscates any known keyword entries on the line."""
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
-                for o_keyword, keyword in self.kw_db.items():
-                    line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
-                    self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
+                for keyword, o_keyword in self.kw_db.items():
+                    if keyword in line:
+                        line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
+                        self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
 
             return line
 
@@ -1269,9 +1275,11 @@ class SOSCleaner:
                 self._ip4_add_network(network)
         if options.domains:
             self.domains.extend(options.domains)
+        if options.keywords_file:
+            self.keywords_file = options.keywords_file
         if options.keywords:
             self.keywords = options.keywords
-            self._keywords2db()
+        self._keywords2db()
         if options.users:  # users from the command line with the -u option
             self._process_user_option(options.users)
         if options.users_file:
