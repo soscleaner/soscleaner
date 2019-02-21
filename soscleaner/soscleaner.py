@@ -32,6 +32,8 @@ import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
+import ConfigParser
+
 
 class SOSCleaner:
     """
@@ -87,6 +89,9 @@ class SOSCleaner:
         self.user_count = 1
         self._prime_userdb()
 
+        # config file options
+        self.config_file = '/etc/sysconfig/soscleaner'
+
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
         but sosreports are run as root and root tends to own the files inside the
@@ -103,6 +108,67 @@ class SOSCleaner:
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
+
+    def _read_config_options(self):
+        """Reads an optional configuration file to load often-used defaults for
+        domains, networks, keywords, etc. If a config file is present and command-line
+        parameters are passed in, they will be addadtive, with the config file being
+        read in first.
+        """
+
+        try:
+            config = ConfigParser.ConfigParser()
+            if os.path.exists(self.config_file):
+                config.read(self.config_file)
+                self.logger.con_out("Loading config file for default values - %s", self.config_file)
+
+                try:
+                    # load in default config values
+                    self.loglevel = config.get('Default', 'loglevel').upper()
+                    self.root_domain = config.get('Default', 'root_domain')
+
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load default configs. Continuing")
+                    pass
+
+                try:
+                    # load in domains
+                    for d in config.get('DomainConfig', 'domains').split(','):
+                        self.domains.append(d)
+                        self.logger.con_out("Loading domains from config file - %s", d)
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load domain config. Continuing.")
+                    pass
+
+                try:
+                    # load in keywords and keyword files
+                    self.keywords = config.get('KeywordConfig', 'keywords')
+                    for f in config.get('KeywordConfig', 'keyword_files').split(','):
+                        self.keywords_file.append(f)
+                        self.logger.con_out("Adding keyword file from config file - %s", f)
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load keyword config. Continuing")
+                    pass
+
+                # load in networks
+                # we need them to be in a list so we can process them individually
+                # each network should be a CIDR notation string, eg 192.168.1.0/24
+                try:
+                    networks = config.get('NetworkConfig', 'networks').split(',')
+                    for network in networks:
+                        self._ip4_add_network(network)
+                        self.logger.con_out("Adding network from config file - %s", network)
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load network config. Continuing")
+                    pass
+
+        except Exception, e:  #pragma: no cover
+            self.logger.exception(e)
+            self.logger.con_out("READ_CONFIG_OPTIONS_ERROR - Unable to load configs from file %s - Continuing without those values", self.config_file)
 
     def _extract_file_data(self, filename):
         """Extracts data from a file and return the data"""
@@ -1265,6 +1331,7 @@ class SOSCleaner:
 
     def clean_report(self, options, sosreport):  # pragma: no cover
         """The primary function, to put everything together and analyze an sosreport."""
+        self._read_config_options()
         if options.report_dir:
             self._process_report_dir(options.report_dir)
         self.loglevel = options.loglevel
