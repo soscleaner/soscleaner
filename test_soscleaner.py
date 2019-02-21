@@ -295,7 +295,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
 
     def test30_sub_keywords(self):
-        self.cleaner.keywords = ['testdata/keyword1.txt']
+        self.cleaner.keywords_file = ['testdata/keyword1.txt']
         self.cleaner._keywords2db()
         test_line = 'this is a sample foo bar. this should be different bar foo.'
         new_line = self.cleaner._sub_keywords(test_line)
