@@ -50,7 +50,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.101'
+        self.version = '0.3.103'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -626,6 +626,7 @@ class SOSCleaner:
         self._create_dn_report()  # pragma: no cover
         self._create_un_report()  # pragma: no cover
         self._create_mac_report()  # pragma: no cover
+        os.chmod(self.logfile, 0o600)
 
     #############################
     #   MAC Address functions   #
@@ -994,7 +995,7 @@ class SOSCleaner:
                     f_archive = f_full.replace(self.report_dir, '')
                     self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
-                    os.chmod(f_full, 0o600)  # per #90
+            os.chmod(self.archive_path, 0o600)  # per #90
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_ARCHIVE_ERROR: Unable to create archive - %s', self.archive_path)
@@ -1406,7 +1407,7 @@ class SOSCleaner:
         self.logger.con_out("Hostnames Obfuscated - %s", len(self.hn_db))
         self.logger.con_out("Domains Obfuscated - %s", len(self.dn_db))
         self.logger.con_out("Users Obfuscated - %s", self.user_count)
-        self.logger.con_ount("Keywords Obfuscated - %s", self.kw_count)
+        self.logger.con_out("Keywords Obfuscated - %s", self.kw_count)
         self.logger.con_out("Total Files Analyzed - %s", self.file_count)
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
