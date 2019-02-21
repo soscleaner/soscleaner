@@ -144,9 +144,11 @@ class SOSCleaner:
 
                 try:
                     # load in domains
-                    for d in config.get('DomainConfig', 'domains').split(','):
-                        self.domains.append(d)
-                        self.logger.con_out("Loading domains from config file - %s", d)
+                    domains = config.get('DomainConfig', 'domains').split(',')
+                    if domains is not None:
+                        for d in domains:
+                            self.domains.append(d)
+                            self.logger.con_out("Loading domains from config file - %s", d)
                 except Exception, e:
                     self.logger.exception(e)
                     self.logger.con_out("Unable to load domain config. Continuing.")
@@ -154,10 +156,14 @@ class SOSCleaner:
 
                 try:
                     # load in keywords and keyword files
-                    self.keywords = config.get('KeywordConfig', 'keywords')
-                    for f in config.get('KeywordConfig', 'keyword_files').split(','):
-                        self.keywords_file.append(f)
-                        self.logger.con_out("Adding keyword file from config file - %s", f)
+                    keywords = config.get('KeywordConfig', 'keywords')
+                    if keywords is not None:
+                        self.keywords = keywords
+                    keyword_files = config.get('KeywordConfig', 'keyword_files').split(',')
+                    if keyword_files is not None:
+                        for f in keyword_files:
+                            self.keywords_file.append(f)
+                            self.logger.con_out("Adding keyword file from config file - %s", f)
                 except Exception, e:
                     self.logger.exception(e)
                     self.logger.con_out("Unable to load keyword config. Continuing")
@@ -167,10 +173,12 @@ class SOSCleaner:
                 # we need them to be in a list so we can process them individually
                 # each network should be a CIDR notation string, eg 192.168.1.0/24
                 try:
-                    networks = config.get('NetworkConfig', 'networks').split(',')
-                    for network in networks:
-                        self._ip4_add_network(network)
-                        self.logger.con_out("Adding network from config file - %s", network)
+                    networks = config.get('NetworkConfig', 'networks')
+                    if networks is not None:
+                        networks = networks.split(',')
+                        for network in networks:
+                            self._ip4_add_network(network)
+                            self.logger.con_out("Adding network from config file - %s", network)
                 except Exception, e:
                     self.logger.exception(e)
                     self.logger.con_out("Unable to load network config. Continuing")
