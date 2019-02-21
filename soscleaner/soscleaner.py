@@ -32,6 +32,8 @@ import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
+import ConfigParser
+
 
 class SOSCleaner:
     """
@@ -76,7 +78,7 @@ class SOSCleaner:
         self.root_domain = 'obfuscateddomain.com'
 
         # Keyword obfuscation information
-        self.keywords_file = None
+        self.keywords_file = list()
         self.keywords = list()
         self.kw_db = dict()  # keyword database
         self.kw_count = 0
@@ -86,6 +88,8 @@ class SOSCleaner:
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
+        self.config_file = '/etc/sysconfig/soscleaner'
+        self._read_early_config_options()
 
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
@@ -103,6 +107,86 @@ class SOSCleaner:
         except Exception, e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
+
+    def _read_early_config_options(self):
+        """Reads an optional configuration file to load often-used defaults for
+        domains, networks, keywords, etc. If a config file is present and command-line
+        parameters are passed in, they will be addadtive, with the config file being
+        read in first.
+        """
+
+        try:
+            config = ConfigParser.ConfigParser()
+            if os.path.exists(self.config_file):
+                config.read(self.config_file)
+
+            # load in default config values
+            self.loglevel = config.get('Default', 'loglevel').upper()
+            self.root_domain = config.get('Default', 'root_domain')
+
+            return True
+
+        except Exception:  # pragma: no cover
+            return False
+
+    def _read_later_config_options(self):
+        """Reads an optional configuration file to load often-used defaults for
+        domains, networks, keywords, etc. If a config file is present and command-line
+        parameters are passed in, they will be addadtive, with the config file being
+        read in first.
+        """
+
+        try:
+            config = ConfigParser.ConfigParser()
+            if os.path.exists(self.config_file):
+                config.read(self.config_file)
+                self.logger.con_out("Loading config file for default values - %s", self.config_file)
+
+                try:
+                    # load in domains
+                    domains = config.get('DomainConfig', 'domains').split(',')
+                    if domains is not None:
+                        for d in domains:
+                            self.domains.append(d)
+                            self.logger.con_out("Loading domains from config file - %s", d)
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load domain config. Continuing.")
+                    pass
+
+                try:
+                    # load in keywords and keyword files
+                    keywords = config.get('KeywordConfig', 'keywords')
+                    if keywords is not None:
+                        self.keywords = keywords
+                    keyword_files = config.get('KeywordConfig', 'keyword_files').split(',')
+                    if keyword_files is not None:
+                        for f in keyword_files:
+                            self.keywords_file.append(f)
+                            self.logger.con_out("Adding keyword file from config file - %s", f)
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load keyword config. Continuing")
+                    pass
+
+                # load in networks
+                # we need them to be in a list so we can process them individually
+                # each network should be a CIDR notation string, eg 192.168.1.0/24
+                try:
+                    networks = config.get('NetworkConfig', 'networks')
+                    if networks is not None:
+                        networks = networks.split(',')
+                        for network in networks:
+                            self._ip4_add_network(network)
+                            self.logger.con_out("Adding network from config file - %s", network)
+                except Exception, e:
+                    self.logger.exception(e)
+                    self.logger.con_out("Unable to load network config. Continuing")
+                    pass
+
+        except Exception, e:  # pragma: no cover
+            self.logger.exception(e)
+            self.logger.con_out("READ_CONFIG_OPTIONS_ERROR - Unable to load configs from file %s - Continuing without those values", self.config_file)
 
     def _extract_file_data(self, filename):
         """Extracts data from a file and return the data"""
@@ -989,7 +1073,7 @@ class SOSCleaner:
     def _keywords2db(self):
         """Adds keywords to the keyword database"""
         try:
-            if self.keywords_file:   # value is set to None by default
+            if len(self.keywords_file) > 0:
                 for f in self.keywords_file:
                     if os.path.isfile(f):
                         with open(f, 'r') as klist:
@@ -1007,7 +1091,7 @@ class SOSCleaner:
 
                     else:
                         self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
-            if self.keywords:
+            if len(self.keywords) > 0:
                 for kw in self.keywords:
                     if len(kw) > 1:  # no single digit keywords
                         o_kw = "keyword%s" % self.kw_count
@@ -1269,6 +1353,7 @@ class SOSCleaner:
             self._process_report_dir(options.report_dir)
         self.loglevel = options.loglevel
         self._start_soscleaner()
+        self._read_later_config_options()
         self._add_loopback_network()
         if options.networks:    # we have defined networks
             self.networks = options.networks
