@@ -121,15 +121,13 @@ class SOSCleaner:
             config = ConfigParser.ConfigParser()
             if os.path.exists(self.config_file):
                 config.read(self.config_file)
-                self.logger.con_out("Loading config file for default values - %s", self.config_file)
 
             # load in default config values
             self.loglevel = config.get('Default', 'loglevel').upper()
             self.root_domain = config.get('Default', 'root_domain')
 
-        except Exception, e:  #pragma: no cover
-            self.logger.exception(e)
-            self.logger.con_out("READ_CONFIG_OPTIONS_ERROR - Unable to load configs from file %s - Continuing without those values", self.config_file)
+        except Exception:  # pragma: no cover
+            pass
 
     def _read_later_config_options(self):
         """Reads an optional configuration file to load often-used defaults for
