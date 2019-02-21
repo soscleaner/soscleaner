@@ -284,7 +284,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(os.path.exists(self.cleaner.origin_path))
 
     def test28_add_keywords_badfile(self):
-        self.cleaner.keywords = ['testdata/keyword_bad.txt']
+        self.cleaner.keywords_file = ['testdata/keyword_bad.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 0)
 
