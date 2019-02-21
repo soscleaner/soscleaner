@@ -77,6 +77,7 @@ class SOSCleaner:
 
         # Keyword obfuscation information
         self.keywords_file = None
+        self.keywords = list()
         self.kw_db = dict()  # keyword database
         self.kw_count = 0
 
@@ -436,9 +437,9 @@ class SOSCleaner:
             self.logger.con_out('Creating keyword address Report - %s', kw_report_name)
             kw_report = open(kw_report_name, 'w')
             kw_report.write('Original Keyword,Obfuscated Keyword\n')
-            if len(self.kw_db) > 0:
-                for k, v in self.kw_db.items():
-                    kw_report.write('%s,%s\n' % (k, v))
+            if self.kw_count > 0:
+                for keyword, o_keyword in self.kw_db.items():
+                    kw_report.write('%s,%s\n' % (keyword, o_keyword))
             else:
                 kw_report.write('None,None\n')
             kw_report.close()
@@ -1021,8 +1022,9 @@ class SOSCleaner:
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
                 for keyword, o_keyword in self.kw_db.items():
-                    line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
-                    self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
+                    if keyword in line:
+                        line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
+                        self.logger.debug("Obfuscating Keyword - %s > %s", keyword, o_keyword)
 
             return line
 
