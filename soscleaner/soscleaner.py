@@ -78,7 +78,7 @@ class SOSCleaner:
         self.root_domain = 'obfuscateddomain.com'
 
         # Keyword obfuscation information
-        self.keywords_file = None
+        self.keywords_file = list()
         self.keywords = list()
         self.kw_db = dict()  # keyword database
         self.kw_count = 0
@@ -1073,7 +1073,7 @@ class SOSCleaner:
     def _keywords2db(self):
         """Adds keywords to the keyword database"""
         try:
-            if self.keywords_file:   # value is set to None by default
+            if len(self.keywords_file) > 0:
                 for f in self.keywords_file:
                     if os.path.isfile(f):
                         with open(f, 'r') as klist:
@@ -1091,7 +1091,7 @@ class SOSCleaner:
 
                     else:
                         self.logger.con_out("%s does not seem to be a file. Not adding any keywords from" % f)
-            if self.keywords:
+            if len(self.keywords) > 0:
                 for kw in self.keywords:
                     if len(kw) > 1:  # no single digit keywords
                         o_kw = "keyword%s" % self.kw_count
