@@ -536,15 +536,15 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('None,None' in data[1])
 
     def test60_kw_report(self):
-        self.cleaner.keywords = ['testdata/keyword2.txt']
+        self.cleaner.keywords_file = ['testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.cleaner._create_kw_report()
         fh = open(self.cleaner.kw_report, 'r')
         data = fh.readlines()
         fh.close()
         report_data = data[1].split(',')
-        self.assertTrue(report_data[0] == 'keyword3')
-        self.assertTrue('here' in report_data[1])
+        self.assertTrue('keyword' in report_data[1])
+        self.assertTrue('some' in report_data[0])
         self.assertTrue(len(data) == 5)
 
     def test61_kw_report_empty(self):
