@@ -88,6 +88,7 @@ class SOSCleaner:
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
+        self._read_early_config_options()
 
         # config file options
         self.config_file = '/etc/sysconfig/soscleaner'
@@ -109,7 +110,7 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
 
-    def _read_config_options(self):
+    def _read_early_config_options(self):
         """Reads an optional configuration file to load often-used defaults for
         domains, networks, keywords, etc. If a config file is present and command-line
         parameters are passed in, they will be addadtive, with the config file being
@@ -122,15 +123,26 @@ class SOSCleaner:
                 config.read(self.config_file)
                 self.logger.con_out("Loading config file for default values - %s", self.config_file)
 
-                try:
-                    # load in default config values
-                    self.loglevel = config.get('Default', 'loglevel').upper()
-                    self.root_domain = config.get('Default', 'root_domain')
+            # load in default config values
+            self.loglevel = config.get('Default', 'loglevel').upper()
+            self.root_domain = config.get('Default', 'root_domain')
 
-                except Exception, e:
-                    self.logger.exception(e)
-                    self.logger.con_out("Unable to load default configs. Continuing")
-                    pass
+        except Exception, e:  #pragma: no cover
+            self.logger.exception(e)
+            self.logger.con_out("READ_CONFIG_OPTIONS_ERROR - Unable to load configs from file %s - Continuing without those values", self.config_file)
+
+    def _read_later_config_options(self):
+        """Reads an optional configuration file to load often-used defaults for
+        domains, networks, keywords, etc. If a config file is present and command-line
+        parameters are passed in, they will be addadtive, with the config file being
+        read in first.
+        """
+
+        try:
+            config = ConfigParser.ConfigParser()
+            if os.path.exists(self.config_file):
+                config.read(self.config_file)
+                self.logger.con_out("Loading config file for default values - %s", self.config_file)
 
                 try:
                     # load in domains
@@ -166,7 +178,7 @@ class SOSCleaner:
                     self.logger.con_out("Unable to load network config. Continuing")
                     pass
 
-        except Exception, e:  #pragma: no cover
+        except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             self.logger.con_out("READ_CONFIG_OPTIONS_ERROR - Unable to load configs from file %s - Continuing without those values", self.config_file)
 
@@ -1331,11 +1343,11 @@ class SOSCleaner:
 
     def clean_report(self, options, sosreport):  # pragma: no cover
         """The primary function, to put everything together and analyze an sosreport."""
-        self._read_config_options()
         if options.report_dir:
             self._process_report_dir(options.report_dir)
         self.loglevel = options.loglevel
         self._start_soscleaner()
+        self._read_later_config_options()
         self._add_loopback_network()
         if options.networks:    # we have defined networks
             self.networks = options.networks
