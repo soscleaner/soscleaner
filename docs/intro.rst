@@ -15,13 +15,13 @@ Important Links
 Soscleaner's build processes are all completely available online.
 
 ================  ====================
-Source Code       `Github <https://github.com/jduncan-rva/soscleaner>`__
-Issues            `Github <https://github.com/jduncan-rva/soscleaner/issues>`__
-Project Tracking  `Github <https://github.com/jduncan-rva/soscleaner/projects/1>`__
-RPMs              `Fedora Copr <https://copr.fedorainfracloud.org/coprs/jduncan/soscleaner/>`__
-Python Packages   `PyPi <https://pypi.org/project/soscleaner/>`__
-Code Coverage     `Coveralls <https://coveralls.io/github/jduncan-rva/soscleaner>`__
-CI/CD             `Travis CI <https://travis-ci.com/jduncan-rva/soscleaner>`__
+Source Code       :github_url:`Github <soscleaner>`
+Issues            :github_issues_url:`Github <soscleaner>`
+Project Tracking  :github_project_url:`Github <1>`
+RPMs              :rpm_url:`Fedora Copr <soscleaner>`
+Python Packages   :pypi_url:`PyPi <soscleaner>`
+Code Coverage     :code_coverage_url:`Coveraalls <soscleaner>`
+CI/CD             :ci_cd_url:`Travis-CI <soscleaner>`
 ================  ====================
 
 Obfuscated data types
