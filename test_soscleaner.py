@@ -594,3 +594,5 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(oct(os.stat(self.cleaner.kw_report).st_mode)[3:] == '0600')
         self.assertTrue(oct(os.stat(self.cleaner.un_report).st_mode)[3:] == '0600')
         self.assertTrue(oct(os.stat(self.cleaner.mac_report).st_mode)[3:] == '0600')
+
+    
