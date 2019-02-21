@@ -16,11 +16,11 @@ https://soscleaner.readthedocs.io
 
 Important Links
 --------------------
-**Source Code** - https://github.com/jduncan-rva/soscleaner
-**Issues** - https://github.com/jduncan-rva/soscleaner/issues
-**Project** - Tracking https://github.com/jduncan-rva/soscleaner/projects/1
-**RPMs** - https://copr.fedorainfracloud.org/coprs/jduncan/soscleaner/
-**PyPi** - https://pypi.org/project/soscleaner/
-**Code Coverage** - https://coveralls.io/github/jduncan-rva/soscleaner
-**CI/CD** - https://travis-ci.com/jduncan-rva/soscleaner
-**Docs** - https://soscleaner.readthedocs.io
+* **Source Code** - https://github.com/jduncan-rva/soscleaner
+* **Issues** - https://github.com/jduncan-rva/soscleaner/issues
+* **Project** - Tracking https://github.com/jduncan-rva/soscleaner/projects/1
+* **RPMs** - https://copr.fedorainfracloud.org/coprs/jduncan/soscleaner/
+* **PyPi** - https://pypi.org/project/soscleaner/
+* **Code Coverage** - https://coveralls.io/github/jduncan-rva/soscleaner
+* **CI/CD** - https://travis-ci.com/jduncan-rva/soscleaner
+* **Docs** - https://soscleaner.readthedocs.io
