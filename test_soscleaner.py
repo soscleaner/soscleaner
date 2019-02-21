@@ -288,8 +288,8 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 0)
 
-    def test29_add_keywords(self):
-        self.cleaner.keywords = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
+    def test29_add_keywords_file(self):
+        self.cleaner.keywords_file = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
         self.assertTrue(all(['foo' in self.cleaner.kw_db.values(), 'some' in self.cleaner.kw_db.values()]))
@@ -578,7 +578,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertFalse('example.com' in o_line)
 
     def test65_test_output_file_mode(self):
-        """From issue #90"""
+        """From issue #90 - artifact modes are 0600"""
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
         self.cleaner._domains2db()
@@ -595,4 +595,9 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(oct(os.stat(self.cleaner.un_report).st_mode)[3:] == '0600')
         self.assertTrue(oct(os.stat(self.cleaner.mac_report).st_mode)[3:] == '0600')
 
-    
+    def test66_add_single_keywords(self):
+        """from issue #86 - add keywords from cli parameters"""
+        self.cleaner.keywords = ['foo', 'bar', 'hello', 'world']
+        self.cleaner._keywords2db()
+        self.assertTrue(self.cleaner.kw_count == 4)
+        self.assertTrue('foo' in self.kw_db.keys())
