@@ -292,7 +292,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.keywords_file = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
-        self.assertTrue(all(['foo' in self.cleaner.kw_db.values(), 'some' in self.cleaner.kw_db.values()]))
+        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
 
     def test30_sub_keywords(self):
         self.cleaner.keywords = ['testdata/keyword1.txt']
