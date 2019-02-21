@@ -1406,7 +1406,7 @@ class SOSCleaner:
         self.logger.con_out("Hostnames Obfuscated - %s", len(self.hn_db))
         self.logger.con_out("Domains Obfuscated - %s", len(self.dn_db))
         self.logger.con_out("Users Obfuscated - %s", self.user_count)
-        self.logger.con_ount("Keywords Obfuscated - %s", self.kw_count)
+        self.logger.con_out("Keywords Obfuscated - %s", self.kw_count)
         self.logger.con_out("Total Files Analyzed - %s", self.file_count)
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
