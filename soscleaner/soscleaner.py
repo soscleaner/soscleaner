@@ -420,6 +420,7 @@ class SOSCleaner:
             else:
                 mac_report.write('None,None\n')
             mac_report.close()
+            os.chmod(mac_report_name, 0o600)
             self.logger.info('Completed MAC Address Report')
 
             self.mac_report = mac_report_name
@@ -441,6 +442,7 @@ class SOSCleaner:
             else:
                 kw_report.write('None,None\n')
             kw_report.close()
+            os.chmod(kw_report_name, 0o600)
             self.logger.info('Completed Keyword Report')
 
             self.kw_report = kw_report_name
@@ -461,6 +463,8 @@ class SOSCleaner:
             un_report.write('Original Username,Obfuscated Username\n')
             for k, v in self.user_db.items():
                 un_report.write('%s,%s\n' % (k, v))
+            un_report.close()
+            os.chmod(un_report_name, 0o600)
 
             self.un_report = un_report_name
         except Exception, e:  # pragma: no cover
@@ -479,6 +483,7 @@ class SOSCleaner:
                     hn_report.write('%s,%s\n' % (k, v))
             else:
                 hn_report.write('None,None\n')
+            os.chmod(hn_report_name, 0o600)
             hn_report.close()
             self.logger.info('Completed Hostname Report')
 
@@ -500,6 +505,7 @@ class SOSCleaner:
             else:
                 dn_report.write('None,None\n')
             dn_report.close()
+            os.chmod(dn_report_name, 0o600)
             self.logger.info('Completed Domainname Report')
 
             self.dn_report = dn_report_name
@@ -518,6 +524,7 @@ class SOSCleaner:
             for i in self.ip_db:
                 ip_report.write('%s,%s\n' % (i[0], i[1]))
             ip_report.close()
+            os.chmod(ip_report_name, 0o600)
             self.logger.info('Completed IP Report')
 
             self.ip_report = ip_report_name
@@ -902,6 +909,7 @@ class SOSCleaner:
                     f_archive = f_full.replace(self.report_dir, '')
                     self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
+                    os.chmod(f_full, 0o600)  # per #90
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_ARCHIVE_ERROR: Unable to create archive - %s', self.archive_path)

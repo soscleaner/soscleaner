@@ -576,3 +576,21 @@ class SOSCleanerTests(unittest.TestCase):
         test_line = 'a line with a subdomain.example.com domain in it'
         o_line = self.cleaner._sub_hostname(test_line)
         self.assertFalse('example.com' in o_line)
+
+    def test65_test_output_file_mode(self):
+        """From issue #90"""
+        self.cleaner.hostname = 'foo'
+        self.cleaner.domainname = 'example.com'
+        self.cleaner._domains2db()
+        self.cleaner._create_dn_report()
+        self.cleaner._create_hn_report()
+        self.cleaner._create_ip_report()
+        self.cleaner._create_kw_report()
+        self.cleaner._create_un_report()
+        self.cleaner._create_mac_report()
+        self.assertTrue(oct(os.stat(self.cleaner.dn_report).st_mode)[3:] == '0600')
+        self.assertTrue(oct(os.stat(self.cleaner.ip_report).st_mode)[3:] == '0600')
+        self.assertTrue(oct(os.stat(self.cleaner.hn_report).st_mode)[3:] == '0600')
+        self.assertTrue(oct(os.stat(self.cleaner.kw_report).st_mode)[3:] == '0600')
+        self.assertTrue(oct(os.stat(self.cleaner.un_report).st_mode)[3:] == '0600')
+        self.assertTrue(oct(os.stat(self.cleaner.mac_report).st_mode)[3:] == '0600')
