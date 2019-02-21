@@ -103,9 +103,15 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 extlinks = {
-    'github_url': ('https://github.com/jduncan-rva/soscleaner/', 'GitHub '),
-    'github_issues_url': ('https://github.com/jduncan-rva/soscleaner/issues/%s', 'GitHub Issue '),
-    'dev_group_url': ('https://groups.google.com/forum/#!forum/%s', 'SOSCleaner mailing list'),
+    'github_url': ('https://github.com/jduncan-rva/%s', 'GitHub '),
+    'github_issues_url': ('https://github.com/jduncan-rva/soscleaner/issues/%s', 'GitHub '),
+    'github_project_url': ('https://github.com/jduncan-rva/soscleaner/projects/%s/', 'Github '),
+    'dev_group_url': ('https://groups.google.com/forum/#!forum/%s/', 'SOSCleaner mailing list'),
+    'ci_cd_url': ('https://travis-ci.com/jduncan-rva/%s/', 'Travis CI/CD'),
+    'rpm_url': ('https://copr.fedorainfracloud.org/coprs/jduncan/%s/', 'Fedora Copr '),
+    'pypi_url': ('https://pypi.org/project/%s/', 'PyPi '),
+    'code_coverage_url': ('https://coveralls.io/github/jduncan-rva/%s/', 'SOSCleaner'),
+
     }
 
 # show_authors = True
