@@ -994,7 +994,7 @@ class SOSCleaner:
                     f_archive = f_full.replace(self.report_dir, '')
                     self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
-                    os.chmod(f_full, 0o600)  # per #90
+            os.chmod(self.archive_path, 0o600)  # per #90
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_ARCHIVE_ERROR: Unable to create archive - %s', self.archive_path)
