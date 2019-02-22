@@ -44,6 +44,27 @@ The default way to use SOSCleaner is using the command-line application of the s
                         Directory to store soscleaner obfuscated sosreport or
                         dataset
 
+Using a config file
+--------------------
+If you find yourself having to use additional command line options a lot, you can create a config file at ``/etc/sysconfig/soscleaner`` to handle these default values for you. A sample config file:
+
+.. code-block:: ini
+  :linenos:
+
+  [Default]
+  loglevel = debug  # the loglevel to run at, default is 'info'
+  root_domain = example.com  # domain to use for obfuscation
+
+  [DomainConfig]
+  domains: example.com,foo.com,domain.com  # additional domains to obfuscate
+
+  [KeywordConfig]
+  keywords: foo,bar,some,other,words  # keywords to obfuscate
+  keyword_files: keywords.txt  # keyword files to obfuscate
+
+  [NetworkConfig]
+  networks: 172.16.0.0/16  # additional networks to obfuscate
+
 Using within a python prompt
 -----------------------------
 SOSCleaner is a python library at its heart, and can be used in other applications as a library. The following sample is useful when testing SOSCleaner functionality from a python prompt, like when we're writing unit tests and other such incredibly fun activities.
