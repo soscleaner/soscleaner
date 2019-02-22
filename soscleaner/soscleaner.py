@@ -50,7 +50,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.101'
+        self.version = '0.3.102'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -1005,6 +1005,7 @@ class SOSCleaner:
         if not self.quiet:  # pragma: no cover
             t.add(self.logfile, arcname=self.logfile.replace(self.report_dir, ''))
         t.close()
+        os.chmod(self.logfile, 0o600)
 
     def _clean_up(self):
         """Cleans up origin directories and other soscleaner processing artifacts"""

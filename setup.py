@@ -17,7 +17,7 @@
 
 from setuptools import setup
 
-version = '0.3.101'
+version = '0.3.102'
 name = 'soscleaner'
 
 setup(
