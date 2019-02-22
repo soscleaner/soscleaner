@@ -50,7 +50,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.3.102'
+        self.version = '0.3.103'
         self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
@@ -626,6 +626,7 @@ class SOSCleaner:
         self._create_dn_report()  # pragma: no cover
         self._create_un_report()  # pragma: no cover
         self._create_mac_report()  # pragma: no cover
+        os.chmod(self.logfile, 0o600)
 
     #############################
     #   MAC Address functions   #
@@ -1005,7 +1006,6 @@ class SOSCleaner:
         if not self.quiet:  # pragma: no cover
             t.add(self.logfile, arcname=self.logfile.replace(self.report_dir, ''))
         t.close()
-        os.chmod(self.logfile, 0o600)
 
     def _clean_up(self):
         """Cleans up origin directories and other soscleaner processing artifacts"""
