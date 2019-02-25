@@ -121,18 +121,16 @@ class SOSCleaner:
                 config.read(self.config_file)
 
                 # load in default config values
-                loglevel = config.get('Default', 'loglevel').upper()
-                if loglevel is not None:
-                    self.loglevel = loglevel
-                root_domain = config.get('Default', 'root_domain')
-                if root_domain is not None:
-                    self.root_domain = root_domain
-                quiet_mode = config.get('Default', 'quiet')
-                if quiet_mode is not None:
-                    self.quiet = quiet_mode
+                if config.has_option('Default', 'loglevel'):
+                    self.loglevel = config.get('Default', 'loglevel').upper()
+                if config.has_option('Default', 'root_domain'):
+                    self.root_domain = config.get('Default', 'root_domain')
+                if config.has_option('Default', 'quiet'):
+                    self.quiet = config.get('Default', 'quiet')
                 return True
 
-            pass
+            else:
+                return True
 
         except Exception:  # pragma: no cover
             pass
@@ -149,50 +147,44 @@ class SOSCleaner:
             if os.path.exists(self.config_file):
                 config.read(self.config_file)
                 self.logger.con_out("Loading config file for default values - %s", self.config_file)
-
-                try:
-                    # load in domains
+                if config.has_section('DomainConfig'):
                     domains = config.get('DomainConfig', 'domains').split(',')
-                    if domains is not None:
-                        for d in domains:
-                            self.domains.append(d)
-                            self.logger.con_out("Loading domains from config file - %s", d)
-                except Exception, e:
-                    self.logger.exception(e)
-                    self.logger.con_out("Unable to load domain config. Continuing.")
-                    pass
+                    for d in domains:
+                        self.domains.append(d)
+                        self.logger.con_out("Loading domains from config file - %s", d)
+                    else:
+                        self.logger.con_out("No config found - DomainConfig.domains")
+                else:
+                    self.logger.con_out("No config file section found - DomainConfig")
 
-                try:
-                    # load in keywords and keyword files
-                    keywords = config.get('KeywordConfig', 'keywords')
-                    if keywords is not None:
+                if config.has_section('KeywordConfig'):
+                    if config.has_option('KeywordConfig', 'keywords'):
+                        keywords = config.get('KeywordConfig', 'keywords')
                         kw = keywords.split(',')
                         for k in kw:
                             self.keywords.append(k.strip())
-                    keyword_files = config.get('KeywordConfig', 'keyword_files').split(',')
-                    if keyword_files is not None:
+                    else:
+                        self.logger.con_out("No config found - KeywordConfig.keywords")
+                    if config.has_option('KeywordConfig', 'keyword_files'):
+                        keyword_files = config.get('KeywordConfig', 'keyword_files').split(',')
                         for f in keyword_files:
                             self.keywords_file.append(f)
                             self.logger.con_out("Adding keyword file from config file - %s", f)
-                except Exception, e:
-                    self.logger.exception(e)
-                    self.logger.con_out("Unable to load keyword config. Continuing")
-                    pass
+                    else:
+                        self.logger.con_out("No config found - KeywordConfig.keyword_files")
 
                 # load in networks
                 # we need them to be in a list so we can process them individually
                 # each network should be a CIDR notation string, eg 192.168.1.0/24
-                try:
-                    networks = config.get('NetworkConfig', 'networks')
-                    if networks is not None:
+                if config.has_section('NetworkConfig'):
+                    if config.has_option('NetworkConfig', 'networks'):
+                        networks = config.get('NetworkConfig', 'networks')
                         networks = networks.split(',')
                         for network in networks:
                             self._ip4_add_network(network)
                             self.logger.con_out("Adding network from config file - %s", network)
-                except Exception, e:
-                    self.logger.exception(e)
-                    self.logger.con_out("Unable to load network config. Continuing")
-                    pass
+                    else:
+                        self.logger.con_out("No config found - NetworkConfig.networks")
 
         except Exception, e:  # pragma: no cover
             self.logger.exception(e)
