@@ -609,3 +609,34 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._keywords2db()
         self.assertTrue('keywordfromfile1' in self.cleaner.kw_db.keys())
         self.assertTrue('keywordfromfile2' in self.cleaner.kw_db.keys())
+
+    def test68_quiet_mode_from_config(self):
+        """from #95 - add quiet mode to config file"""
+        self.cleaner.config_file = 'testdata/config_file'
+        self.cleaner._read_early_config_options()
+        self.assertTrue(self.cleaner.quiet)
+
+    def test69_root_domain_from_config(self):
+        self.cleaner.config_file = 'testdata/config_file'
+        self.cleaner._read_early_config_options()
+        self.assertTrue(self.cleaner.root_domain == 'example.com')
+
+    def test70_log_level_from_config(self):
+        self.cleaner.config_file = 'testdata/config_file'
+        self.cleaner._read_early_config_options()
+        self.assertTrue(self.cleaner.loglevel == 'DEBUG')
+
+    def test71_quiet_mode_bad_conf_file(self):
+        self.cleaner.config_file = '/bad/path/to/config_file'
+        self.cleaner._read_early_config_options()
+        self.assertFalse(self.cleaner.quiet == False)
+
+    def test72_root_domain_bad_conf_file(self):
+        self.cleaner.config_file = '/bad/path/to/config_file'
+        self.cleaner._read_early_config_options()
+        self.assertTrue(self.cleaner.root_domain == 'obfuscateddomain.com')
+
+    def test73_log_level_bad_conf_file(self):
+        self.cleaner.config_file = '/bad/path/to/config_file'
+        self.cleaner._read_early_config_options()
+        self.assertTrue(self.cleaner.loglevel == 'INFO')

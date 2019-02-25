@@ -120,14 +120,22 @@ class SOSCleaner:
             if os.path.exists(self.config_file):
                 config.read(self.config_file)
 
-            # load in default config values
-            self.loglevel = config.get('Default', 'loglevel').upper()
-            self.root_domain = config.get('Default', 'root_domain')
+                # load in default config values
+                loglevel = config.get('Default', 'loglevel').upper()
+                if loglevel is not None:
+                    self.loglevel = loglevel
+                root_domain = config.get('Default', 'root_domain')
+                if root_domain is not None:
+                    self.root_domain = root_domain
+                quiet_mode = config.get('Default', 'quiet')
+                if quiet_mode is not None:
+                    self.quiet = quiet_mode
+                return True
 
-            return True
+            pass
 
         except Exception:  # pragma: no cover
-            return False
+            pass
 
     def _read_later_config_options(self):
         """Reads an optional configuration file to load often-used defaults for

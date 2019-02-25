@@ -1,6 +1,7 @@
 [Default]
 loglevel = debug
 root_domain = example.com
+quiet = True
 
 [DomainConfig]
 domains: example.com,foo.com,domain.com
