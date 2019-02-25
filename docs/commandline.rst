@@ -54,6 +54,7 @@ If you find yourself having to use additional command line options a lot, you ca
   [Default]
   loglevel = debug  # the loglevel to run at, default is 'info'
   root_domain = example.com  # domain to use for obfuscation
+  quiet = True # defaults to False, True suppresses output to stdout
 
   [DomainConfig]
   domains: example.com,foo.com,domain.com  # additional domains to obfuscate
