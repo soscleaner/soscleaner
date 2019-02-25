@@ -158,7 +158,9 @@ class SOSCleaner:
                     # load in keywords and keyword files
                     keywords = config.get('KeywordConfig', 'keywords')
                     if keywords is not None:
-                        self.keywords = keywords
+                        kw = keywords.split(',')
+                        for k in kw:
+                            self.keywords.append(k.strip())
                     keyword_files = config.get('KeywordConfig', 'keyword_files').split(',')
                     if keyword_files is not None:
                         for f in keyword_files:

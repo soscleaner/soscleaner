@@ -1,0 +1,13 @@
+[Default]
+loglevel = debug
+root_domain = example.com
+
+[DomainConfig]
+domains: example.com,foo.com,domain.com
+
+[KeywordConfig]
+keywords: keywordfromfile1,keywordfromfile2
+keyword_files: keyword1.txt
+
+[NetworkConfig]
+networks: 172.16.0.0/16

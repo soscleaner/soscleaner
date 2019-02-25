@@ -601,3 +601,11 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 4)
         self.assertTrue('foo' in self.cleaner.kw_db.keys())
+
+    def test67_keywords_from_config_file(self):
+        """from issue #92 - keywords not read from config file"""
+        self.cleaner.config_file = 'testdata/config_file'
+        self.cleaner._read_later_config_options()
+        self.cleaner._keywords2db()
+        self.assertTrue('keywordfromfile1' in self.cleaner.kw_db.keys())
+        self.assertTrue('keywordfromfile2' in self.cleaner.kw_db.keys())
