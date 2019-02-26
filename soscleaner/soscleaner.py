@@ -821,14 +821,14 @@ class SOSCleaner:
                 # we care about, we regex it out of the line.
                 if domain_found:
                     o_hostname = self._hn2db(hostname)
-                    line = re.sub(r'\b%s\b' % hostname, o_hostname, line, flags=re.IGNORECASE)
+                    line = re.sub(r'\b%s\b(?i)' % hostname, o_hostname, line)
 
             # Now that the hard work is done, we account for the handful of
             # single-word "short domains" that we care about. We start with
             # the hostname.
             if self.hostname is not None:
                 o_host = self._hn2db(self.hostname)
-                line = re.sub(r'\b%s\b' % self.hostname, o_host, line, flags=re.IGNORECASE)
+                line = re.sub(r'\b%s\b(?i)' % self.hostname, o_host, line)
 
             # There are a handful of short domains that we want to obfuscate
             # Things like 'localhost' and 'localdomain'
@@ -837,7 +837,7 @@ class SOSCleaner:
             # they're only 1 word, so we handle them here.
             for domain in self.short_domains:
                 o_host = self._hn2db(domain)
-                line = re.sub(r'\b%s\b' % domain, o_host, line, flags=re.IGNORECASE)
+                line = re.sub(r'\b%s\b(?i)' % domain, o_host, line)
 
             return line
 
