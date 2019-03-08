@@ -104,14 +104,14 @@ class SOSCleaner:
 
                 sys.exit(8)
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("UID_ERROR - unable to run SOSCleaner - you do not appear to be the root user")
 
     def _read_early_config_options(self):
         """Reads an optional configuration file to load often-used defaults for
         domains, networks, keywords, etc. If a config file is present and command-line
-        parameters are passed in, they will be addadtive, with the config file being
+        parameters are passed in, they will be additive, with the config file being
         read in first.
         """
 
@@ -186,7 +186,7 @@ class SOSCleaner:
                     else:
                         self.logger.con_out("No config found - NetworkConfig.networks")
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             self.logger.con_out("READ_CONFIG_OPTIONS_ERROR - Unable to load configs from file %s - Continuing without those values", self.config_file)
 
@@ -199,7 +199,7 @@ class SOSCleaner:
 
             return data
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("FILE_OPEN_ERROR - unable to open %s", filename)
 
@@ -221,7 +221,7 @@ class SOSCleaner:
                     return True
                 else:
                     return False
-            except Exception, e:  # pragma: no cover
+            except Exception as e:  # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CONFIRM_TEXT_FILE_ERROR - Cannot confirm file type - %s", filename)
 
@@ -300,7 +300,7 @@ class SOSCleaner:
                 compression_type = os.popen(command).read().strip('\n').split(':')[1].strip().lower()
                 return compression_type
 
-            except Exception, e:  # pragma: no cover
+            except Exception as e:  # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("GET_COMPRESSION_SIG_ERROR: Unable to verify compression sig - %s", filename)
 
@@ -324,7 +324,7 @@ class SOSCleaner:
 
                             return return_path
 
-                        except Exception, e:  # pragma: no cover
+                        except Exception as e:  # pragma: no cover
                             self.logger.exception(e)
                             raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
 
@@ -339,11 +339,11 @@ class SOSCleaner:
 
                         return return_path
 
-                except Exception, e:    # pragma: no cover
+                except Exception as e:    # pragma: no cover
                     self.logger.exception(e)
                     raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CompressionError: Unable To Determine Compression Type')
 
@@ -362,7 +362,7 @@ class SOSCleaner:
 
             return True
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('PRIME_USERDB_ERROR: unable to prime user database')
 
@@ -374,7 +374,7 @@ class SOSCleaner:
                 new_user = self._user2db(username)
                 self.logger.con_out("Adding user from the command line - %s > %s", username, new_user)
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("PROCESS_USER_OPTION_ERROR: unable to add user to user database")
 
@@ -393,7 +393,7 @@ class SOSCleaner:
 
             return line
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('SUB_USERNAME_ERROR: Unable to obfuscate usernames on line - %s', line)
 
@@ -413,7 +413,7 @@ class SOSCleaner:
 
             return o_user
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("USER_TO_DB_ERROR: unable to add user %s to database", username)
 
@@ -452,7 +452,7 @@ class SOSCleaner:
 
                 return False
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("PROCESS_USERS_FILE_ERROR: unable to add file - %s", self.users_file)
 
@@ -477,7 +477,7 @@ class SOSCleaner:
                     line = line.replace(ip, new_ip)
             return line
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("SUB_IP_ERROR: Unable to obfuscate IP address")
 
@@ -512,7 +512,7 @@ class SOSCleaner:
 
             self.mac_report = mac_report_name
 
-        except Exception, e:  # pragma no cover
+        except Exception as e:  # pragma no cover
             self.logger.exception(e)
             raise Exception('CREATE_MAC_REPORT_ERROR: Unable to create report - %s', mac_report_name)
 
@@ -534,7 +534,7 @@ class SOSCleaner:
 
             self.kw_report = kw_report_name
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_KW_REPORT_ERROR: unable to create report - $%s', kw_report_name)
 
@@ -554,7 +554,7 @@ class SOSCleaner:
             os.chmod(un_report_name, 0o600)
 
             self.un_report = un_report_name
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_USERNAME_REPORT_ERROR: Unable to create report - %s', un_report_name)
 
@@ -575,7 +575,7 @@ class SOSCleaner:
             self.logger.info('Completed Hostname Report')
 
             self.hn_report = hn_report_name
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_HN_REPORT_ERROR: Unable to create report - %s', hn_report_name)
 
@@ -597,7 +597,7 @@ class SOSCleaner:
 
             self.dn_report = dn_report_name
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_DN_REPORT_ERROR: Unable to create report - %s', dn_report_name)
 
@@ -616,7 +616,7 @@ class SOSCleaner:
 
             self.ip_report = ip_report_name
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_IP_REPORT_ERROR: Unable to create report - %s', ip_report_name)
 
@@ -628,7 +628,7 @@ class SOSCleaner:
         self._create_dn_report()  # pragma: no cover
         self._create_un_report()  # pragma: no cover
         self._create_mac_report()  # pragma: no cover
-        os.chmod(self.logfile, 0o600)
+        # os.chmod(self.logfile, 0o600)
 
     #############################
     #   MAC Address functions   #
@@ -646,7 +646,7 @@ class SOSCleaner:
                     line = line.replace(mac, new_mac)
             return line
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("SUB_MAC_ERROR: Unable to obfuscate MAC address")
 
@@ -698,7 +698,7 @@ class SOSCleaner:
             if o_host is not None:
                 return o_host
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("HN2DB_ERROR: Unable to add hostname to database - %s", host)
 
@@ -719,7 +719,7 @@ class SOSCleaner:
 
             return hostname, domainname
 
-        except IOError, e:  # the 'hostname' file doesn't exist or isn't readable for some reason
+        except IOError as e:  # the 'hostname' file doesn't exist or isn't readable for some reason
             self.logger.warning("Unable to determine system hostname!!!")
             self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
             self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
@@ -732,7 +732,7 @@ class SOSCleaner:
 
             return hostname, domainname
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('GET_HOSTNAME_ERROR: Cannot resolve hostname from %s') % hostfile
 
@@ -841,7 +841,7 @@ class SOSCleaner:
 
             return line
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("SUB_HOSTNAME_ERROR: Unable to obfuscate hostnames on line - %s", line)
 
@@ -876,7 +876,7 @@ class SOSCleaner:
 
             return new_line
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("CLEAN_LINE_ERROR: Cannot Clean Line - %s" % line)
 
@@ -896,7 +896,7 @@ class SOSCleaner:
 
                     tmp_file.seek(0)
 
-            except Exception, e:  # pragma: no cover
+            except Exception as e:  # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CLEAN_FILE_ERROR: Unable to obfuscate file - %s" % f)
 
@@ -914,7 +914,7 @@ class SOSCleaner:
                     self.logger.con_out("CLEAN_FILE_ERROR: Removing partially obfuscated report and other artifacts")
                     self.logger.con_out("CLEAN_FILE_ERROR: Please remedy the disk pressure and re-run soscleaner")
                     self._clean_up()
-            except Exception, e:  # pragma: no cover
+            except Exception as e:  # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CLEAN_FILE_ERROR: Unable to write obfuscated file - %s" % f)
 
@@ -932,11 +932,11 @@ class SOSCleaner:
                 fname = os.path.basename(f)
                 f_new = os.path.join(self.dir_path, fname)
                 shutil.copyfile(f, f_new)
-        except IOError, e:
+        except IOError as e:
             self.logger.con_out("ExtraFileError: %s is not readable or does not exist. Skipping File" % f)
             self.logger.exception(e)
             pass
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("ADD_EXTRA_FILES_ERROR: Unable to process extra file - %s" % f)
 
@@ -952,7 +952,7 @@ class SOSCleaner:
                 dir_list[dirName] = x
 
             return dir_list
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("WALK_REPORT_ERROR: Unable to create file list in folder - %s", folder)
 
@@ -969,7 +969,7 @@ class SOSCleaner:
             self.file_count = len(rtn)  # a count of the files we'll have in the final cleaned sosreport
             return rtn
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("FILE_LIST_ERROR: Unable to create file list from directory - %s", folder)
 
@@ -981,7 +981,7 @@ class SOSCleaner:
         try:
             shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("MAKE_DESTINATION_ENV_ERROR: Cannot Create Destination Environment")
 
@@ -998,7 +998,7 @@ class SOSCleaner:
                     self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
             os.chmod(self.archive_path, 0o600)  # per #90
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('CREATE_ARCHIVE_ERROR: Unable to create archive - %s', self.archive_path)
 
@@ -1020,7 +1020,7 @@ class SOSCleaner:
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("CLEAN_UP_ERROR: Unable to complete clean up process")
 
@@ -1045,7 +1045,7 @@ class SOSCleaner:
             else:
                 return None
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("DN2DB_ERROR: Unable to retrieve obfuscated domain - %s", domain)
 
@@ -1065,7 +1065,7 @@ class SOSCleaner:
 
             return True
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("DOMAINS2DB_ERROR: Unable to process domains")
 
@@ -1102,7 +1102,7 @@ class SOSCleaner:
                         self.logger.con_out("Added obfuscated keyword - %s > %s", kw, o_kw)
                         self.kw_count += 1
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("KEYWORDS2DB_ERROR: Unable to process keyword - %s", keyword)
 
@@ -1117,7 +1117,7 @@ class SOSCleaner:
 
             return line
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception('SUB_KEYWORDS_ERROR: Unable to obfuscate keywords on line - %s', line)
 
@@ -1144,7 +1144,7 @@ class SOSCleaner:
                 fh.close()
             else:
                 self.logger.info("No route file found. Unable to auto-add routed networks for this system.")
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("PROCESS_ROUTE_FILE_ERROR: Cannot process file - %s", route_path)
 
@@ -1162,7 +1162,7 @@ class SOSCleaner:
 
             return retval
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("IP4_NEW_OBFUSCATE_NET_ERROR: Unable to create new network - %s", new_net_string)
 
@@ -1177,7 +1177,7 @@ class SOSCleaner:
 
             return net, subnet
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("IP4_PARSE_NETWORK_ERROR: Unable to parse network - %s", network)
 
@@ -1190,7 +1190,7 @@ class SOSCleaner:
                 return True
             return False
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("IP4_NETWORK_IN_DB_ERROR: Unable to test for network in network database - %s", network)
 
@@ -1210,7 +1210,7 @@ class SOSCleaner:
             self.net_db.append(loopback_entry)
             self.logger.con_out("Creating Loopback Network Entry")
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("ADD_LOOPBACK_NETWORK_ERROR: Unable to create obfuscated loopback network")
 
@@ -1236,7 +1236,7 @@ class SOSCleaner:
             else:
                 self.logger.info("Network already exists in database. Not obfuscating. - %s" % network)
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("IP4_ADD_NETWORK_ERROR: Unable to add obfuscated network - %s", network)
 
@@ -1255,7 +1255,7 @@ class SOSCleaner:
 
             return network
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("IP4_FIND_NETWORK_ERROR: Unable to determin obfuscated network for IP address - %s", ip)
 
@@ -1269,7 +1269,7 @@ class SOSCleaner:
                 return True
             return False
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("IP4_IN_DB_ERROR: Unable to verify if IP is in database - %s", ip)
 
@@ -1308,7 +1308,7 @@ class SOSCleaner:
                 os.makedirs(self.dir_path)    # create the dir_path directory
             self._add_extra_files(files)
 
-        except OSError, e:  # pragma: no cover
+        except OSError as e:  # pragma: no cover
             # If the file already exists
             if e.errno == errno.EEXIST:
                 pass
@@ -1323,7 +1323,7 @@ class SOSCleaner:
                 self.logger.exception(e)
                 raise Exception("CLEAN_FILES_ONLY_ERROR: Unable to clean file from dataset - OSError")
 
-        except Exception, e:  # pragma: no cover
+        except Exception as e:  # pragma: no cover
             self.logger.exception(e)
             raise Exception("CLEAN_FILES_ONLY_ERROR: Unable toclean files from dataset")
 
@@ -1335,7 +1335,7 @@ class SOSCleaner:
 
             return True
 
-        except Exception, e:
+        except Exception as e:
             self.logger.exception(e)
             raise Exception("PROCESS_REPORT_DIR_ERROR: Unable to set report output directory")
 
@@ -1346,7 +1346,7 @@ class SOSCleaner:
             self._start_logging(self.logfile)
             self._check_uid()  # make sure it's soscleaner is running as root
             self._get_disclaimer()
-        except Exception, e:
+        except Exception as e:
             self.logger.exception(e)
             raise Exception("START_SOSCLEANER_ERROR: Unable to create needed artifacts to run soscleaner")
 
@@ -1373,7 +1373,6 @@ class SOSCleaner:
             self._process_user_option(options.users)
         if options.users_file:
             self.users_file = options.users_file
-        self.report_dir = options.report_dir
         if not sosreport:
             if not options.files:
                 raise Exception("Error: You must supply either an sosreport and/or files to process")
@@ -1415,10 +1414,4 @@ class SOSCleaner:
         self._create_reports()
         self._create_archive()
 
-        return_data = [self.archive_path, self.logfile, self.ip_report]
-        if self.hostname:
-            return_data.append(self.hn_report)
-        if len(self.dn_db) >= 1:
-            return_data.append(self.dn_report)
-
-        return return_data
+        return True
