@@ -628,6 +628,7 @@ class SOSCleaner:
         self._create_dn_report()  # pragma: no cover
         self._create_un_report()  # pragma: no cover
         self._create_mac_report()  # pragma: no cover
+        self._create_kw_report()  # pragma: no cover
         # os.chmod(self.logfile, 0o600)
 
     #############################
