@@ -14,35 +14,37 @@ The default way to use SOSCleaner is using the command-line application of the s
   Usage: soscleaner <OPTIONS> /path/to/sosreport
 
   Options:
-  --version             show program's version number and exit
-  -h, --help            show this help message and exit
-  -l LOGLEVEL, --log_level=LOGLEVEL
-                        The Desired Log Level (default = INFO) Options are
-                        DEBUG, INFO, WARNING, ERROR
-  -d DOMAIN, --domain=DOMAIN
-                        additional domain to obfuscate (optional). use a flag
-                        for each additional domain
-  -f FILES, --file=FILES
-                        addtional files to be analyzed in addition to or in
-                        exception of sosreport
-  -q, --quiet           disable output to STDOUT
-  -k KEYWORDS, --keywords=KEYWORDS
-                        optional text file to be obfuscated. format is one
-                        word per line. warning: long lists may slow down
-                        soscleaner.
-  -H HOSTNAMEPATH, --hostname-path=HOSTNAMEPATH
-                        optional path to hostname file.
-  -n NETWORK, --network=NETWORK
-                        networks to be obfuscatedi (optional). by default it
-                        looks through known routes to generate a list from a
-                        sosreport
-  -u USER, --user=USER  additional usernames to obfuscate in the sosreport or
-                        dataset - one user per flag
-  -U USERS_FILE, --users-file=USERS_FILE
-                        line-delimited list of users to obfuscate
-  -o DIRECTORY, --output-dir=DIRECTORY
-                        Directory to store soscleaner obfuscated sosreport or
-                        dataset
+    --version             show program's version number and exit
+    -h, --help            show this help message and exit
+    -l LOGLEVEL, --log_level=LOGLEVEL
+                          The Desired Log Level (default = INFO) Options are
+                          DEBUG, INFO, WARNING, ERROR
+    -d DOMAIN, --domain=DOMAIN
+                          additional domain to obfuscate (optional). use a flag
+                          for each additional domain
+    -f FILES, --file=FILES
+                          addtional files to be analyzed in addition to or in
+                          exception of sosreport
+    -q, --quiet           disable output to STDOUT
+    -k KEYWORD, --keyword=KEYWORD
+                          additional keywords to obfuscate. use multiple times
+                          for multiple keywords
+    -K KEYWORDS_FILE, --keywords_file=KEYWORDS_FILE
+                          line-delimited list of keywords to obfuscate
+    -H HOSTNAMEPATH, --hostname-path=HOSTNAMEPATH
+                          optional path to hostname file.
+    -n NETWORK, --network=NETWORK
+                          networks to be obfuscatedi (optional). by default it
+                          looks through known routes to generate a list from a
+                          sosreport
+    -u USER, --user=USER  additional usernames to obfuscate in the sosreport or
+                          dataset - one user per flag
+    -U USERS_FILE, --users-file=USERS_FILE
+                          line-delimited list of users to obfuscate
+    -o DIRECTORY, --output-dir=DIRECTORY
+                          Directory to store soscleaner obfuscated sosreport or
+                          dataset
+    -m, --macs            disable MAC address obfuscation
 
 Using a config file
 --------------------
@@ -65,6 +67,9 @@ If you find yourself having to use additional command line options a lot, you ca
 
   [NetworkConfig]
   networks: 172.16.0.0/16  # additional networks to obfuscate
+
+  [MacConfig]
+  obfuscate_macs = False  # True/False (defaults to True) - if False MAC obfuscation will not occur
 
 Using within a python prompt
 -----------------------------

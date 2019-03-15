@@ -90,6 +90,7 @@ class SOSCleaner:
         self._prime_userdb()
         self.config_file = '/etc/sysconfig/soscleaner'
         self._read_early_config_options()
+        self.obfuscate_macs = True  # issue #98
 
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
@@ -185,6 +186,10 @@ class SOSCleaner:
                             self.logger.con_out("Adding network from config file - %s", network)
                     else:
                         self.logger.con_out("No config found - NetworkConfig.networks")
+
+                if config.has_section('MacConfig'):
+                    if config.has_option('MacConfig', 'obfuscate_macs'):
+                        self.obfuscate_macs = bool(config.get('MacConfig', 'obfuscate_macs'))
 
         except Exception as e:  # pragma: no cover
             self.logger.exception(e)
@@ -871,7 +876,8 @@ class SOSCleaner:
             new_line = self._sub_hostname(line)  # Hostname substitution
             new_line = self._sub_keywords(new_line)  # Keyword Substitution
             new_line = self._sub_username(new_line)  # Username substitution
-            new_line = self._sub_mac(new_line)  # MAC address obfuscation
+            if self.obfuscate_macs is True:
+                new_line = self._sub_mac(new_line)  # MAC address obfuscation
             if process_ips:
                 new_line = self._sub_ip(new_line)  # IP substitution
 
@@ -1358,6 +1364,8 @@ class SOSCleaner:
         self.loglevel = options.loglevel
         self._start_soscleaner()
         self._read_later_config_options()
+        if options.obfuscate_macs:
+            self.obfuscate_macs = options.obfuscate_macs
         self._add_loopback_network()
         if options.networks:    # we have defined networks
             self.networks = options.networks

@@ -42,6 +42,9 @@ def main():
     parser.add_option("-o", "--output-dir", action="store", default="/tmp", dest="report_dir",
                             help="Directory to store soscleaner obfuscated sosreport or dataset",
                             metavar="DIRECTORY")
+    parser.add_option("-m", "--macs", action="store_true", default=False, dest='obfuscate_macs',
+                            help="disable MAC address obfuscation",
+                            metavar="MACS")
 
     (options, args) = parser.parse_args()
     if not args and not options.files:  # we don't have an sosreport
