@@ -629,7 +629,7 @@ class SOSCleanerTests(unittest.TestCase):
     def test71_quiet_mode_bad_conf_file(self):
         self.cleaner.config_file = '/bad/path/to/config_file'
         self.cleaner._read_early_config_options()
-        self.assertFalse(self.cleaner.quiet == False)
+        self.assertFalse(self.cleaner.quiet is False)
 
     def test72_root_domain_bad_conf_file(self):
         self.cleaner.config_file = '/bad/path/to/config_file'
@@ -640,3 +640,13 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.config_file = '/bad/path/to/config_file'
         self.cleaner._read_early_config_options()
         self.assertTrue(self.cleaner.loglevel == 'INFO')
+
+    def test74_skip_mac_obfuscation(self):
+        """from #98 - makes MAC obfuscation optional"""
+        self.cleaner.obfuscate_macs = False
+        test_line = 'a line with a 00:0c:29:64:72:3e valid mac address'
+        new_line = self.cleaner._clean_line(test_line, 'somefile')
+        self.assertTrue('00:0c:29:64:72:3e' in new_line)
+        self.cleaner.obfuscate_macs = True
+        new_line2 = self.cleaner._clean_line(test_line, 'somefile')
+        self.assertFalse('00:0c:29:64:72:3e' in new_line2)
