@@ -1091,7 +1091,7 @@ class SOSCleaner:
                                 keyword = keyword.rstrip()
                                 if len(keyword) > 1:
                                     if self.kw_db.get(keyword) is None:  # no duplicates
-                                        o_kw = "keyword%s" % self.kw_count
+                                        o_kw = "obfuscatedkeyword%s" % self.kw_count
                                         self.kw_db[keyword] = o_kw
                                         self.logger.con_out("Added Obfuscated Keyword from Keywords File - %s > %s", keyword, o_kw)
                                         self.kw_count += 1
@@ -1104,7 +1104,7 @@ class SOSCleaner:
             if len(self.keywords) > 0:
                 for kw in self.keywords:
                     if len(kw) > 1:  # no single digit keywords
-                        o_kw = "keyword%s" % self.kw_count
+                        o_kw = "obfuscatedkeyword%s" % self.kw_count
                         self.kw_db[kw] = o_kw
                         self.logger.con_out("Added obfuscated keyword - %s > %s", kw, o_kw)
                         self.kw_count += 1
