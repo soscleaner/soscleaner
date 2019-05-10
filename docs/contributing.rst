@@ -33,7 +33,7 @@ We've just started using `gitchangelog <https://pypi.org/project/gitchangelog/>`
 
       Is WHO is concerned by the change.
 
-      'dev'  is for developpers (API changes, refactors...)
+      'dev'  is for developers (API changes, refactors...)
       'usr'  is for final users (UI changes)
       'pkg'  is for packagers   (packaging changes)
       'test' is for testers     (test only related changes)

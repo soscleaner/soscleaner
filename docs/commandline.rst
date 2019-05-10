@@ -23,7 +23,7 @@ The default way to use SOSCleaner is using the command-line application of the s
                           additional domain to obfuscate (optional). use a flag
                           for each additional domain
     -f FILES, --file=FILES
-                          addtional files to be analyzed in addition to or in
+                          additional files to be analyzed in addition to or in
                           exception of sosreport
     -q, --quiet           disable output to STDOUT
     -k KEYWORD, --keyword=KEYWORD
