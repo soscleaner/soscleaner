@@ -1,0 +1,43 @@
+.\" Manpage for soscleaner
+.\" Contact jduncan@redhat.com for errors / typos
+.TH man 8 "20 Jul 2014" "0.2.1" "soscleaner"
+.SH NAME
+soscleaner - clean sosreports of sensitive information
+.SH SYNOPSIS
+soscleaner -l LOGLEVEL -d DOMAIN -f FILE -q
+.SH DESCRIPTION
+soscleaner is an attempt to begin the process of cleaning potentially sensitive hostnames and IPv4 addresses from an sosreport after it has been created. It is NOT a full cleaning, but it attempts to be a good starting point. If a Fully Qualified Domain Name is used for the hostname, it can substitute instances of hostnames on that domain with a consistent substitution. If an FQDN is not used, it will replace all instances of the short hostname. It also replaces instances of IPv4 addresses with a randomly assignable IPv4 range.
+.SH OPTIONS
+.TP
+.BR \-d ", " \-\-domain = \fIDOMAIN\fR
+optional additional domains to be analyzed during the soscleaner process
+.TP
+.BR \-f ", " \-\-file = \fIFILE\fR
+optional additional files to be analyzed. Can be used in addition to supplying an sosreport, or can be used without specifying an sosreport. If no sosreport is supplied, no hostnames will be obfuscated usless the -d flag is used to add a domain for analysis
+.TP
+.BR \-l ", " \-\-loglevel = \fILOGLEVEL\fR
+the desired loglevel to be used. default is 'INFO' (including quotes). Options are 'DEBUG','INFO','WARNING','ERROR'.
+.BR \-q ", " \-\-quiet
+Quiet mode. Nothing will be output to STDOUT. logfiles will still be created.
+.SH EXAMPLES
+.TP
+.BR "supply an sosreport"\fR
+soscleaner /path/to/sosreport.tar.gz
+.TP
+.BR "change logging level"\fR
+soscleaner -l DEBUG /path/to/sosreport.tar.gz
+(warning - DEBUG level logging is extremely intensive.)
+.TP
+.BR "supply additional domains"\fR
+soscleaner -d foo.com -d google.com /path/to/sosreport.tar.gz
+.TP
+.BR "supply additional files"\fR
+soscleaner -f /path/to/file1 -f /path/to/file2 /path/to/sosreport.tar.gz
+.TP
+.BR "only analyze files"\fR
+soscleaner -f /path/to/file1 -f /path/to/file2 -d foo.com\fR
+(It is highly recommended to use the -d flag if only scanning files, so hostnames will be obfuscated.)
+.SH BUGS
+Please report new bugs to https://github.com/jduncan-rva/soscleaner/issues
+.SH AUTHOR
+Jamie Duncan (jduncan@redhat.com)
