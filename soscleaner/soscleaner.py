@@ -323,7 +323,7 @@ class SOSCleaner:
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
                             self.logger.info('LZMA Hack - Creating %s', self.origin_path)
-                            os.system('mkdir %s' % self.origin_path)
+                            os.makedirs( self.origin_path, 0755 )
                             os.system('tar -xJf %s -C %s' % (path, self.origin_path))
                             return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
