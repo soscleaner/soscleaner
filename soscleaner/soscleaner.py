@@ -133,7 +133,7 @@ class SOSCleaner:
             else:
                 return True
 
-        except Exception:  # pragma: no cover
+        except OSError as e: # pragma: no cover
             pass
 
     def _read_later_config_options(self):
