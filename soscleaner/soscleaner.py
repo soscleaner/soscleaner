@@ -428,7 +428,8 @@ class SOSCleaner:
         From RFE #79
         """
 
-        ignored_users = ('reboot', 'shutdown', 'wtmp')  # users and entries that we don't want to add that show up in last
+        # users and entries that we don't want to add that show up in last
+        ignored_users = ('landscape', 'lxd', 'reboot', 'shutdown', 'ubuntu', 'wtmp')
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
         try:
