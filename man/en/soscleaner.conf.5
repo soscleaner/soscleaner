@@ -1,0 +1,64 @@
+.TH "soscleaner.conf" "5" "SOSCLEANER" "soscleaner configuration file"
+.SH NAME
+soscleaner.conf \- soscleaner configuration
+.SH DESCRIPTION
+.sp
+soscleaner uses a optional configuration file at /etc/soscleaner.conf.
+.SH PARAMETERS
+.sp
+There are five optional sections in the soscleaner configuration file:
+Default, DomainConfig, KeywordConfig, NetworkConfig and MacConfig.
+
+Some options accept a comma separated list of values.
+
+.SH EXAMPLES
+A sample config file:
+.LP
+[Default]
+.br
+# The loglevel to run at, default is 'info'
+.br
+loglevel = debug
+.br
+# Domain to use for obfuscation
+.br
+root_domain = example.com
+.br
+# Defaults to False, True suppresses output to stdout
+.br
+quiet = True
+.LP
+[DomainConfig]
+.br
+# Additional domains to obfuscate
+.br
+domains: example.com,foo.com,domain.com
+.LP
+[KeywordConfig]
+.br
+# Keywords to obfuscate
+.br
+keywords: foo,bar,some,other,words
+.br
+# Keyword files to obfuscate
+.br
+keyword_files: keywords.txt
+.LP
+[NetworkConfig]
+.br
+# Additional networks to obfuscate
+.br
+networks: 172.16.0.0/16
+.LP
+[MacConfig]
+.br
+# True/False (defaults to True) - if False MAC obfuscation
+.br
+obfuscate_macs = False
+.br
+.SH FILES
+.sp
+/etc/soscleaner.conf
+.SH SEE ALSO
+.sp
+soscleaner(8)
