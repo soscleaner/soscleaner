@@ -33,6 +33,7 @@ from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from itertools import imap
 from random import randint
 import ConfigParser
+import subprocess
 
 
 class SOSCleaner:
@@ -323,8 +324,16 @@ class SOSCleaner:
                         try:
                             self.logger.info('Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
                             self.logger.info('LZMA Hack - Creating %s', self.origin_path)
-                            os.makedirs( self.origin_path, 0755 )
-                            os.system('tar -xJf %s -C %s' % (path, self.origin_path))
+                            os.system('mkdir %s' % self.origin_path)
+                            subprocess.Popen(["tar", "-xJf", path, "-C", self.origin_path]).wait()
+
+                            
+                            
+                            
+                            
+                            
+                            
+                            
                             return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
                             return return_path
