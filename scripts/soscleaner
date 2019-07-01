@@ -3,6 +3,7 @@
 
 from soscleaner import SOSCleaner
 from optparse import OptionParser
+import os
 import sys
 
 
@@ -55,7 +56,13 @@ def main():
 
     sosreport = None
     if args:
-        sosreport = args[0]  # grab the sosreport path
+        for arg in args:
+            file = os.path.isfile(arg)
+            if file == True:
+                sosreport = args[0]  # grab the sosreport path
+            else:
+                print("ERROR: No presence of an existing file to sanitize detected")
+                sys.exit(1)
 
     cleaner.clean_report(options, sosreport)
 
