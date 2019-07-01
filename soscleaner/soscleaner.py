@@ -450,7 +450,7 @@ class SOSCleaner:
 
                 # first, we get out the unique user entries
                 for line in data:
-                    if len(line) > 1:  # there are some blank lines at the end of the last ouput
+                    if len(line) > 1:  # there are some blank lines at the end of the last output
                         sorted_users.append(line.split()[0])
 
                 # then we add them to the obfuscation database
@@ -676,7 +676,7 @@ class SOSCleaner:
                 # using this lambda to create a valid randomized mac address is
                 # documented at https://www.commandlinefu.com/commands/view/7245/generate-random-valid-mac-addresses
                 # many thanks for putting that little thought together
-                o_mac = ':'.join(['%02x'%x for x in imap(lambda x:randint(0, 255), range(6))])
+                o_mac = ':'.join(['%02x' % x for x in imap(lambda x:randint(0, 255), range(6))])
                 self.logger.debug("Creating new obfuscated MAC address: %s > %s", mac, o_mac)
                 self.mac_db[mac] = o_mac
 
@@ -760,7 +760,7 @@ class SOSCleaner:
         Each label can be a maximum of 63 characters
         With 4th, 5th, 6th level domains being more the norm today, I wanted to take as
         broad an interpretation of a domain as I could. SO:
-        seperated by a word boundary
+        separated by a word boundary
         the lower domains can be a max of 190 characters, not including dots
         any valid domain character is allowed (alpha, digit, dash)
         the top level domain can be up to 63 characters, and not contain numbers

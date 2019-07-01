@@ -16,7 +16,7 @@ def main():
                             help="additional domain to obfuscate (optional). use a flag for each additional domain",
                             metavar="DOMAIN")
     parser.add_option("-f", "--file", action="append", default=[], dest="files",
-                            help="addtional files to be analyzed in addition to or in exception of sosreport",
+                            help="additional files to be analyzed in addition to or in exception of sosreport",
                             metavar="FILES")
     parser.add_option("-q", "--quiet", action="store_true", default=False, dest='quiet',
                             help="disable output to STDOUT",

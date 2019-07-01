@@ -8,9 +8,9 @@ Purpose
 -------
 SOSCleaner is a tool to consistently obfuscate sensitive information in large datasets like Red Hat sosreports. It works on any data set, from 1 file to thousands.
 
-Documenation
+Documentation
 ----------------
-Documenation has been moved to ReadTheDocs.
+Documentation has been moved to ReadTheDocs.
 
 https://soscleaner.readthedocs.io
 
