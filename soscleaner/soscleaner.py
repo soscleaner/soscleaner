@@ -247,7 +247,7 @@ class SOSCleaner:
     def _start_logging(self, filename):
         """Creates the logging objects and starts a logging instance."""
         # will get the logging instance going
-        loglevel_config = 'logging.%s' % self.loglevel
+        loglevel_config = '%s' % self.loglevel
 
         # i'd like the stdout to be under another logging name than 'con_out'
         console_log_level = 25  # between INFO and WARNING
@@ -261,7 +261,7 @@ class SOSCleaner:
         logging.Logger.con_out = con_out
 
         logging.basicConfig(filename=filename,
-                            level=eval(loglevel_config),
+                            level=logging.getLevelName(loglevel_config),
                             format='%(asctime)s %(name)s %(levelname)s: %(message)s',
                             datefmt='%m-%d %H:%M:%S'
                             )
