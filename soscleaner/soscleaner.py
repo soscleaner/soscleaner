@@ -89,7 +89,7 @@ class SOSCleaner:
         self.user_db = dict()
         self.user_count = 1
         self._prime_userdb()
-        self.config_file = '/etc/sysconfig/soscleaner'
+        self.config_file = '/etc/soscleaner.conf'
         self._read_early_config_options()
         self.obfuscate_macs = True  # issue #98
 

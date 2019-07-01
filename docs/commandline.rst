@@ -48,7 +48,7 @@ The default way to use SOSCleaner is using the command-line application of the s
 
 Using a config file
 --------------------
-If you find yourself having to use additional command line options a lot, you can create a config file at ``/etc/sysconfig/soscleaner`` to handle these default values for you. A sample config file:
+If you find yourself having to use additional command line options a lot, you can create a config file at ``/etc/soscleaner.conf`` to handle these default values for you. A sample config file:
 
 .. code-block:: ini
   :linenos:
