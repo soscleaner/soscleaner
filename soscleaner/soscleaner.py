@@ -326,6 +326,14 @@ class SOSCleaner:
                             self.logger.info('LZMA Hack - Creating %s', self.origin_path)
                             os.system('mkdir %s' % self.origin_path)
                             subprocess.Popen(["tar", "-xJf", path, "-C", self.origin_path]).wait()
+
+                            
+                            
+                            
+                            
+                            
+                            
+                            
                             return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
                             return return_path
