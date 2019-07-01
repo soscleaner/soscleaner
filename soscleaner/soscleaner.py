@@ -52,7 +52,14 @@ class SOSCleaner:
         self.domainname = None
         self.report_dir = '/tmp'
         self.version = '0.4.3'
-        self.ip_false_positives = ['installed_rpms', 'sos_commands/rpm']
+        self.false_positives = [
+            'installed-debs',
+            'installed_rpms',
+            'sos_commands/dpkg',
+            'sos_commands/rpm',
+            'sos_commands/snappy/snap_list_--all',
+            'sos_commands/snappy/snap_--version'
+        ]
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
         self.ip_db = list()
@@ -874,22 +881,23 @@ class SOSCleaner:
         """
 
         try:
-            process_ips = True
-            # We want to skip the files in self.ip_false_positives for IP
-            # obfuscation because they don't have any IP info in them
-            # and they generate a lot of false positives that much up the
-            # obfuscation and confuse people when they're working with the files
-            #  Issue #60
-            for false_positive in self.ip_false_positives:
+            process_obfuscation = True
+            # We want to skip the files in self.false_positives for all
+            # obfuscation but keywords because they don't have any sensible
+            # info in them and they generate a lot of false positives that
+            # much up the obfuscation and confuse people when they're working
+            # with the files
+            # Issues #60 & #101
+            for false_positive in self.false_positives:
                 if false_positive in filename:
-                    process_ips = False
-            new_line = self._sub_hostname(line)  # Hostname substitution
-            new_line = self._sub_keywords(new_line)  # Keyword Substitution
-            new_line = self._sub_username(new_line)  # Username substitution
+                    process_obfuscation = False
+            new_line = self._sub_keywords(line)  # Keyword Substitution
             if self.obfuscate_macs is True:
                 new_line = self._sub_mac(new_line)  # MAC address obfuscation
-            if process_ips:
+            if process_obfuscation:
+                new_line = self._sub_hostname(new_line)  # Hostname substitution
                 new_line = self._sub_ip(new_line)  # IP substitution
+                new_line = self._sub_username(new_line)  # Username substitution
 
             return new_line
 
