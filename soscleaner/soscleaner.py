@@ -30,9 +30,9 @@ import tempfile
 import logging
 import tarfile
 from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
-from itertools import imap
+
 from random import randint
-import ConfigParser
+import configparser
 import subprocess
 
 
@@ -128,7 +128,7 @@ class SOSCleaner:
         """
 
         try:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             if os.path.exists(self.config_file):
                 config.read(self.config_file)
 
@@ -155,7 +155,7 @@ class SOSCleaner:
         """
 
         try:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             if os.path.exists(self.config_file):
                 config.read(self.config_file)
                 self.logger.con_out(
@@ -194,8 +194,10 @@ class SOSCleaner:
                             "No config found - KeywordConfig.keyword_files")
 
                 # load in networks
-                # we need them to be in a list so we can process them individually
-                # each network should be a CIDR notation string, eg 192.168.1.0/24
+                # we need them to be in a list so we can process
+                # them individually
+                # each network should be a CIDR notation
+                # string, eg 192.168.1.0/24
                 if config.has_section('NetworkConfig'):
                     if config.has_option('NetworkConfig', 'networks'):
                         networks = config.get('NetworkConfig', 'networks')
@@ -232,15 +234,20 @@ class SOSCleaner:
             raise Exception("FILE_OPEN_ERROR - unable to open %s", filename)
 
     def _skip_file(self, d, files):
-        """The function passed into shutil.copytree to ignore certain patterns and filetypes
-        Currently Skipped: 1) Directories - handled by copytree 2) Symlinks - handled by copytree
+        """The function passed into shutil.copytree to ignore certain
+        patterns and filetypes
+        Currently Skipped:
+        1) Directories - handled by copytree
+        2) Symlinks - handled by copytree
         3) Write-only files (stuff in /proc)
         Binaries (can't scan them)
         Sockets and FIFO files. Scanning them locks up the copying.
         """
         def confirm_text_file(filename):
-            """I know this is an epic hack, but I've seen a _ton_ of inconsistency around different
-            distribution's builds of python-magic. Until it stabilizes, I'm just going to hack around it.
+            """I know this is an epic hack, but I've seen a _ton_
+            of inconsistency around different distribution's builds
+            of python-magic. Until it stabilizes, I'm just going to
+            hack around it.
             """
             try:
                 command = "file %s" % filename
@@ -302,11 +309,14 @@ class SOSCleaner:
         self.logger.con_out("Log File Created at %s" % filename)
 
     def _prep_environment(self):
-        """Creates the needed definitions to identify the unique soscleaner runs
-        It creates a 16 character UUID, then uses that to create an origin_path to define
-        where the temporary working files are stored, a dir_path that is where the
-        obfuscated files are located, and a session value, which is used in multiple
-        locations to identify objects for a given soscleaner run
+        """Creates the needed definitions to identify the unique
+        soscleaner runs
+        It creates a 16 character UUID, then uses that to
+        create an origin_path to define where the temporary working
+        files are stored, a dir_path that is where the
+        obfuscated files are located, and a session value,
+        which is used in multiple locations to identify objects
+        for a given soscleaner run
         """
 
         # we set up our various needed directory structures, etc.
@@ -439,7 +449,7 @@ class SOSCleaner:
 
         try:
             if self.user_count > 0:    # we have obfuscated keywords to work with
-                for user, o_user in self.user_db.items():
+                for user, o_user in list(self.user_db.items()):
                     if user in line:
                         line = re.sub(r'\b%s\b(?i)' % user, o_user, line)
                         self.logger.debug(
@@ -570,7 +580,7 @@ class SOSCleaner:
             mac_report = open(mac_report_name, 'w')
             mac_report.write('Original MAC Address,Obfuscated MAC Address\n')
             if len(self.mac_db) > 0:
-                for k, v in self.mac_db.items():
+                for k, v in list(self.mac_db.items()):
                     mac_report.write('%s,%s\n' % (k, v))
             else:
                 mac_report.write('None,None\n')
@@ -595,7 +605,7 @@ class SOSCleaner:
             kw_report = open(kw_report_name, 'w')
             kw_report.write('Original Keyword,Obfuscated Keyword\n')
             if self.kw_count > 0:
-                for keyword, o_keyword in self.kw_db.items():
+                for keyword, o_keyword in list(self.kw_db.items()):
                     kw_report.write('%s,%s\n' % (keyword, o_keyword))
             else:
                 kw_report.write('None,None\n')
@@ -622,7 +632,7 @@ class SOSCleaner:
                 'Creating Userfname Report - %s', un_report_name)
             un_report = open(un_report_name, 'w')
             un_report.write('Original Username,Obfuscated Username\n')
-            for k, v in self.user_db.items():
+            for k, v in list(self.user_db.items()):
                 un_report.write('%s,%s\n' % (k, v))
             un_report.close()
             os.chmod(un_report_name, 0o600)
@@ -643,7 +653,7 @@ class SOSCleaner:
             hn_report = open(hn_report_name, 'w')
             hn_report.write('Original Hostname,Obfuscated Hostname\n')
             if self.hostname_count > 0:
-                for k, v in self.hn_db.items():
+                for k, v in list(self.hn_db.items()):
                     hn_report.write('%s,%s\n' % (k, v))
             else:
                 hn_report.write('None,None\n')
@@ -667,7 +677,7 @@ class SOSCleaner:
             dn_report = open(dn_report_name, 'w')
             dn_report.write('Original Domain,Obfuscated Domain\n')
             if self.domain_count > 0:
-                for domain, o_domain in self.dn_db.items():
+                for domain, o_domain in list(self.dn_db.items()):
                     dn_report.write('%s,%s\n' % (domain, o_domain))
             else:
                 dn_report.write('None,None\n')
@@ -721,7 +731,7 @@ class SOSCleaner:
     def _sub_mac(self, line):
         """Finds potential MAC addresses and obfuscates them in a single line."""
         try:
-            pattern = re.compile(ur'(?:[0-9a-fA-F]:?){12}')
+            pattern = re.compile(r'(?:[0-9a-fA-F]:?){12}')
             macs = re.findall(pattern, line)
             if len(macs) > 0:
                 for mac in macs:
@@ -745,8 +755,8 @@ class SOSCleaner:
                 # using this lambda to create a valid randomized mac address is
                 # documented at https://www.commandlinefu.com/commands/view/7245/generate-random-valid-mac-addresses
                 # many thanks for putting that little thought together
-                o_mac = ':'.join(['%02x' % x for x in imap(
-                    lambda x:randint(0, 255), range(6))])
+                o_mac = ':'.join(['%02x' % x for x in map(
+                    lambda x:randint(0, 255), list(range(6)))])
                 self.logger.debug(
                     "Creating new obfuscated MAC address: %s > %s", mac, o_mac)
                 self.mac_db[mac] = o_mac
@@ -854,7 +864,7 @@ class SOSCleaner:
             no match is found. This is used to determine if we should add a new
             subdomain to self.dn_db.
             """
-            for known_domain in self.dn_db.keys():
+            for known_domain in list(self.dn_db.keys()):
                 if known_domain in root_domain:
                     self.logger.debug(
                         "evaluated domain found in database %s > %s", root_domain, known_domain)
@@ -1074,7 +1084,7 @@ class SOSCleaner:
         try:
             rtn = []
             walk = self._walk_report(folder)
-            for key, val in walk.items():
+            for key, val in list(walk.items()):
                 for v in val:
                     x = os.path.join(key, v)
                     rtn.append(x)
@@ -1241,7 +1251,7 @@ class SOSCleaner:
         """Accepts a line from a file in an sosreport and obfuscates any known keyword entries on the line."""
         try:
             if self.kw_count > 0:    # we have obfuscated keywords to work with
-                for keyword, o_keyword in self.kw_db.items():
+                for keyword, o_keyword in list(self.kw_db.items()):
                     if keyword in line:
                         line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
                         self.logger.debug(
