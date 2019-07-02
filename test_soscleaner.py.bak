@@ -194,9 +194,9 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domainname = 'myserver.com'
         self.cleaner.domains.extend(['foo.com', 'bar.com'])
         self.cleaner._domains2db()
-        self.assertTrue(self.cleaner.domainname in list(self.cleaner.dn_db.keys()))
-        self.assertTrue('foo.com' in list(self.cleaner.dn_db.keys()))
-        self.assertTrue('bar.com' in list(self.cleaner.dn_db.keys()))
+        self.assertTrue(self.cleaner.domainname in self.cleaner.dn_db.keys())
+        self.assertTrue('foo.com' in self.cleaner.dn_db.keys())
+        self.assertTrue('bar.com' in self.cleaner.dn_db.keys())
 
     def test17_file_list(self):
         x = self.cleaner._file_list('testdata/sosreport_dir')
@@ -303,7 +303,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
         self.assertTrue(
-            all(['foo' in list(self.cleaner.kw_db.keys()), 'some' in list(self.cleaner.kw_db.keys())]))
+            all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
 
     def test30_sub_keywords(self):
         self.cleaner.keywords_file = ['testdata/keyword1.txt']
@@ -363,22 +363,22 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test39_add_users_from_command_line(self):
         self.cleaner._user2db('bob')
-        self.assertTrue('bob' in list(self.cleaner.user_db.keys()))
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
 
     def test40_process_user_option(self):
         users = ('bob', 'sam', 'george')
         self.cleaner._process_user_option(users)
-        self.assertTrue('bob' in list(self.cleaner.user_db.keys()))
-        self.assertTrue('sam' in list(self.cleaner.user_db.keys()))
-        self.assertTrue('george' in list(self.cleaner.user_db.keys()))
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
+        self.assertTrue('sam' in self.cleaner.user_db.keys())
+        self.assertTrue('george' in self.cleaner.user_db.keys())
 
     def test41_process_users_file(self):
         self.cleaner.dir_path = 'testdata'
         self.cleaner.users_file = 'userfile1'
         self.cleaner._process_users_file()
-        self.assertTrue('bob' in list(self.cleaner.user_db.keys()))
-        self.assertTrue('sam' in list(self.cleaner.user_db.keys()))
-        self.assertTrue('george' in list(self.cleaner.user_db.keys()))
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
+        self.assertTrue('sam' in self.cleaner.user_db.keys())
+        self.assertTrue('george' in self.cleaner.user_db.keys())
 
     def test42_sub_username(self):
         self.cleaner._user2db('bob')
@@ -409,12 +409,12 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test46_confirm_no_user_double_adds(self):
         self.cleaner._user2db('bob')
-        self.assertTrue('bob' in list(self.cleaner.user_db.keys()))
-        for name, o_name in list(self.cleaner.user_db.items()):
+        self.assertTrue('bob' in self.cleaner.user_db.keys())
+        for name, o_name in self.cleaner.user_db.items():
             if name == 'bob':
                 test_name = name
         self.cleaner._user2db('bob')
-        for name, o_name in list(self.cleaner.user_db.items()):
+        for name, o_name in self.cleaner.user_db.items():
             if name == 'bob':
                 test_name2 = name
         self.assertTrue(test_name == test_name2)
@@ -423,7 +423,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domains.append('example.com')
         self.cleaner._domains2db()
 
-        self.assertTrue('example.com' in list(self.cleaner.dn_db.keys()))
+        self.assertTrue('example.com' in self.cleaner.dn_db.keys())
 
     def test48_sub_hostname_single_3rd_level(self):
         self.cleaner.domains.append('example.com')
@@ -446,7 +446,7 @@ class SOSCleanerTests(unittest.TestCase):
 
         o_hostname = self.cleaner._hn2db(test_hostname)
 
-        self.assertTrue(test_hostname in list(self.cleaner.hn_db.keys()))
+        self.assertTrue(test_hostname in self.cleaner.hn_db.keys())
         self.assertTrue(test_domainname in o_hostname)
 
     def test50_hn2db_2nd_level_domain(self):
@@ -468,7 +468,7 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.domainname = 'example.com'
 
         test_host = self.cleaner._hn2db(self.cleaner.hostname)
-        self.assertTrue(self.cleaner.hostname in list(self.cleaner.hn_db.keys()))
+        self.assertTrue(self.cleaner.hostname in self.cleaner.hn_db.keys())
         self.assertTrue('obfuscatedhost' in test_host)
 
     def test52_clean_line_multiple_same_domain(self):
@@ -623,15 +623,15 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.keywords = ['foo', 'bar', 'hello', 'world']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 4)
-        self.assertTrue('foo' in list(self.cleaner.kw_db.keys()))
+        self.assertTrue('foo' in self.cleaner.kw_db.keys())
 
     def test67_keywords_from_config_file(self):
         """from issue #92 - keywords not read from config file"""
         self.cleaner.config_file = 'testdata/config_file'
         self.cleaner._read_later_config_options()
         self.cleaner._keywords2db()
-        self.assertTrue('keywordfromfile1' in list(self.cleaner.kw_db.keys()))
-        self.assertTrue('keywordfromfile2' in list(self.cleaner.kw_db.keys()))
+        self.assertTrue('keywordfromfile1' in self.cleaner.kw_db.keys())
+        self.assertTrue('keywordfromfile2' in self.cleaner.kw_db.keys())
 
     def test68_quiet_mode_from_config(self):
         """from #95 - add quiet mode to config file"""
