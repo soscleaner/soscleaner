@@ -650,3 +650,11 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.obfuscate_macs = True
         new_line2 = self.cleaner._clean_line(test_line, 'somefile')
         self.assertFalse('00:0c:29:64:72:3e' in new_line2)
+
+    def test75_catch_cap_usernames(self):
+        """from #99 - makes username search case-insensitive"""
+        self.cleaner._user2db('bob')
+        test_line = 'this is a sample line with bob the user as well as BOB the user'
+        new_line = self.cleaner._sub_username(test_line)
+        self.assertFalse('bob' in new_line)
+        self.assertFalse('BOB' in new_line)

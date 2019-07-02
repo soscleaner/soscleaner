@@ -334,13 +334,13 @@ class SOSCleaner:
                             os.system('mkdir %s' % self.origin_path)
                             subprocess.Popen(["tar", "-xJf", path, "-C", self.origin_path]).wait()
 
-                            
-                            
-                            
-                            
-                            
-                            
-                            
+
+
+
+
+
+
+
                             return_path = os.path.join(self.origin_path, os.listdir(self.origin_path)[0])
 
                             return return_path
@@ -409,7 +409,7 @@ class SOSCleaner:
             if self.user_count > 0:    # we have obfuscated keywords to work with
                 for user, o_user in self.user_db.items():
                     if user in line:
-                        line = re.sub(r'\b%s\b' % user, o_user, line)
+                        line = re.sub(r'\b%s\b(?i)' % user, o_user, line)
                         self.logger.debug("Obfuscating User - %s > %s", user, o_user)
 
             return line
