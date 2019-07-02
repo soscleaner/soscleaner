@@ -21,13 +21,13 @@
 # Created By : Jamie Duncan
 # Purpose : SOSCleaner unittests
 
+from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+import shutil
+import os
+from soscleaner import SOSCleaner
+import unittest
 import sys
 sys.path.append('soscleaner/')
-import unittest
-from soscleaner import SOSCleaner
-import os
-import shutil
-from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 
 class SOSCleanerTests(unittest.TestCase):
@@ -168,7 +168,8 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner.hostname = hostname
         self.cleaner.domainname = 'example.com'
         self.cleaner._domains2db()
-        new_line = 'foo bar %s some words %s more words' % (self.cleaner._hn2db(hostname), self.cleaner._ip4_2_db(ip))
+        new_line = 'foo bar %s some words %s more words' % (
+            self.cleaner._hn2db(hostname), self.cleaner._ip4_2_db(ip))
         self.assertTrue(self.cleaner._clean_line(line, 'foo_file') == new_line)
 
     def test14_make_dest_env(self):
@@ -261,25 +262,33 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue('my' not in new_line)
 
     def test24_extra_files(self):
-        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3']
+        files = ['testdata/extrafile1',
+                 'testdata/extrafile2', 'testdata/extrafile3']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.isdir(self.cleaner.dir_path))
-        self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
+        self.assertTrue(os.path.exists(os.path.join(
+            self.cleaner.dir_path, 'extrafile3')))
 
     def test25_create_archive_nososreport(self):
-        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3']
+        files = ['testdata/extrafile1',
+                 'testdata/extrafile2', 'testdata/extrafile3']
         self.cleaner._clean_files_only(files)
-        self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
+        self.assertTrue(os.path.exists(os.path.join(
+            self.cleaner.dir_path, 'extrafile3')))
 
     def test26_extra_files_nonexistent(self):
-        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3', 'testdata/bogusfile']
+        files = ['testdata/extrafile1', 'testdata/extrafile2',
+                 'testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
-        self.assertTrue(os.path.exists(os.path.join(self.cleaner.dir_path, 'extrafile3')))
-        self.assertFalse(os.path.exists(os.path.join(self.cleaner.dir_path, 'bogusfile')))
+        self.assertTrue(os.path.exists(os.path.join(
+            self.cleaner.dir_path, 'extrafile3')))
+        self.assertFalse(os.path.exists(
+            os.path.join(self.cleaner.dir_path, 'bogusfile')))
 
     def test27_clean_files_only_originexists(self):
         os.makedirs(self.cleaner.origin_path)
-        files = ['testdata/extrafile1', 'testdata/extrafile2', 'testdata/extrafile3', 'testdata/bogusfile']
+        files = ['testdata/extrafile1', 'testdata/extrafile2',
+                 'testdata/extrafile3', 'testdata/bogusfile']
         self.cleaner._clean_files_only(files)
         self.assertTrue(os.path.exists(self.cleaner.origin_path))
 
@@ -289,10 +298,12 @@ class SOSCleanerTests(unittest.TestCase):
         self.assertTrue(self.cleaner.kw_count == 0)
 
     def test29_add_keywords_file(self):
-        self.cleaner.keywords_file = ['testdata/keyword1.txt', 'testdata/keyword2.txt']
+        self.cleaner.keywords_file = [
+            'testdata/keyword1.txt', 'testdata/keyword2.txt']
         self.cleaner._keywords2db()
         self.assertTrue(self.cleaner.kw_count == 8)
-        self.assertTrue(all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
+        self.assertTrue(
+            all(['foo' in self.cleaner.kw_db.keys(), 'some' in self.cleaner.kw_db.keys()]))
 
     def test30_sub_keywords(self):
         self.cleaner.keywords_file = ['testdata/keyword1.txt']
@@ -329,17 +340,21 @@ class SOSCleanerTests(unittest.TestCase):
     def test35_existing_network(self):
         self.cleaner.dir_path = 'testdata/sosreport_dir'
         self.cleaner._ip4_add_network('10.0.0.0/8')
-        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) is True)
+        self.assertTrue(self.cleaner._ip4_network_in_db(
+            IPv4Network('10.0.0.0/8')) is True)
 
     def test36_add_loopback(self):
         self.cleaner._add_loopback_network()
-        self.assertTrue(self.cleaner.net_metadata['127.0.0.0']['host_count'] == 0)
-        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('127.0.0.0/8')) is True)
+        self.assertTrue(
+            self.cleaner.net_metadata['127.0.0.0']['host_count'] == 0)
+        self.assertTrue(self.cleaner._ip4_network_in_db(
+            IPv4Network('127.0.0.0/8')) is True)
 
     def test37_dup_networks(self):
         self.cleaner._ip4_add_network('10.0.0.0/8')
         self.cleaner._ip4_add_network('10.0.0.0/8')
-        self.assertTrue(self.cleaner._ip4_network_in_db(IPv4Network('10.0.0.0/8')) is True)
+        self.assertTrue(self.cleaner._ip4_network_in_db(
+            IPv4Network('10.0.0.0/8')) is True)
 
     def test38_find_existing_network(self):
         self.cleaner._ip4_add_network('10.0.0.0/8')
@@ -465,10 +480,12 @@ class SOSCleanerTests(unittest.TestCase):
         new_line = self.cleaner._clean_line(test_line, 'foo_line')
 
         self.assertFalse('example.com' in new_line)
-        self.assertFalse(self.cleaner._hn2db('host1.example.com') == self.cleaner._hn2db('host2.example.com'))
+        self.assertFalse(self.cleaner._hn2db('host1.example.com')
+                         == self.cleaner._hn2db('host2.example.com'))
 
     def test53_hn2db_high_level_host(self):
-        self.cleaner.domains.extend(['example.com', 'crazy.super.level.example.com'])
+        self.cleaner.domains.extend(
+            ['example.com', 'crazy.super.level.example.com'])
         self.cleaner.hostname = 'foo'
         self.cleaner.domainname = 'example.com'
 
@@ -588,12 +605,18 @@ class SOSCleanerTests(unittest.TestCase):
         self.cleaner._create_kw_report()
         self.cleaner._create_un_report()
         self.cleaner._create_mac_report()
-        self.assertTrue(oct(os.stat(self.cleaner.dn_report).st_mode)[3:] == '0600')
-        self.assertTrue(oct(os.stat(self.cleaner.ip_report).st_mode)[3:] == '0600')
-        self.assertTrue(oct(os.stat(self.cleaner.hn_report).st_mode)[3:] == '0600')
-        self.assertTrue(oct(os.stat(self.cleaner.kw_report).st_mode)[3:] == '0600')
-        self.assertTrue(oct(os.stat(self.cleaner.un_report).st_mode)[3:] == '0600')
-        self.assertTrue(oct(os.stat(self.cleaner.mac_report).st_mode)[3:] == '0600')
+        self.assertTrue(
+            oct(os.stat(self.cleaner.dn_report).st_mode)[3:] == '0600')
+        self.assertTrue(
+            oct(os.stat(self.cleaner.ip_report).st_mode)[3:] == '0600')
+        self.assertTrue(
+            oct(os.stat(self.cleaner.hn_report).st_mode)[3:] == '0600')
+        self.assertTrue(
+            oct(os.stat(self.cleaner.kw_report).st_mode)[3:] == '0600')
+        self.assertTrue(
+            oct(os.stat(self.cleaner.un_report).st_mode)[3:] == '0600')
+        self.assertTrue(
+            oct(os.stat(self.cleaner.mac_report).st_mode)[3:] == '0600')
 
     def test66_add_single_keywords(self):
         """from issue #86 - add keywords from cli parameters"""
