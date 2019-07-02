@@ -51,7 +51,7 @@ class SOSCleaner:
         self.short_domains = ['localdomain', 'localhost']
         self.domainname = None
         self.report_dir = '/tmp'
-        self.version = '0.4.3'
+        self.version = '0.4.4'
         self.false_positives = [
             'installed-debs',
             'installed_rpms',
