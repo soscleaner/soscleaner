@@ -417,7 +417,7 @@ class SOSCleaner:
         """
 
         try:
-            new_user = "obfuscateduser%s" % self.user_count
+            new_user = "obfuscateduser%s" % randint(1,1000000)
             self.user_db['root'] = new_user
 
             return True
@@ -462,6 +462,22 @@ class SOSCleaner:
             raise Exception(
                 'SUB_USERNAME_ERROR: Unable to obfuscate usernames on line - %s', line)
 
+    def _create_random_username(self):
+        """Generates a random, unique obfuscated user ID and returns it"""
+
+        def _randomizer():
+            return "obfuscateduser%s" % randint(1,1000000)
+
+        test_user = _randomizer()
+        if test_user in self.user_db.values():
+            while test_user in self.user_db.values():
+                self.logger.debug("Duplicate Obfuscated Hostname. Retrying - %s", test_user)
+                test_user = _randomizer()
+                if test_user not in self.user_db.values():
+                    return test_user
+        else:
+            return test_user
+
     def _user2db(self, username):
         """Takes a username and adds it to the user_db with an obfuscated partner.
         If the user hasn't been encountered before, it will add it to the database
@@ -473,7 +489,7 @@ class SOSCleaner:
             if o_user is None:  # no match, so we need to add to the database
                 # new username, so we increment the counter to get the user's obfuscated name
                 self.user_count += 1
-                o_user = "obfuscateduser%s" % self.user_count
+                o_user = self._create_random_username()
                 self.logger.info(
                     "Adding new obfuscated user: %s > %s", username, o_user)
                 self.user_db[username] = o_user
