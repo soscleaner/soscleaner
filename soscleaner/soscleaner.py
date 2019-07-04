@@ -109,9 +109,9 @@ class SOSCleaner:
 
         try:  # pragma: no cover
             if os.getuid() != 0:
-                self.logger.con_out(
+                self.logger.warning(
                     "soscleaner must be executed by the root user in the same manner as sosreport")
-                self.logger.con_out("soscleaner cannot continue. Exiting...")
+                self.logger.warning("soscleaner cannot continue. Exiting...")
 
                 sys.exit(8)
 
