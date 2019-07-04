@@ -466,7 +466,7 @@ class SOSCleaner:
         """Generates a random, unique obfuscated user ID and returns it"""
 
         def _randomizer():
-            return user = "obfuscateduser%s" % randint(1,1000000)
+            return "obfuscateduser%s" % randint(1,1000000)
 
         test_user = _randomizer()
         if test_user in self.user_db.values():
