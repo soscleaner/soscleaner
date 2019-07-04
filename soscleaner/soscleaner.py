@@ -629,7 +629,7 @@ class SOSCleaner:
             un_report_name = os.path.join(
                 self.report_dir, "%s-username.csv" % self.session)
             self.logger.con_out(
-                'Creating Userfname Report - %s', un_report_name)
+                'Creating Username Report - %s', un_report_name)
             un_report = open(un_report_name, 'w')
             un_report.write('Original Username,Obfuscated Username\n')
             for k, v in list(self.user_db.items()):
