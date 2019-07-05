@@ -580,9 +580,9 @@ class SOSCleaner:
     def _get_disclaimer(self):
         """Prints out a disclaimer at the beginning of each soscleaner run"""
 
-        self.logger.info(
+        self.logger.con_out(
             "%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)  # pragma: no cover
-        self.logger.info(
+        self.logger.con_out(
             "Please review the content before passing it along to any third party.")  # pragma: no cover
 
     ###########################
