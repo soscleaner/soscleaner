@@ -732,7 +732,7 @@ class SOSCleaner:
                 'CREATE_IP_REPORT_ERROR: Unable to create report - %s', ip_report_name)
 
     def _create_sos_report(self):
-            """Creates a report of original sosreport tarball and its obfuscated counterpart"""
+        """Creates a report of original sosreport tarball and its obfuscated counterpart"""
         try:
             sos_report_name = os.path.join(
                 self.report_dir, "%s-sosreport.csv" % self.session)
