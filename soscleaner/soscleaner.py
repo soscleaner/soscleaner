@@ -343,6 +343,7 @@ class SOSCleaner:
                 """I know this is an epic hack, but I've seen a _ton_ of inconsistency around different
                 distribution's builds of python-magic. Until it stabilizes, I'm just going to hack around it.
                 """
+                self.sosreport_filename = filename
                 command = "file %s" % filename
                 compression_type = os.popen(command).read().strip(
                     '\n').split(':')[1].strip().lower()
@@ -730,6 +731,26 @@ class SOSCleaner:
             raise Exception(
                 'CREATE_IP_REPORT_ERROR: Unable to create report - %s', ip_report_name)
 
+    def _create_sos_report(self):
+            """Creates a report of original sosreport tarball and its obfuscated counterpart"""
+        try:
+            sos_report_name = os.path.join(
+                self.report_dir, "%s-sosreport.csv" % self.session)
+            self.logger.con_out('Creating sosreport Report - %s', sos_report_name)
+            sos_report = open(sos_report_name, 'w')
+            sos_report.write('Original Sosreport,Obfuscated Sosreport\n')
+            sos_report.write('%s,%s.tar.gz\n' % (self.sosreport_filename, self.session))
+            sos_report.close()
+            os.chmod(sos_report_name, 0o600)
+            self.logger.info('Completed Sosreport Report')
+
+            self.sos_report = sos_report_name
+
+        except Exception as e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception(
+                'CREATE_SOS_REPORT_ERROR: Unable to create report - %s', sos_report_name)
+
     def _create_reports(self):
         """Creates the reports at the end of an soscleaner run"""
 
@@ -739,6 +760,7 @@ class SOSCleaner:
         self._create_un_report()  # pragma: no cover
         self._create_mac_report()  # pragma: no cover
         self._create_kw_report()  # pragma: no cover
+        self._create_sos_report()  # pragma: no cover
         # os.chmod(self.logfile, 0o600)
 
     #############################
