@@ -9,14 +9,14 @@ Network Obfuscation Overview
 Beginning with version 0.3.0, soscleaner uses the ipaddr module to manage network objects and their obfuscation
 This will let the program be much more intelligent with how it obfuscates the data while being network away, etc.
 
-Filing networking bugs
-```````````````````````
-Please open networking obfuscation bugs using the :github_issues_url:`network obfuscation bug template <new?assignees=&labels=Exception+Engine%2C+network+obfuscation&template=networking-bug-.md&title=>`. This will ensure the proper labels are applied and we can move forward quickly with your issue.
-
 .. figure:: static/soscleaner-network_obfuscation.png
   :alt: network obfuscation overview
 
   Network Obfuscation Workflow Overview
+
+Filing networking bugs
+```````````````````````
+Please open networking obfuscation bugs using the :github_issues_url:`network obfuscation bug template <new?assignees=&labels=Exception+Engine%2C+network+obfuscation&template=networking-bug-.md&title=>`. This will ensure the proper labels are applied and we can move forward quickly with your issue.
 
 IPv4 Network database
 ----------------------
