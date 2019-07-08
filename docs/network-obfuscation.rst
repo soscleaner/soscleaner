@@ -13,7 +13,7 @@ Filing networking bugs
 ```````````````````````
 Please open networking obfuscation bugs using the :github_issues_url:`network obfuscation bug template <new?assignees=&labels=Exception+Engine%2C+network+obfuscation&template=networking-bug-.md&title=>`. This will ensure the proper labels are applied and we can move forward quickly with your issue.
 
-.. figure:: _static/soscleaner-network_obfuscation.png
+.. figure:: static/soscleaner-network_obfuscation.png
   :alt: network obfuscation overview
 
   Network Obfuscation Workflow Overview
