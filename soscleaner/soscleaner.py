@@ -109,9 +109,9 @@ class SOSCleaner:
 
         try:  # pragma: no cover
             if os.getuid() != 0:
-                self.logger.con_out(
+                self.logger.warning(
                     "soscleaner must be executed by the root user in the same manner as sosreport")
-                self.logger.con_out("soscleaner cannot continue. Exiting...")
+                self.logger.warning("soscleaner cannot continue. Exiting...")
 
                 sys.exit(8)
 
@@ -343,6 +343,7 @@ class SOSCleaner:
                 """I know this is an epic hack, but I've seen a _ton_ of inconsistency around different
                 distribution's builds of python-magic. Until it stabilizes, I'm just going to hack around it.
                 """
+                self.sosreport_filename = filename
                 command = "file %s" % filename
                 compression_type = os.popen(command).read().strip(
                     '\n').split(':')[1].strip().lower()
@@ -417,7 +418,7 @@ class SOSCleaner:
         """
 
         try:
-            new_user = "obfuscateduser%s" % self.user_count
+            new_user = "obfuscateduser%s" % randint(1,1000000)
             self.user_db['root'] = new_user
 
             return True
@@ -462,6 +463,22 @@ class SOSCleaner:
             raise Exception(
                 'SUB_USERNAME_ERROR: Unable to obfuscate usernames on line - %s', line)
 
+    def _create_random_username(self):
+        """Generates a random, unique obfuscated user ID and returns it"""
+
+        def _randomizer():
+            return "obfuscateduser%s" % randint(1,1000000)
+
+        test_user = _randomizer()
+        if test_user in self.user_db.values():
+            while test_user in self.user_db.values():
+                self.logger.debug("Duplicate Obfuscated Hostname. Retrying - %s", test_user)
+                test_user = _randomizer()
+                if test_user not in self.user_db.values():
+                    return test_user
+        else:
+            return test_user
+
     def _user2db(self, username):
         """Takes a username and adds it to the user_db with an obfuscated partner.
         If the user hasn't been encountered before, it will add it to the database
@@ -473,7 +490,7 @@ class SOSCleaner:
             if o_user is None:  # no match, so we need to add to the database
                 # new username, so we increment the counter to get the user's obfuscated name
                 self.user_count += 1
-                o_user = "obfuscateduser%s" % self.user_count
+                o_user = self._create_random_username()
                 self.logger.info(
                     "Adding new obfuscated user: %s > %s", username, o_user)
                 self.user_db[username] = o_user
@@ -563,9 +580,9 @@ class SOSCleaner:
     def _get_disclaimer(self):
         """Prints out a disclaimer at the beginning of each soscleaner run"""
 
-        self.logger.warning(
+        self.logger.con_out(
             "%s is a tool to help obfuscate sensitive information from an existing sosreport." % self.name)  # pragma: no cover
-        self.logger.warning(
+        self.logger.con_out(
             "Please review the content before passing it along to any third party.")  # pragma: no cover
 
     ###########################
@@ -714,6 +731,26 @@ class SOSCleaner:
             raise Exception(
                 'CREATE_IP_REPORT_ERROR: Unable to create report - %s', ip_report_name)
 
+    def _create_sos_report(self):
+        """Creates a report of original sosreport tarball and its obfuscated counterpart"""
+        try:
+            sos_report_name = os.path.join(
+                self.report_dir, "%s-sosreport.csv" % self.session)
+            self.logger.con_out('Creating sosreport Report - %s', sos_report_name)
+            sos_report = open(sos_report_name, 'w')
+            sos_report.write('Original Sosreport,Obfuscated Sosreport\n')
+            sos_report.write('%s,%s.tar.gz\n' % (self.sosreport_filename, self.session))
+            sos_report.close()
+            os.chmod(sos_report_name, 0o600)
+            self.logger.info('Completed Sosreport Report')
+
+            self.sos_report = sos_report_name
+
+        except Exception as e:  # pragma: no cover
+            self.logger.exception(e)
+            raise Exception(
+                'CREATE_SOS_REPORT_ERROR: Unable to create report - %s', sos_report_name)
+
     def _create_reports(self):
         """Creates the reports at the end of an soscleaner run"""
 
@@ -723,6 +760,7 @@ class SOSCleaner:
         self._create_un_report()  # pragma: no cover
         self._create_mac_report()  # pragma: no cover
         self._create_kw_report()  # pragma: no cover
+        self._create_sos_report()  # pragma: no cover
         # os.chmod(self.logfile, 0o600)
 
     #############################
