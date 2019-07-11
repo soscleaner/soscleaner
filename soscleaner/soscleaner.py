@@ -371,7 +371,7 @@ class SOSCleaner:
                                 'Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
                             self.logger.info(
                                 'LZMA Hack - Creating %s', self.origin_path)
-                            os.system('mkdir %s' % self.origin_path)
+                            os.makedirs( self.origin_path, 0755 )
                             subprocess.Popen(
                                 ["tar", "-xJf", path, "-C", self.origin_path]).wait()
 
