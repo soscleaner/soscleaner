@@ -451,9 +451,8 @@ class SOSCleaner:
         try:
             if self.user_count > 0:    # we have obfuscated keywords to work with
                 for user, o_user in list(self.user_db.items()):
-                    if user in line:
-                        line = re.sub(r'\b%s\b(?i)' % user, o_user, line)
-                        self.logger.debug(
+                    line = re.sub(r'\b%s\b(?i)' % user, o_user, line)
+                    self.logger.debug(
                             "Obfuscating User - %s > %s", user, o_user)
 
             return line
