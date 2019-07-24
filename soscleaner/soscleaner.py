@@ -508,9 +508,34 @@ class SOSCleaner:
         """
 
         # users and entries that we don't want to add that show up in last
-        ignored_users = ('landscape', 'lxd', 'reboot',
-                         'shutdown', 'ubuntu', 'wtmp',
-                         'Username')
+        ignored_users = ('backup',
+                         'bin',
+                         'daemon',
+                         'dnsmasq',
+                         'games',
+                         'irc',
+                         'landscape',
+                         'list',
+                         'lp',
+                         'lxd',
+                         'mail',
+                         'man',
+                         'messagebus',
+                         'news',
+                         'pollinate',
+                         'proxy',
+                         'reboot',
+                         'shutdown',
+                         'sshd',
+                         'sync',
+                         'sys',
+                         'syslog',
+                         'systemd-network',
+                         'systemd-resolve',
+                         'ubuntu',
+                         'Username',
+                         'wtmp')
+
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
         try:
