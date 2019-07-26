@@ -601,6 +601,12 @@ class SOSCleaner:
     #   Formatting Functions    #
     #############################
 
+    def _get_version(self):
+        """Prints out soscleaner version"""
+
+        self.logger.con_out(
+            "SOSCleaner version: %s" % self.version)
+
     def _get_disclaimer(self):
         """Prints out a disclaimer at the beginning of each soscleaner run"""
 
@@ -1587,6 +1593,7 @@ class SOSCleaner:
             self.origin_path, self.dir_path, self.session, self.logfile, self.uuid = self._prep_environment()
             self._start_logging(self.logfile)
             self._check_uid()  # make sure it's soscleaner is running as root
+            self._get_version()
             self._get_disclaimer()
         except Exception as e:
             self.logger.exception(e)
