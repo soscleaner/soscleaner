@@ -507,12 +507,60 @@ class SOSCleaner:
         From RFE #79
         """
 
-        # users and entries that we don't want to add that show up in last
-        ignored_users = ('reboot',
+        # Users and entries that we don't want to obfuscate that could show up in lastlog
+        # Debian base users: https://salsa.debian.org/debian/base-passwd/blob/master/passwd.master
+        ignored_users = ('Username',
+                         '_chrony',
+                         'avahi',
+                         'backup',
+                         'bin',
+                         'bind',
+                         'ceph',
+                         'cinder',
+                         'daemon',
+                         'designate',
+                         'dhcpd',
+                         'dnsmasq',
+                         'games',
+                         'glance',
+                         'gnats',
+                         'horizon',
+                         'irc',
+                         'keystone',
+                         'landscape',
+                         'libvirt-qemu',
+                         'list',
+                         'lp',
+                         'lxd',
+                         'maas',
+                         'mail',
+                         'man',
+                         'memcache',
+                         'mysql',
+                         'neutron',
+                         'news',
+                         'nginx',
+                         'nobody'
+                         'nova',
+                         'pollinate',
+                         'postgres',
+                         'proxy',
+                         'reboot',
+                         'root',
                          'shutdown',
+                         'sshd',
+                         'swift',
+                         'sync',
+                         'sys',
+                         'systemd-coredump',
+                         'systemd-network',
+                         'systemd-resolve',
+                         'systemd-timesync',
                          'ubuntu',
-                         'Username',
-                         'wtmp')
+                         'uucp',
+                         'uuid',
+                         'wtmp',
+                         'www-data')
 
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
