@@ -510,6 +510,7 @@ class SOSCleaner:
         # Users and entries that we don't want to obfuscate that could show up in lastlog
         # Debian base users: https://salsa.debian.org/debian/base-passwd/blob/master/passwd.master
         ignored_users = ('Username',
+                         '_apt',
                          '_chrony',
                          'avahi',
                          'backup',
@@ -536,11 +537,12 @@ class SOSCleaner:
                          'mail',
                          'man',
                          'memcache',
+                         'messagebus',
                          'mysql',
                          'neutron',
                          'news',
                          'nginx',
-                         'nobody'
+                         'nobody',
                          'nova',
                          'pollinate',
                          'postgres',
@@ -552,13 +554,14 @@ class SOSCleaner:
                          'swift',
                          'sync',
                          'sys',
+                         'syslog',
                          'systemd-coredump',
                          'systemd-network',
                          'systemd-resolve',
                          'systemd-timesync',
                          'ubuntu',
                          'uucp',
-                         'uuid',
+                         'uuidd',
                          'wtmp',
                          'www-data')
 
