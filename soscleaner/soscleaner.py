@@ -20,6 +20,7 @@
 # Purpose : an sosreport and data set obfuscation tool
 
 import os
+import hashlib
 import re
 import errno
 import stat
@@ -1233,10 +1234,24 @@ class SOSCleaner:
 
         self._clean_up()
         self.logger.info('Archiving Complete')
-        self.logger.con_out('SOSCleaner Complete')
         if not self.quiet:  # pragma: no cover
             t.add(self.logfile, arcname=self.logfile.replace(self.report_dir, ''))
         t.close()
+
+    def soscleaner_checksum(self):
+        """check MD5 against soscleaner tarball"""
+        soscleaner_archive = self.session + ".tar.gz"
+        checksum = hashlib.md5(open(soscleaner_archive, 'rb').read()).hexdigest()
+
+        soscleaner_archive_hash = soscleaner_archive + ".md5"
+        fp = open(soscleaner_archive_hash, "w")
+        fp.write(checksum + "\n")
+        self.logger.con_out('md5 checksum is: %s' % checksum)
+        fp.close()
+
+    def finalmsg(self):
+        """Final message at the end of the soscleaner run"""
+        self.logger.con_out('SOSCleaner Complete')
 
     def _clean_up(self):
         """Cleans up origin directories and other soscleaner processing artifacts"""
@@ -1700,5 +1715,7 @@ class SOSCleaner:
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
         self._create_archive()
+        self.soscleaner_checksum()
+        self.finalmsg()
 
         return True
