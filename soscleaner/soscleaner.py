@@ -96,7 +96,7 @@ class SOSCleaner:
         # obfuscating users from the last command, per rfe #79
         self.users_file = 'sos_commands/last/lastlog'
         self.user_db = dict()
-        self.user_count = 1
+        self.user_count = 0
         self._prime_userdb()
         self.config_file = '/etc/soscleaner.conf'
         self._read_early_config_options()
@@ -423,7 +423,6 @@ class SOSCleaner:
 
         try:
             new_user = "obfuscateduser%s" % randint(1,1000000)
-            self.user_db['root'] = new_user
 
             return True
 
