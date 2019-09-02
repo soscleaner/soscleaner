@@ -325,7 +325,7 @@ class SOSCleaner:
         ran_uuid = str(uuid.uuid4().int)[:16]
         # Gather data into its own soscleaner session directory
         self.report_dir += '/' + 'soscleaner-' + ran_uuid
-        os.makedirs( self.report_dir, 0o600 )
+        os.makedirs( self.report_dir, 0o700 )
         # the origin dir we'll copy the files from
         origin_path = os.path.join(
             self.report_dir, "soscleaner-origin-%s" % ran_uuid)
