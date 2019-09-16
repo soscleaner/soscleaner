@@ -94,7 +94,7 @@ class SOSCleaner:
         self.kw_count = 0
 
         # obfuscating users from the last command, per rfe #79
-        self.users_file = 'sos_commands/last/lastlog'
+        self.users_file = 'sos_commands/last/lastlog_-u_1000-60000'
         self.user_db = dict()
         self.user_count = 0
         self._prime_userdb()
@@ -513,60 +513,8 @@ class SOSCleaner:
         # Users and entries that we don't want to obfuscate that could show up in lastlog
         # Debian base users: https://salsa.debian.org/debian/base-passwd/blob/master/passwd.master
         ignored_users = ('Username',
-                         '_apt',
-                         '_chrony',
-                         'avahi',
-                         'backup',
-                         'bin',
-                         'bind',
-                         'ceph',
-                         'cinder',
-                         'daemon',
-                         'designate',
-                         'dhcpd',
-                         'dnsmasq',
-                         'games',
-                         'glance',
-                         'gnats',
-                         'horizon',
-                         'irc',
-                         'keystone',
-                         'landscape',
-                         'libvirt-qemu',
-                         'list',
-                         'lp',
-                         'lxd',
-                         'maas',
-                         'mail',
-                         'man',
-                         'memcache',
-                         'messagebus',
-                         'mysql',
-                         'neutron',
-                         'news',
-                         'nginx',
-                         'nobody',
-                         'nova',
-                         'pollinate',
-                         'postgres',
-                         'proxy',
-                         'reboot',
-                         'root',
-                         'shutdown',
-                         'sshd',
-                         'swift',
-                         'sync',
-                         'sys',
-                         'syslog',
-                         'systemd-coredump',
-                         'systemd-network',
-                         'systemd-resolve',
-                         'systemd-timesync',
-                         'ubuntu',
-                         'uucp',
-                         'uuidd',
-                         'wtmp',
-                         'www-data')
+                         'ubuntu'
+                         )
 
         # we're not calling this function from an option on the cli, we're just running it as part of __init__
 
