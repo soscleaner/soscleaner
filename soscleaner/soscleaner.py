@@ -511,7 +511,6 @@ class SOSCleaner:
         """
 
         # Users and entries that we don't want to obfuscate that could show up in lastlog
-        # Debian base users: https://salsa.debian.org/debian/base-passwd/blob/master/passwd.master
         ignored_users = ('Username',
                          'ubuntu'
                          )
