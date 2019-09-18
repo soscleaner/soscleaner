@@ -626,7 +626,7 @@ class SOSCleaner:
         """Creates a report of keywords and their obfuscated counterparts"""
         try:
             kw_report_name = os.path.join(
-                self.report_dir, "%s-kw.csv" % self.session)
+                self.report_dir, "%s-keyword.csv" % self.session)
             self.logger.con_out(
                 'Creating keyword address Report - %s', kw_report_name)
             kw_report = open(kw_report_name, 'w')
