@@ -148,17 +148,17 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test10_extract_sosreport_gz(self):
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.gz')
-        check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
+        check_d = '/tmp/soscleaner-%s/soscleaner-origin-%s/sosreport_dir' % (self.cleaner.uuid, self.cleaner.uuid)
         self.assertTrue(d == check_d)
 
     def test11_extract_sosreport_bz(self):
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.gz')
-        check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
+        check_d = '/tmp/soscleaner-%s/soscleaner-origin-%s/sosreport_dir' % (self.cleaner.uuid, self.cleaner.uuid)
         self.assertTrue(d == check_d)
 
     def test12_extract_sosreport_xz(self):
         d = self.cleaner._extract_sosreport('testdata/sosreport1.tar.xz')
-        check_d = '/tmp/soscleaner-origin-%s/sosreport_dir' % self.cleaner.uuid
+        check_d = '/tmp/soscleaner-%s/soscleaner-origin-%s/sosreport_dir' % (self.cleaner.uuid, self.cleaner.uuid)
         self.assertTrue(d == check_d)
 
     def test13_clean_line(self):
@@ -573,6 +573,7 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test62_un_report(self):
         """Edited for #129: obfuscateduserX is now randomized"""
+        self.cleaner._prime_userdb()
         self.cleaner._create_un_report()
         fh = open(self.cleaner.un_report, 'r')
         data = fh.readlines()

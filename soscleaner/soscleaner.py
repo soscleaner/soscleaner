@@ -19,6 +19,9 @@
 # Created By : Jamie Duncan
 # Purpose : an sosreport and data set obfuscation tool
 
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import hashlib
 import re
@@ -37,7 +40,7 @@ import configparser
 import subprocess
 
 
-class SOSCleaner:
+class SOSCleaner(object):
     """
     A class to parse through an sosreport or generic dataset to begin the
     cleaning and obfuscation process required in many industries.
@@ -375,7 +378,7 @@ class SOSCleaner:
                                 'Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
                             self.logger.info(
                                 'LZMA Hack - Creating %s', self.origin_path)
-                            os.makedirs( self.origin_path, 0755 )
+                            os.makedirs( self.origin_path, 0o755 )
                             subprocess.Popen(
                                 ["tar", "-xJf", path, "-C", self.origin_path]).wait()
 
@@ -423,6 +426,7 @@ class SOSCleaner:
 
         try:
             new_user = "obfuscateduser%s" % randint(1,1000000)
+            self.user_db['root'] = new_user
 
             return True
 
@@ -472,11 +476,11 @@ class SOSCleaner:
             return "obfuscateduser%s" % randint(1,1000000)
 
         test_user = _randomizer()
-        if test_user in self.user_db.values():
-            while test_user in self.user_db.values():
+        if test_user in list(self.user_db.values()):
+            while test_user in list(self.user_db.values()):
                 self.logger.debug("Duplicate Obfuscated Hostname. Retrying - %s", test_user)
                 test_user = _randomizer()
-                if test_user not in self.user_db.values():
+                if test_user not in list(self.user_db.values()):
                     return test_user
         else:
             return test_user
@@ -803,8 +807,7 @@ class SOSCleaner:
                 # using this lambda to create a valid randomized mac address is
                 # documented at https://www.commandlinefu.com/commands/view/7245/generate-random-valid-mac-addresses
                 # many thanks for putting that little thought together
-                o_mac = ':'.join(['%02x' % x for x in map(
-                    lambda x:randint(0, 255), list(range(6)))])
+                o_mac = ':'.join(['%02x' % x for x in [randint(0, 255) for x in list(range(6))]])
                 self.logger.debug(
                     "Creating new obfuscated MAC address: %s > %s", mac, o_mac)
                 self.mac_db[mac] = o_mac
