@@ -100,7 +100,6 @@ class SOSCleaner(object):
         self.users_file = 'sos_commands/last/lastlog_-u_1000-60000'
         self.user_db = dict()
         self.user_count = 0
-        self._prime_userdb()
         self.config_file = '/etc/soscleaner.conf'
         self._read_early_config_options()
         self.obfuscate_macs = True  # issue #98
@@ -419,22 +418,6 @@ class SOSCleaner(object):
     #  User Functions  #
     ################################
 
-    def _prime_userdb(self):
-        """Creates an initial entry in the user_db for the root user. This is needed so we
-        have something to iterate through for later functions.
-        """
-
-        try:
-            new_user = "obfuscateduser%s" % randint(1,1000000)
-            self.user_db['root'] = new_user
-
-            return True
-
-        except Exception as e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception(
-                'PRIME_USERDB_ERROR: unable to prime user database')
-
     def _process_user_option(self, users):
         """Adds users specified from the command line to the user_db object"""
 
@@ -652,9 +635,7 @@ class SOSCleaner(object):
                 'CREATE_KW_REPORT_ERROR: unable to create report - $%s', kw_report_name)
 
     def _create_un_report(self):
-        """Creates a report of usernames and their obfuscated counterparts. There
-        will always be at least one obfuscated user because we obfuscate 'root'
-        when we start an soscleaner run.
+        """Creates a report of usernames and their obfuscated counterparts. 
         """
         try:
             un_report_name = os.path.join(

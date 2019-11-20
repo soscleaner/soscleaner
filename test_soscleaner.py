@@ -573,13 +573,13 @@ class SOSCleanerTests(unittest.TestCase):
 
     def test62_un_report(self):
         """Edited for #129: obfuscateduserX is now randomized"""
-        self.cleaner._prime_userdb()
+        self.cleaner._user2db('user1')
         self.cleaner._create_un_report()
         fh = open(self.cleaner.un_report, 'r')
         data = fh.readlines()
         fh.close()
         user_data = data[1].split(',')
-        self.assertTrue(user_data[0] == 'root')
+        self.assertTrue(user_data[0] == 'user1')
         self.assertTrue('obfuscateduser' in user_data[1])
 
     def test63_sub_mac(self):
