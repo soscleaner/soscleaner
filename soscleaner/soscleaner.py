@@ -19,6 +19,9 @@
 # Created By : Jamie Duncan
 # Purpose : an sosreport and data set obfuscation tool
 
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 import hashlib
 import re
@@ -37,7 +40,7 @@ import configparser
 import subprocess
 
 
-class SOSCleaner:
+class SOSCleaner(object):
     """
     A class to parse through an sosreport or generic dataset to begin the
     cleaning and obfuscation process required in many industries.
@@ -97,7 +100,6 @@ class SOSCleaner:
         self.users_file = 'sos_commands/last/lastlog_-u_1000-60000'
         self.user_db = dict()
         self.user_count = 0
-        self._prime_userdb()
         self.config_file = '/etc/soscleaner.conf'
         self._read_early_config_options()
         self.obfuscate_macs = True  # issue #98
@@ -375,7 +377,7 @@ class SOSCleaner:
                                 'Data Source Appears To Be LZMA Encrypted Data - decompressing into %s', self.origin_path)
                             self.logger.info(
                                 'LZMA Hack - Creating %s', self.origin_path)
-                            os.makedirs( self.origin_path, 0755 )
+                            os.makedirs( self.origin_path, 0o755 )
                             subprocess.Popen(
                                 ["tar", "-xJf", path, "-C", self.origin_path]).wait()
 
@@ -415,21 +417,6 @@ class SOSCleaner:
     ################################
     #  User Functions  #
     ################################
-
-    def _prime_userdb(self):
-        """Creates an initial entry in the user_db for the root user. This is needed so we
-        have something to iterate through for later functions.
-        """
-
-        try:
-            new_user = "obfuscateduser%s" % randint(1,1000000)
-
-            return True
-
-        except Exception as e:  # pragma: no cover
-            self.logger.exception(e)
-            raise Exception(
-                'PRIME_USERDB_ERROR: unable to prime user database')
 
     def _process_user_option(self, users):
         """Adds users specified from the command line to the user_db object"""
@@ -472,11 +459,11 @@ class SOSCleaner:
             return "obfuscateduser%s" % randint(1,1000000)
 
         test_user = _randomizer()
-        if test_user in self.user_db.values():
-            while test_user in self.user_db.values():
+        if test_user in list(self.user_db.values()):
+            while test_user in list(self.user_db.values()):
                 self.logger.debug("Duplicate Obfuscated Hostname. Retrying - %s", test_user)
                 test_user = _randomizer()
-                if test_user not in self.user_db.values():
+                if test_user not in list(self.user_db.values()):
                     return test_user
         else:
             return test_user
@@ -648,9 +635,7 @@ class SOSCleaner:
                 'CREATE_KW_REPORT_ERROR: unable to create report - $%s', kw_report_name)
 
     def _create_un_report(self):
-        """Creates a report of usernames and their obfuscated counterparts. There
-        will always be at least one obfuscated user because we obfuscate 'root'
-        when we start an soscleaner run.
+        """Creates a report of usernames and their obfuscated counterparts. 
         """
         try:
             un_report_name = os.path.join(
@@ -803,8 +788,7 @@ class SOSCleaner:
                 # using this lambda to create a valid randomized mac address is
                 # documented at https://www.commandlinefu.com/commands/view/7245/generate-random-valid-mac-addresses
                 # many thanks for putting that little thought together
-                o_mac = ':'.join(['%02x' % x for x in map(
-                    lambda x:randint(0, 255), list(range(6)))])
+                o_mac = ':'.join(['%02x' % x for x in [randint(0, 255) for x in list(range(6))]])
                 self.logger.debug(
                     "Creating new obfuscated MAC address: %s > %s", mac, o_mac)
                 self.mac_db[mac] = o_mac
