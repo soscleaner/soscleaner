@@ -1167,8 +1167,6 @@ class SOSCleaner(object):
 
         self._clean_up()
         self.logger.info('Archiving Complete')
-        if not self.quiet:  # pragma: no cover
-            t.add(self.logfile, arcname=self.logfile.replace(self.report_dir, ''))
         t.close()
 
     def soscleaner_checksum(self):
