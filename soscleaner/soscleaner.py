@@ -97,6 +97,7 @@ class SOSCleaner(object):
         self.kw_count = 0
 
         # obfuscating users from the last command, per rfe #79
+        # To accomodate sos <v3.9 using last plugin to store lastlog infos.
         self.users_file = 'sos_commands/last/lastlog_-u_1000-60000'
         self.user_db = dict()
         self.user_count = 0
@@ -506,6 +507,15 @@ class SOSCleaner(object):
 
         try:
             users_file = os.path.join(self.dir_path, self.users_file)
+            if not os.path.exists(users_file):
+                self.logger.con_out(
+                    "Unable to locate user file - %s", users_file)
+                # To accomodate sos >v3.9 using login plugin to store lastlog infos.
+                # Fallback to login plugin
+                self.users_file = 'sos_commands/login/lastlog_-u_1000-60000'
+                users_file = os.path.join(self.dir_path, self.users_file)
+                self.logger.con_out(
+                    "Fallback to - %s", users_file)
             # check to make sure users_file is there and we can access it
             if os.path.exists(users_file):
                 self.logger.con_out(
